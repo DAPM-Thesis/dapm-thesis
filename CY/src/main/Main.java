@@ -1,19 +1,29 @@
 package main;
 
+import main.algorithms.BehavioralPatternsMiner;
+import main.datatype.Event;
+import main.node.OperatorNode;
+import java.util.Collection;
+import java.util.HashSet;
+
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
 public class Main {
     public static void main(String[] args) {
-        // Press Alt+Enter with your caret at the highlighted text to see how
-        // IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        // an input topic should actually be coming from a Node. So this is a mock topic
+        Topic<Event> inputTopicDiscovery = new Topic<>();
+        Collection<Topic<?>> inputTopicsDiscovery = new HashSet<>();
+        inputTopicsDiscovery.add(inputTopicDiscovery);
+        BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
 
-        // Press Shift+F10 or click the green arrow button in the gutter to run the code.
-        for (int i = 1; i <= 5; i++) {
+        OperatorNode discoveryNode = new OperatorNode(
+                "DUMMY Discovery algorithm",
+                "DUMMY discovery algorithm taking in events and outputting petri nets",
+                inputTopicsDiscovery,
+                discoveryMiner
+        );
 
-            // Press Shift+F9 to start debugging your code. We have set one breakpoint
-            // for you, but you can always add more by pressing Ctrl+F8.
-            System.out.println("i = " + i);
-        }
+        System.out.println(discoveryNode.getOutputTopic().getClass());
+
     }
 }
