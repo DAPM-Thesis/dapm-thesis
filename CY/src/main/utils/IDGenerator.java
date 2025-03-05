@@ -1,5 +1,6 @@
 package main.utils;
 
+/** A simple, synchronized (non thread-safe) ID Generation static class. */
 public class IDGenerator {
     private static int ID = 1;
 

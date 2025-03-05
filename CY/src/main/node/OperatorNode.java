@@ -1,7 +1,6 @@
 package main.node;
 
 import main.algorithms.Algorithm;
-import main.utils.IDGenerator;
 import main.datatype.DataType;
 import main.Topic;
 import main.node.handle.InputHandle;
@@ -13,20 +12,24 @@ import java.util.HashSet;
 public class OperatorNode extends Node {
     private final Collection<InputHandle<?>> inputHandles;
     private final OutputHandle<?> outputHandle;
-    main.algorithms.Algorithm<?> Algorithm;
+    private Algorithm<?> Algorithm;
 
     public <T extends DataType> OperatorNode(String name, String description, Collection<Topic<?>> inputTopics, Algorithm<T> algorithm) {
-        super(name, IDGenerator.newID(), description);
+        super(name, description);
 
+        // create input handles
         inputHandles = new HashSet<>();
         for (Topic<?> topic : inputTopics) {
             addInputHandle(topic);
         }
 
+        // create output handle
         Topic<T> outputTopic = new Topic<>();
         outputHandle = new OutputHandle<>(outputTopic);
     }
 
+    /** Creates a (new) input handle for the node.
+     * @param topic the topic that the input handle subscribes to receive streamed items.*/
     private <T extends DataType> void addInputHandle(Topic<T> topic) {
         InputHandle<T> handle = InputHandle.createForTopic(topic);
         inputHandles.add(handle);
