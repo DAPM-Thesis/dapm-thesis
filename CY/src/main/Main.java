@@ -2,6 +2,7 @@ package main;
 
 import main.algorithms.BehavioralPatternsMiner;
 import main.datatype.Event;
+import main.datatype.PetriNet;
 import main.node.OperatorNode;
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,6 +25,7 @@ public class Main {
         );
 
         System.out.println(discoveryNode.getOutputTopic().getClass());
-
+        Message<Event> msg = new Message<>(new Event("Bob", "run", "15-13-25:19:50", new HashSet<>()));
+        System.out.println(msg.data().getCaseID());
     }
 }

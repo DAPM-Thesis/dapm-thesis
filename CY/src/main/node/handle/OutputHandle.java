@@ -11,4 +11,5 @@ public class OutputHandle<T extends DataType> extends Handle<T> {
         super(topic);
     }
 
+    public void publish(Message<T> msg) {this.topic.publish(msg); }
 }

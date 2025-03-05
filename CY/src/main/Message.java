@@ -1,13 +1,6 @@
 package main;
 
-import main.datatype.Event;
+import main.datatype.DataType;
 
-public class Message {
-    private Event event;
-
-    public Message(Event event){
-        this.event = event;
-    }
-
-    public Event getEvent() {return event;}
+public record Message<T extends DataType>(T data) {
 }

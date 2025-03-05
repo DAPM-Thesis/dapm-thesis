@@ -18,5 +18,5 @@ public class Event extends DataType {
         this.attributes = attributes;
     }
 
-
+    public String getCaseID() {return caseID;}
 }
