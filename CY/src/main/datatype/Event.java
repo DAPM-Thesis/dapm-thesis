@@ -19,4 +19,10 @@ public class Event extends DataType {
     }
 
     public String getCaseID() {return caseID;}
+
+
+    @Override
+    protected String getPayloadString() {
+        return "caseID=" + caseID + ", activity=" + activity + ", timestamp=" + timestamp + ", attributes=" + attributes;
+    }
 }

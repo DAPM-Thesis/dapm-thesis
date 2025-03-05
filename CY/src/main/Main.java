@@ -3,6 +3,7 @@ package main;
 import main.algorithms.BehavioralPatternsMiner;
 import main.datatype.Event;
 import main.datatype.PetriNet;
+import main.node.MiningNode;
 import main.node.OperatorNode;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -20,7 +21,7 @@ public class Main {
         inputTopicsDiscovery.add(inputTopicDiscovery);
         BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
 
-        OperatorNode discoveryNode = new OperatorNode(
+        MiningNode<PetriNet> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 inputTopicsDiscovery,

@@ -34,7 +34,7 @@ public class InputHandle<T extends DataType> extends Handle<T> implements Subscr
 
     @Override
     public void unsubscribe(Subscriber<Message<T>> subscriber) {
-        throw new IllegalCallerException("An input handle's lifetime is the same as the node it is created for. It should never unsubscribe from its node.")
+        throw new IllegalCallerException("An input handle's lifetime is the same as the node it is created for. It should never unsubscribe from its node.");
     }
 
     @Override
