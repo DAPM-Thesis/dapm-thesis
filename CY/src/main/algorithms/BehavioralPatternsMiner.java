@@ -5,6 +5,7 @@ import main.datatype.PetriNet;
 import main.utils.Pair;
 
 public class BehavioralPatternsMiner implements Algorithm<Pair<PetriNet, Boolean>> {
+    AlgorithmConfiguration configuration;
 
     @Override
     public <U extends DataType> Pair<PetriNet, Boolean> runAlgorithm(U item) {
