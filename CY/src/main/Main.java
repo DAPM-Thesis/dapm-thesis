@@ -3,11 +3,14 @@ package main;
 import main.algorithms.BehavioralPatternsMiner;
 import main.datatype.Event;
 import main.node.OperatorNode;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 import java.util.Collection;
 import java.util.HashSet;
 
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
+@SpringBootApplication
 public class Main {
     public static void main(String[] args) {
         // an input topic should actually be coming from a Node. So this is a mock topic
