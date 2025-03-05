@@ -1,6 +1,5 @@
 package main.algorithms;
 
-import jdk.jshell.spi.ExecutionControl;
 import main.datatype.DataType;
 import main.datatype.PetriNet;
 import main.utils.Pair;
