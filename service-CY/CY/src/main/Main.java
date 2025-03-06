@@ -37,7 +37,6 @@ public class Main {
         Consumer kafkaConsumer = new Consumer();
 
         kafkaProducer.publish("input-topic","This is a message");
-
         kafkaConsumer.observe("input-topic");
     }
 }

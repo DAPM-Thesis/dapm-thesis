@@ -1,9 +1,5 @@
 package main.service;
 
-import main.Message;
-import main.datatype.DataType;
-import main.observerpattern.Publisher;
-import main.observerpattern.Subscriber;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -25,7 +21,6 @@ public class Producer {
 
         this.kafkaProducer = new KafkaProducer<>(props);
     }
-
 
     public void publish(String topic, String message) {
         ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, message);

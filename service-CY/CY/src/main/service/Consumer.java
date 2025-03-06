@@ -1,7 +1,5 @@
 package main.service;
 
-import main.datatype.DataType;
-import main.observerpattern.Subscriber;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
