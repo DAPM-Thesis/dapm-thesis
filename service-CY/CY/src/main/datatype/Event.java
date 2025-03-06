@@ -1,7 +1,5 @@
 package main.datatype;
 
-import main.Attribute;
-
 import java.util.Collection;
 import java.util.HashSet;
 

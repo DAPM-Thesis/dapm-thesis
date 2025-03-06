@@ -1,7 +1,7 @@
 package main.algorithms;
 
 import main.datatype.DataType;
-import main.datatype.PetriNet;
+import main.datatype.petrinet.PetriNet;
 import main.utils.Pair;
 
 public class BehavioralPatternsMiner implements Algorithm<Pair<PetriNet, Boolean>> {
