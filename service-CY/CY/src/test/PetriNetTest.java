@@ -1,5 +1,3 @@
-package test;
-
 import main.datatype.petrinet.PetriNet;
 import main.datatype.petrinet.Place;
 import main.datatype.petrinet.Transition;

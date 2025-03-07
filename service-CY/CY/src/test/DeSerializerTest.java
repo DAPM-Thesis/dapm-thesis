@@ -1,5 +1,3 @@
-package test;
-
 import main.datatype.petrinet.PetriNet;
 import main.datatype.petrinet.Place;
 import main.datatype.petrinet.Transition;
@@ -10,6 +8,10 @@ import main.datatype.visitorpattern.SerializerVisitor;
 import main.datatype.DeSerializer;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,6 +48,22 @@ class DeSerializerTest {
         PetriNet pn = getPetriNetExample();
         String pnml = serializer.visitPetriNet(pn);
         PetriNet pn_2 = DeSerializer.PNMLToPetriNet(pnml);
+
+        assertEquals(pn, pn_2);
+    }
+
+    @Test
+    void testDeserializePetriNetExample() throws IOException {
+        PetriNet pn = new PetriNet();
+        Place p1 = new Place("p1", 3);
+        pn.addPlace(p1);
+        Transition t1 = new Transition("t1");
+        pn.addTransition(t1);
+        pn.addArc(new PlaceToTransitionArc("a1", p1, t1));
+
+        String XMLPathString = "service-CY/CY/src/test/resources/pnml/article.xml";
+        String XMLContents = Files.readString(Paths.get(XMLPathString));
+        PetriNet pn_2 = DeSerializer.PNMLToPetriNet(XMLContents);
 
         assertEquals(pn, pn_2);
     }
