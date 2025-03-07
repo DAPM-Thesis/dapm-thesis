@@ -4,6 +4,7 @@ import main.datatype.DataType;
 import main.datatype.petrinet.arc.Arc;
 import main.datatype.petrinet.arc.PlaceToTransitionArc;
 import main.datatype.petrinet.arc.TransitionToPlaceArc;
+import main.datatype.visitorpattern.Visitor;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,11 +24,16 @@ public class PetriNet extends DataType {
         // add each component individually to assert invariants
         this();
         assert this.places.isEmpty() && this.transitions.isEmpty() && this.flowRelation.isEmpty() : "Empty constructor no longer compatible";
+        assert !places.contains(null) && !transitions.contains(null) && !flowRelation.contains(null);
 
         for (Place p : places) {addPlace(p);}
         for (Transition t : transitions) {addTransition(t);}
         for (Arc a : flowRelation) {addArc(a);}
     }
+
+    public Set<Place> getPlaces() { return places; }
+    public Set<Transition> getTransitions() { return transitions; }
+    public Set<Arc> getFlowRelation() { return flowRelation; }
 
     public void addPlace(Place p) {
         assert !places.contains(p) : "Place with the same id already exists";
@@ -49,5 +55,28 @@ public class PetriNet extends DataType {
         }
         flowRelation.add(a);
     }
+
+    @Override
+    public void acceptVisitor(Visitor<?> v) {
+        v.visitPetriNet(this);
+    }
+
+    @Override
+    public String toString() {
+        return "PetriNet{\t" + "places=" + places + ",\n\ttransitions=" + transitions + ",\n\tflowRelation=" + flowRelation + "\n}";
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) return true;
+        if (!(other instanceof PetriNet otherPetriNet)) return false;
+        return places.equals(otherPetriNet.places)
+                && transitions.equals(otherPetriNet.transitions)
+                && flowRelation.equals(otherPetriNet.flowRelation);
+    }
+
+    @Override
+    public int hashCode() { return java.util.Objects.hash(places, transitions, flowRelation); }
+
 
 }

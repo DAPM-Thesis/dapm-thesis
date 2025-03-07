@@ -3,7 +3,15 @@ package main.datatype.petrinet;
 public class Transition {
     private String ID;
 
-    public Transition(String ID) { this.ID = ID; }
+    public Transition(String ID) {
+        assert ID.matches("^[A-Za-z0-9_]+$");
+        this.ID = ID;
+    }
+
+    public String getID() { return ID; }
+
+    @Override
+    public String toString() { return String.format("t(%s)", ID); }
 
     @Override
     public boolean equals(Object other) {
