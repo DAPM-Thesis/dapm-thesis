@@ -1,7 +1,5 @@
-package main.service;
+package service;
 
-import main.Message;
-import main.datatype.DataType;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -11,9 +9,9 @@ import org.springframework.stereotype.Service;
 import java.util.Properties;
 
 @Service
-public class Producer<T extends DataType> {
+public class Producer {
 
-    private final KafkaProducer<String, Message<T>> kafkaProducer;
+    private final KafkaProducer<String, String> kafkaProducer;
 
     public Producer() {
         Properties props = new Properties();
@@ -24,8 +22,8 @@ public class Producer<T extends DataType> {
         this.kafkaProducer = new KafkaProducer<>(props);
     }
 
-    public void publish(String topic, Message<T> message) {
-        ProducerRecord<String, Message<T>> record = new ProducerRecord<String, Message<T>>(topic, message);
+    public void publish(String topic, String message) {
+        ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, message);
         this.kafkaProducer.send(record, (metadata, exception) -> {
             if (exception != null) {
                 exception.printStackTrace();

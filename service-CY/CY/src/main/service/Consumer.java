@@ -1,5 +1,7 @@
 package main.service;
 
+import main.Message;
+import main.node.handle.InputHandle;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -25,15 +27,18 @@ public class Consumer {
         this.kafkaConsumer = new KafkaConsumer<>(props);
     }
 
-    public void observe(String topic) {
-        kafkaConsumer.subscribe(List.of(topic));
+    public void subscribe(String topic, InputHandle inputHandle) {
+        new Thread(() -> {
+            kafkaConsumer.subscribe(List.of(topic));
+            while (true) {
+                var records = kafkaConsumer.poll(java.time.Duration.ofMillis(100));
 
-        while (true) {
-            var records = kafkaConsumer.poll(java.time.Duration.ofMillis(100));
-
-            for (ConsumerRecord<String, String> record : records) {
-                System.out.println("Consumed record with value: " + record.value());
+                if (!records.isEmpty()) {
+                    for (ConsumerRecord<String, String> record : records) {
+                        inputHandle.observe(new Message<>(record.value()));
+                    }
+                }
             }
-        }
+        }).start();
     }
 }

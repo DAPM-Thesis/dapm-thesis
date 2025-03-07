@@ -17,7 +17,7 @@ public abstract class OperatorNode<T extends DataType> extends Node implements S
         super(name, description);
 
         // create output handle
-        Topic<T> outputTopic = new Topic<>();
+        Topic outputTopic = new Topic(name + "_output");
         outputHandle = new OutputHandle<>(outputTopic);
     }
 
@@ -27,11 +27,11 @@ public abstract class OperatorNode<T extends DataType> extends Node implements S
      * @param topic the topic that the input handle subscribes to receive streamed items.
      * @return A (new) InputHandle subscribed to the given topic.
      */
-    protected  <U extends DataType> InputHandle<U> makeInputHandle(Topic<U> topic) {
-        return InputHandle.createForTopic(topic);
+    protected  <U extends DataType> InputHandle<U> makeInputHandle(Topic topic) {
+        return InputHandle.createForTopic(topic, this);
     }
 
-    public Topic<?> getOutputTopic() { return outputHandle.getTopic(); }
+    public Topic getOutputTopic() { return outputHandle.getTopic(); }
 
     public void publish(Message<T> message) {
         this.outputHandle.publish(message);

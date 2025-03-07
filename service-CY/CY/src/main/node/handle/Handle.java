@@ -4,9 +4,9 @@ import main.datatype.DataType;
 import main.Topic;
 
 public abstract class Handle<T extends DataType> {
-    Topic<T> topic;
+    Topic topic;
 
-    public Handle(Topic<T> topic) { this.topic = topic; }
+    public Handle(Topic topic) { this.topic = topic; }
 
-    public Topic<T> getTopic() { return topic; }
+    public Topic getTopic() { return topic; }
 }

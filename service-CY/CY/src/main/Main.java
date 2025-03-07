@@ -1,6 +1,7 @@
 package main;
 
 import main.algorithms.BehavioralPatternsMiner;
+import main.datatype.DataType;
 import main.datatype.Event;
 import main.datatype.PetriNet;
 import main.node.MiningNode;
@@ -17,8 +18,8 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) {
         // an input topic should actually be coming from a Node. So this is a mock topic
-        Topic<Event> inputTopicDiscovery = new Topic<>();
-        Collection<Topic<?>> inputTopicsDiscovery = new HashSet<>();
+        Topic inputTopicDiscovery = new Topic("ingest");
+        Collection<Topic> inputTopicsDiscovery = new HashSet<>();
         inputTopicsDiscovery.add(inputTopicDiscovery);
         BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
 
@@ -32,11 +33,5 @@ public class Main {
         System.out.println(discoveryNode.getOutputTopic().getClass());
         Message<Event> msg = new Message<>(new Event("Bob", "run", "15-13-25:19:50", new HashSet<>()));
         System.out.println(msg.data().getCaseID());
-
-        Producer kafkaProducer = new Producer();
-        Consumer kafkaConsumer = new Consumer();
-
-        kafkaProducer.publish("input-topic","This is a message");
-        kafkaConsumer.observe("input-topic");
     }
 }

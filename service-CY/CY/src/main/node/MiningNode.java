@@ -17,13 +17,13 @@ public class MiningNode<T extends DataType> extends OperatorNode<T>{
     private final Collection<InputHandle<?>> inputHandles;
     private final Algorithm<Pair<T, Boolean>> algorithm;
 
-    public MiningNode(String name, String description, Collection<Topic<?>> inputTopics, Algorithm<Pair<T, Boolean>> algorithm) {
+    public MiningNode(String name, String description, Collection<Topic> inputTopics, Algorithm<Pair<T, Boolean>> algorithm) {
         super(name, description);
         this.algorithm = algorithm;
 
         // create input handles
         inputHandles = new HashSet<>();
-        for (Topic<?> topic : inputTopics) {
+        for (Topic topic : inputTopics) {
             InputHandle<?> handle = makeInputHandle(topic);
             inputHandles.add(handle);
         }
