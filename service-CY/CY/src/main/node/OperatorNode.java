@@ -27,7 +27,7 @@ public abstract class OperatorNode<T extends DataType> extends Node implements S
      * @param topic the topic that the input handle subscribes to receive streamed items.
      * @return A (new) InputHandle subscribed to the given topic.
      */
-    protected  <U extends DataType> InputHandle<U> makeInputHandle(Topic topic) {
+    protected  InputHandle<? extends DataType> makeInputHandle(Topic topic) {
         return InputHandle.createForTopic(topic, this);
     }
 
