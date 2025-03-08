@@ -1,7 +1,9 @@
 package com.dapm.security_service.models;
 
+import com.dapm.security_service.models.enums.AccessRequestStatus;
 import lombok.*;
 import jakarta.persistence.*;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -60,6 +62,14 @@ public class AccessRequest {
 
     @PrePersist
     protected void onCreate() {
-        this.requestTime = Instant.now(); // Set to UTC time on creation
+        this.requestTime = Instant.now();
+    }
+
+    public UUID getId(){
+        return id;
+    }
+
+    public void setId(UUID id){
+        this.id = id;
     }
 }

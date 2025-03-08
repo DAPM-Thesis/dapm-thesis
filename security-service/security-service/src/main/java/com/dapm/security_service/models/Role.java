@@ -44,4 +44,122 @@ public class Role {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    public UUID getId(){
+        return id;
+    }
+
+    public void setId(UUID id){
+        this.id = id;
+    }
+
+    // Manual Builder implementation
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+
+    public Set<Permission> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<Permission> permissions) {
+        this.permissions = permissions;
+    }
+
+    public UUID getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(UUID createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public static class Builder {
+        private UUID id;
+        private String name;
+        private Organization organization;
+        private Set<Permission> permissions;
+        private UUID createdBy;
+        private Instant createdAt;
+        private Instant updatedAt;
+
+        public Builder id(UUID id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder organization(Organization organization) {
+            this.organization = organization;
+            return this;
+        }
+
+        public Builder permissions(Set<Permission> permissions) {
+            this.permissions = permissions;
+            return this;
+        }
+
+        public Builder createdBy(UUID createdBy) {
+            this.createdBy = createdBy;
+            return this;
+        }
+
+        public Builder createdAt(Instant createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder updatedAt(Instant updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+
+        public Role build() {
+            Role role = new Role();
+            role.setId(this.id);
+            role.setName(this.name);
+            role.setOrganization(this.organization);
+            role.setPermissions(this.permissions);
+            role.setCreatedBy(this.createdBy);
+            role.setCreatedAt(this.createdAt);
+            role.setUpdatedAt(this.updatedAt);
+            return role;
+        }
+    }
 }

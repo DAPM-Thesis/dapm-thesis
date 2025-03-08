@@ -35,4 +35,12 @@ public class ActionType {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    public UUID getId(){
+        return id;
+    }
+
+    public void setId(UUID id){
+        this.id = id;
+    }
 }

@@ -1,4 +1,4 @@
-package com.dapm.security_service.models;
+package com.dapm.security_service.models.enums;
 
 public enum AccessRequestStatus {
     PENDING,
