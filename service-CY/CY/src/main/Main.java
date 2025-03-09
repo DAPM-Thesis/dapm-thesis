@@ -1,9 +1,8 @@
 package main;
 
 import main.algorithms.BehavioralPatternsMiner;
-import main.datatype.DataType;
 import main.datatype.Event;
-import main.datatype.PetriNet;
+import main.datatype.petrinet.PetriNet;
 import main.node.MiningNode;
 import main.service.Consumer;
 import main.service.Producer;
@@ -12,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Collection;
 import java.util.HashSet;
+
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
 @SpringBootApplication
