@@ -1,4 +1,4 @@
-package main.datatype.visitorpattern;
+package main.datatype.serialization;
 
 import main.datatype.Event;
 import main.datatype.petrinet.PetriNet;
@@ -7,10 +7,10 @@ import main.datatype.petrinet.Transition;
 import main.datatype.petrinet.arc.Arc;
 import main.datatype.petrinet.arc.PlaceToTransitionArc;
 import main.datatype.petrinet.arc.TransitionToPlaceArc;
-
-public class SerializerVisitor implements Visitor<String> {
+// TODO: make serialization its own class? Sure it adds an extra step but it will make maintainability easier, and enforce the correct formatting. Should be considered if serialization format changes frequently.
+public class DataTypeSerializer implements DataTypeVisitor<String> {
     @Override
-    public String visitEvent(Event e) {
+    public String visit(Event e) {
         return "";
     }
 
@@ -18,7 +18,11 @@ public class SerializerVisitor implements Visitor<String> {
      * Note that serializations from this method will only include the necessary components of a (single) petri net. That is, it includes the petri net's places with their marking,
      * the transitions, and the arcs. */
     @Override
-    public String visitPetriNet(PetriNet pn) {
+    public String visit(PetriNet pn) {
+        return pn.getName() + ":" +  ToPNML(pn);
+    }
+
+    private String ToPNML(PetriNet pn) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pnml xmlns=\"https://www.pnml.org/version-2009/version-2009.php\">")
                 .append("<net id=\"pn\" type=\"https://orbit.dtu.dk/en/publications/a-primer-on-the-petri-net-markup-language-and-isoiec-15909-2\">")
@@ -26,11 +30,9 @@ public class SerializerVisitor implements Visitor<String> {
 
         for (Place p : pn.getPlaces()) { sb.append(serializePlace(p)); }
         for (Transition t : pn.getTransitions()) { sb.append(serializeTransition(t)); }
-        for (Arc a : pn.getFlowRelation()) { sb.append(serializeTransition(a)); }
+        for (Arc a : pn.getFlowRelation()) { sb.append(serializeArc(a)); }
 
-        sb.append("</page>")
-                .append("</net>")
-                .append("</pnml>");
+        sb.append("</page></net></pnml>");
 
         String pnmlString = sb.toString();
         System.out.println(pnmlString);
@@ -53,7 +55,7 @@ public class SerializerVisitor implements Visitor<String> {
         return "<transition id=\"" + t.getID() + "\"></transition>";
     }
 
-    public String serializeTransition(Arc a) {
+    public String serializeArc(Arc a) {
         String source;
         String target;
         if (a instanceof TransitionToPlaceArc tpa) {

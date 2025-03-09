@@ -1,6 +1,8 @@
 package main.datatype;
 
-import main.datatype.visitorpattern.Visitor;
+import main.datatype.serialization.DataTypeVisitor;
+import main.datatype.serialization.deserialization.DeserializationStrategy;
+import main.datatype.serialization.deserialization.EventDeserializationStrategy;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,7 +23,17 @@ public class Event extends DataType {
     public String getCaseID() {return caseID;}
 
     @Override
-    public void acceptVisitor(Visitor<?> v) {
-        v.visitEvent(this);
+    public String getName() {
+        return "event";
+    }
+
+    @Override
+    public void acceptVisitor(DataTypeVisitor<?> v) {
+        v.visit(this);
+    }
+
+    @Override
+    public DeserializationStrategy getDeserializationStrategy() {
+        return new EventDeserializationStrategy();
     }
 }

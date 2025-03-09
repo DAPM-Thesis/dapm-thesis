@@ -4,12 +4,11 @@ import main.datatype.petrinet.Transition;
 import main.datatype.petrinet.arc.Arc;
 import main.datatype.petrinet.arc.PlaceToTransitionArc;
 import main.datatype.petrinet.arc.TransitionToPlaceArc;
-import main.datatype.visitorpattern.SerializerVisitor;
+import main.datatype.serialization.DataTypeSerializer;
 import main.datatype.DeSerializer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -44,9 +43,9 @@ class DeSerializerTest {
 
     @Test
     void testDeserializePNML() {
-        SerializerVisitor serializer = new SerializerVisitor();
+        DataTypeSerializer serializer = new DataTypeSerializer();
         PetriNet pn = getPetriNetExample();
-        String pnml = serializer.visitPetriNet(pn);
+        String pnml = serializer.visit(pn);
         PetriNet pn_2 = DeSerializer.PNMLToPetriNet(pnml);
 
         assertEquals(pn, pn_2);

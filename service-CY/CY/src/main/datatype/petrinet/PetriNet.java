@@ -4,7 +4,9 @@ import main.datatype.DataType;
 import main.datatype.petrinet.arc.Arc;
 import main.datatype.petrinet.arc.PlaceToTransitionArc;
 import main.datatype.petrinet.arc.TransitionToPlaceArc;
-import main.datatype.visitorpattern.Visitor;
+import main.datatype.serialization.DataTypeVisitor;
+import main.datatype.serialization.deserialization.DeserializationStrategy;
+import main.datatype.serialization.deserialization.PetriNetDeserializationStrategy;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -57,8 +59,13 @@ public class PetriNet extends DataType {
     }
 
     @Override
-    public void acceptVisitor(Visitor<?> v) {
-        v.visitPetriNet(this);
+    public void acceptVisitor(DataTypeVisitor<?> v) {
+        v.visit(this);
+    }
+
+    @Override
+    public DeserializationStrategy getDeserializationStrategy() {
+        return new PetriNetDeserializationStrategy();
     }
 
     @Override
