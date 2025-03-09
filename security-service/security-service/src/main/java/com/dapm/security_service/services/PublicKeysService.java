@@ -37,6 +37,10 @@ public class PublicKeysService {
         return publicKeys.get(organizationId);
     }
 
+    public Map<String, PublicKey> getAllPublicKeys() {
+        return publicKeys;
+    }
+
     private PublicKey parsePublicKey(String pem) {
         if (pem == null || pem.isBlank()) {
             throw new SecurityException("Empty PEM string provided");
