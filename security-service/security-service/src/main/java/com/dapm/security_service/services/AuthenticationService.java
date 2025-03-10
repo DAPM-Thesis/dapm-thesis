@@ -2,6 +2,7 @@ package com.dapm.security_service.services;
 
 import com.dapm.security_service.models.User;
 import com.dapm.security_service.repositories.interfaces.IUserRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -9,13 +10,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthenticationService {
 
-    @Autowired
-    private IUserRepository userRepository;
+    private final IUserRepository userRepository;
 
-    @Autowired
-    private TokenService tokenService;
+    private final TokenService tokenService;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    public AuthenticationService(IUserRepository userRepository, TokenService tokenService) {
+        this.userRepository = userRepository;
+        this.tokenService = tokenService;
+    }
 
     /**
      * @param username the username

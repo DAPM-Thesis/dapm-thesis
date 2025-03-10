@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.util.Base64;
@@ -23,9 +25,32 @@ public class TokenService {
 
     private PrivateKey privateKey;
 
-    @Value("${org.private-OrgA}")
+    @Value("${org.private-key}")
     private String privateKeyString;
 
+    @PostConstruct
+    public void init() {
+        try {
+            String privateKeyPEM = privateKeyString
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----", "")
+                    .replaceAll("\\s+", "");
+
+            byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            this.privateKey = keyFactory.generatePrivate(keySpec);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new IllegalStateException("Failed to initialize RSA private key: " + e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Invalid private key format: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unexpected error during private key initialization: " + e.getMessage(), e);
+        }
+    }
+
+
+    /*
     @PostConstruct
     public void init() throws Exception {
         // Remove PEM header/footer and whitespace.
@@ -33,11 +58,14 @@ public class TokenService {
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
                 .replaceAll("\\s+", "");
+
         byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         this.privateKey = keyFactory.generatePrivate(keySpec);
     }
+
+     */
 
     /**
      * Generates a JWT for the given user including claims for username,

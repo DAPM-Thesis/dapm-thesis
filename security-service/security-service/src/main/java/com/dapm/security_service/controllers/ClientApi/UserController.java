@@ -1,4 +1,4 @@
-package com.dapm.security_service.controllers;
+package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.User;
 import com.dapm.security_service.repositories.interfaces.IUserRepository;

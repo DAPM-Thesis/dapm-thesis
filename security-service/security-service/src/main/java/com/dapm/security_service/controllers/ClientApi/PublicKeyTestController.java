@@ -1,4 +1,4 @@
-package com.dapm.security_service.controllers;
+package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.services.PublicKeysService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/keys")
 public class PublicKeyTestController {
+    @Autowired
     private final PublicKeysService publicKeysService;
 
     @Autowired
