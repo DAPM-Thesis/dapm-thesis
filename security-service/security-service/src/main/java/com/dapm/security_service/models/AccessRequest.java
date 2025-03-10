@@ -1,15 +1,15 @@
 package com.dapm.security_service.models;
 
 import com.dapm.security_service.models.enums.AccessRequestStatus;
-import lombok.*;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Data
 @Table(name = "access_request")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -17,7 +17,7 @@ public class AccessRequest {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    private UUID id; // Manually set
+    private UUID id;
 
     // The user who made the access request.
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,7 +29,7 @@ public class AccessRequest {
     @JoinColumn(name = "resource_type_id", nullable = false)
     private ResourceType resourceType;
 
-    // Reference the Action entity.
+    // Reference the ActionType entity.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "action_type_id", nullable = false)
     private ActionType action;
@@ -50,15 +50,6 @@ public class AccessRequest {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private AccessRequestStatus status;
-
-    @Column(name = "created_by", nullable = false)
-    private UUID createdBy;
-
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
 
     @PrePersist
     protected void onCreate() {

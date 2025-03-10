@@ -3,7 +3,6 @@ package com.dapm.security_service.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ public class User {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    private UUID id; // Manually set
+    private UUID id;
 
     @Column(name = "username", nullable = false, unique = true)
     private String username;
@@ -32,14 +31,13 @@ public class User {
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
-    @Column(name = "created_by", nullable = false)
-    private UUID createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "faculty_id", nullable = false)
+    private Faculty faculty;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id", nullable = false)
+    private Department department;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -48,5 +46,4 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
-
 }

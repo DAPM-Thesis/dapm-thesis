@@ -28,6 +28,7 @@ public class AuthenticationService {
             throw new RuntimeException("Invalid username or password");
         }
 
-        return tokenService.generateToken(user);
+        // jwt token expiration time (1 hour = 3600000 ms)
+        return tokenService.generateTokenForUser(user, 3600000);
     }
 }

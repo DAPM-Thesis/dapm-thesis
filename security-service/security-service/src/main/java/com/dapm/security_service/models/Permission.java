@@ -1,12 +1,8 @@
 package com.dapm.security_service.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -26,13 +22,4 @@ public class Permission {
 
     @Column(name = "description", length = 1000)
     private String description;
-
-    @Column(name = "created_by", nullable = false)
-    private UUID createdBy;
-
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
 }

@@ -1,8 +1,10 @@
 package com.dapm.security_service.services;
 
+import com.dapm.security_service.models.Role;
 import com.dapm.security_service.models.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,56 +14,60 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class TokenService {
+
+    private PrivateKey privateKey;
+
     @Value("${org.private-OrgA}")
     private String privateKeyString;
 
-    @Value("${jwt.expiration.ms:3600000}") // default 1 hour
-    private long jwtExpirationMs;
-
-    /**
-     * @param user the authenticated user
-     * @return a signed JWT token as a string
-     */
-    public String generateToken(User user) {
-        PrivateKey privateKey = getPrivateKeyFromPem(privateKeyString);
-
-        String roles = user.getRoles()
-                .stream()
-                .map(role -> role.getName())
-                .collect(Collectors.joining(","));
-
-        Instant now = Instant.now();
-        Instant expiry = now.plusMillis(jwtExpirationMs);
-
-        return Jwts.builder()
-                .setSubject(user.getUsername())
-                .claim("roles", roles)
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(expiry))
-                .signWith(privateKey, SignatureAlgorithm.RS256)
-                .compact();
+    @PostConstruct
+    public void init() throws Exception {
+        // Remove PEM header/footer and whitespace.
+        String privateKeyPEM = privateKeyString
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replaceAll("\\s+", "");
+        byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        this.privateKey = keyFactory.generatePrivate(keySpec);
     }
 
     /**
-     * @param keyPem the PEM string (including header/footer)
-     * @return the PrivateKey object
+     * Generates a JWT for the given user including claims for username,
+     * organization, faculty, department, and roles.
+     * default jwt token expiration time (1 hour = 3600000 ms)
+     *
+     * @param user the authenticated user
+     * @param expirationMillis token expiration time in milliseconds
+     * @return a signed JWT as a String
      */
-    private PrivateKey getPrivateKeyFromPem(String keyPem) {
-        try {
-            String privateKeyPEM = keyPem
-                    .replace("-----BEGIN PRIVATE KEY-----", "")
-                    .replace("-----END PRIVATE KEY-----", "")
-                    .replaceAll("\\s+", "");
-            byte[] keyBytes = Base64.getDecoder().decode(privateKeyPEM);
-            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            return keyFactory.generatePrivate(spec);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse private key", e);
-        }
+    public String generateTokenForUser(User user, Integer expirationMillis) {
+        Instant now = Instant.now();
+
+        // Build claims from the user model.
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("username", user.getUsername());
+        claims.put("organization", user.getOrganization().getName());
+        claims.put("faculty", user.getFaculty().getName());
+        claims.put("department", user.getDepartment().getName());
+        claims.put("roles", user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toList()));
+
+        // Build and sign the JWT.
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(user.getId().toString())
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plusMillis(expirationMillis)))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
     }
 }

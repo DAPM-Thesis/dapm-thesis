@@ -6,17 +6,18 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "organization")
+@Table(name = "faculty")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Organization {
-
+public class Faculty {
     @Id
-    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "name", nullable = false, unique = true)
     private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organization organization;
 }

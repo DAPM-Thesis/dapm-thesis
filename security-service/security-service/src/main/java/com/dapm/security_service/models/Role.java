@@ -3,7 +3,6 @@ package com.dapm.security_service.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,17 +16,15 @@ public class Role {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    private UUID id; // Must be manually set
+    private UUID id;
 
     @Column(name = "name", nullable = false)
-    private String name; // e.g., ADMIN, DEPARTMENT_HEAD, RESEARCHER, PIPELINE_EXECUTION
+    private String name;
 
-    // Associate a role with an organization.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
-    // Many-to-many relationship to Permission
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "role_permissions",
@@ -35,14 +32,4 @@ public class Role {
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
     private Set<Permission> permissions;
-
-    @Column(name = "created_by", nullable = false)
-    private UUID createdBy;
-
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
 }
