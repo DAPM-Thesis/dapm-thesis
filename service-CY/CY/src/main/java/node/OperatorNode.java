@@ -1,11 +1,11 @@
-package main.node;
+package node;
 
 import main.Message;
-import main.datatype.DataType;
+import datatype.DataType;
 import main.Topic;
-import main.node.handle.InputHandle;
-import main.node.handle.OutputHandle;
-import main.observerpattern.Subscriber;
+import node.handle.InputHandle;
+import node.handle.OutputHandle;
+import observerpattern.Subscriber;
 
 import java.util.Collection;
 

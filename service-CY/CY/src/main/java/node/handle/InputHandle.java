@@ -1,14 +1,15 @@
-package main.node.handle;
+package node.handle;
 
+import datatype.serialization.deserialization.DataTypeFactory;
 import main.Message;
-import main.datatype.DataType;
+import datatype.DataType;
 import main.Topic;
-import main.observerpattern.Publisher;
-import main.observerpattern.Subscriber;
-import main.service.Consumer;
+import observerpattern.Publisher;
+import observerpattern.Subscriber;
+import service.Consumer;
 
 /** Input handle is responsible for receiving messages from a topic and publishing them to its node */
-public class InputHandle<T extends DataType> extends Handle<T> implements Subscriber<Message<T>>, Publisher<Message<T>> {
+public class InputHandle<T extends DataType> extends Handle<T> implements Subscriber<Message<String>>, Publisher<Message<T>> {
     private Subscriber<Message<T>> node;
     private Consumer consumer;
 
@@ -20,10 +21,12 @@ public class InputHandle<T extends DataType> extends Handle<T> implements Subscr
     }
 
     @Override
-    public void observe(Message<T> message) {
+    public void observe(Message<String> message) {
         // Pass on the message received from the Topic to the input handle's Node.
-        System.out.println("Received in input handle: " +message);
-        publish(message);
+        T data = (T) DataTypeFactory.deserialize(message.data());
+        Message<T> dataTypeMessage = new Message<>(data);
+        System.out.println("Received in input handle: " + dataTypeMessage);
+        publish(dataTypeMessage);
     }
 
     public static <T extends DataType> InputHandle<T> createForTopic(Topic topic, Subscriber<Message<T>> node) {

@@ -1,8 +1,8 @@
-package main.datatype;
+package datatype;
 
-import main.datatype.serialization.DataTypeVisitor;
-import main.datatype.serialization.deserialization.DeserializationStrategy;
-import main.datatype.serialization.deserialization.EventDeserializationStrategy;
+import datatype.serialization.DataTypeVisitor;
+import datatype.serialization.deserialization.DeserializationStrategy;
+import datatype.serialization.deserialization.EventDeserializationStrategy;
 
 import java.util.Collection;
 import java.util.HashSet;

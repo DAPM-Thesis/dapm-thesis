@@ -1,11 +1,11 @@
-package main.node;
+package node;
 
 import main.Message;
 import main.Topic;
-import main.algorithms.Algorithm;
-import main.datatype.DataType;
-import main.node.handle.InputHandle;
-import main.utils.Pair;
+import algorithms.Algorithm;
+import datatype.DataType;
+import node.handle.InputHandle;
+import utils.Pair;
 
 import java.util.Collection;
 import java.util.HashSet;

@@ -1,6 +1,6 @@
-package main.node.handle;
+package node.handle;
 
-import main.datatype.DataType;
+import datatype.DataType;
 import main.Topic;
 
 public abstract class Handle<T extends DataType> {

@@ -1,4 +1,4 @@
-package main.datatype.petrinet;
+package datatype.petrinet;
 
 public class Transition {
     private String ID;

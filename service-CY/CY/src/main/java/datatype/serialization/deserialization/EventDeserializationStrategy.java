@@ -1,7 +1,7 @@
-package main.datatype.serialization.deserialization;
+package datatype.serialization.deserialization;
 
-import main.datatype.DataType;
-import main.datatype.Event;
+import datatype.DataType;
+import datatype.Event;
 
 import java.util.HashSet;
 

@@ -1,4 +1,4 @@
-package main.datatype;
+package datatype;
 
 public class Attribute<T> {
     private final String name;

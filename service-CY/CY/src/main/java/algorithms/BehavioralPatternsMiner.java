@@ -1,8 +1,8 @@
-package main.algorithms;
+package algorithms;
 
-import main.datatype.DataType;
-import main.datatype.petrinet.PetriNet;
-import main.utils.Pair;
+import datatype.DataType;
+import datatype.petrinet.PetriNet;
+import utils.Pair;
 
 public class BehavioralPatternsMiner implements Algorithm<Pair<PetriNet, Boolean>> {
     AlgorithmConfiguration configuration;

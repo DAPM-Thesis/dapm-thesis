@@ -1,11 +1,13 @@
-package main.node;
+package node;
 
-import main.Message;
+
+import node.OperatorNode;
 import main.Topic;
-import main.algorithms.Algorithm;
-import main.datatype.DataType;
-import main.node.handle.InputHandle;
-import main.node.handle.OutputHandle;
+import main.Message;
+import algorithms.Algorithm;
+import datatype.DataType;
+import node.handle.InputHandle;
+import node.handle.OutputHandle;
 
 import java.util.Collection;
 

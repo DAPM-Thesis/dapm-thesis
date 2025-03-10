@@ -1,4 +1,4 @@
-package main.observerpattern;
+package observerpattern;
 
 import main.Message;
 import main.Topic;

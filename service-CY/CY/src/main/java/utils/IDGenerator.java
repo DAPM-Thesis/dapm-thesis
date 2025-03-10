@@ -1,4 +1,4 @@
-package main.utils;
+package utils;
 
 /** A simple, synchronized (non thread-safe) ID Generation static class. */
 public class IDGenerator {

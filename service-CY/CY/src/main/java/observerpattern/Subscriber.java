@@ -1,4 +1,4 @@
-package main.observerpattern;
+package observerpattern;
 
 public interface Subscriber<T> {
 

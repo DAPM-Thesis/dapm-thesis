@@ -1,7 +1,7 @@
-package main.algorithms;
+package algorithms;
 
-import main.datatype.DataType;
-import main.utils.Pair;
+import datatype.DataType;
+import utils.Pair;
 
 /** Algorithm<T> where T is the output type of the runAlgorithm(), e.g. PetriNet or Event. Organization algorithms
  * must implement this interface. */

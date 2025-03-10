@@ -1,14 +1,16 @@
-package main.node.handle;
+package node.handle;
 
-import main.datatype.DataType;
+import datatype.DataType;
+import datatype.serialization.DataTypeSerializer;
+import datatype.serialization.DataTypeVisitor;
 import main.Message;
 import main.Topic;
-import main.service.Producer;
+import service.Producer;
 
 /** The component of Node which is responsible for publishing node output to topics. */
 public class OutputHandle<T extends DataType> extends Handle<T> {
 
-    private final Producer<T> producer;
+    private final Producer<String> producer;
 
     public OutputHandle(Topic topic) {
         super(topic);
@@ -16,7 +18,10 @@ public class OutputHandle<T extends DataType> extends Handle<T> {
     }
 
     public void publish(Message<T> msg) {
-        this.producer.publish(getTopic().getName(), msg);
+        DataTypeSerializer serializer = new DataTypeSerializer();
+        msg.data().acceptVisitor(serializer);
+        String serialization = serializer.getSerialization();
+        this.producer.publish(getTopic().getName(), new Message<>(serialization));
     }
 
 }

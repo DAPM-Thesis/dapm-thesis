@@ -1,4 +1,4 @@
-package main.utils;
+package utils;
 
 public class Pair<T, U> {
     private T first;

@@ -1,6 +1,6 @@
 package main;
 
-import main.datatype.DataType;
+import datatype.DataType;
 
 public record Message<T>(T data) {
 }

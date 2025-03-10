@@ -1,7 +1,7 @@
-package main.datatype;
+package datatype;
 
-import main.datatype.serialization.DataTypeVisitor;
-import main.datatype.serialization.deserialization.DeserializationStrategy;
+import datatype.serialization.DataTypeVisitor;
+import datatype.serialization.deserialization.DeserializationStrategy;
 
 /** The type of items which can go over the stream. */
 public abstract class DataType {

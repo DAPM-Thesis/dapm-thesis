@@ -1,12 +1,9 @@
 package main;
 
-import main.algorithms.BehavioralPatternsMiner;
-import main.datatype.Event;
-import main.datatype.petrinet.PetriNet;
-import main.node.MiningNode;
-import main.service.Consumer;
-import main.service.Producer;
-import org.apache.kafka.clients.producer.KafkaProducer;
+import algorithms.BehavioralPatternsMiner;
+import datatype.Event;
+import datatype.petrinet.PetriNet;
+import node.MiningNode;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Collection;

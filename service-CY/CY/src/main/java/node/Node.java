@@ -1,7 +1,7 @@
-package main.node;
+package node;
 
 
-import main.utils.IDGenerator;
+import utils.IDGenerator;
 
 public abstract class Node {
     private final String name;

@@ -1,12 +1,12 @@
-package main.datatype.petrinet;
+package datatype.petrinet;
 
-import main.datatype.DataType;
-import main.datatype.petrinet.arc.Arc;
-import main.datatype.petrinet.arc.PlaceToTransitionArc;
-import main.datatype.petrinet.arc.TransitionToPlaceArc;
-import main.datatype.serialization.DataTypeVisitor;
-import main.datatype.serialization.deserialization.DeserializationStrategy;
-import main.datatype.serialization.deserialization.PetriNetDeserializationStrategy;
+import datatype.DataType;
+import datatype.petrinet.arc.Arc;
+import datatype.petrinet.arc.PlaceToTransitionArc;
+import datatype.petrinet.arc.TransitionToPlaceArc;
+import datatype.serialization.DataTypeVisitor;
+import datatype.serialization.deserialization.DeserializationStrategy;
+import datatype.serialization.deserialization.PetriNetDeserializationStrategy;
 
 import java.util.HashSet;
 import java.util.Set;

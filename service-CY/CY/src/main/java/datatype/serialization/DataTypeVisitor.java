@@ -1,7 +1,7 @@
-package main.datatype.serialization;
+package datatype.serialization;
 
-import main.datatype.Event;
-import main.datatype.petrinet.PetriNet;
+import datatype.Event;
+import datatype.petrinet.PetriNet;
 
 public interface DataTypeVisitor<T> {
     T visit(Event e);

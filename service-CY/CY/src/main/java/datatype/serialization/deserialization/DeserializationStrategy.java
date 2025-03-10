@@ -1,6 +1,6 @@
-package main.datatype.serialization.deserialization;
+package datatype.serialization.deserialization;
 
-import main.datatype.DataType;
+import datatype.DataType;
 
 public interface DeserializationStrategy {
     DataType deserialize(String payload);

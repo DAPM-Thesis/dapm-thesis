@@ -1,7 +1,7 @@
-package main.service;
+package service;
 
 import main.Message;
-import main.datatype.DataType;
+import datatype.DataType;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.Properties;
 
 @Service
-public class Producer<T extends DataType> {
+public class Producer<T> {
 
     private final KafkaProducer<String, Message<T>> kafkaProducer;
 

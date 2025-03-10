@@ -1,8 +1,8 @@
-package main.datatype.serialization.deserialization;
+package datatype.serialization.deserialization;
 
-import main.datatype.DataType;
-import main.datatype.Event;
-import main.datatype.petrinet.PetriNet;
+import datatype.DataType;
+import datatype.Event;
+import datatype.petrinet.PetriNet;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,7 +19,7 @@ public class DataTypeFactory {
         strategyMap.put(instance.getName(), instance.getDeserializationStrategy());
     }
 
-    public DataType deserialize(String serialization) {
+    public static DataType deserialize(String serialization) {
         assert serialization != null && !serialization.isEmpty();
 
         String[] typeAndPayload = serialization.split(":", 2);

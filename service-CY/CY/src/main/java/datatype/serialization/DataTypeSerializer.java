@@ -1,14 +1,16 @@
-package main.datatype.serialization;
+package datatype.serialization;
 
-import main.datatype.Event;
-import main.datatype.petrinet.PetriNet;
-import main.datatype.petrinet.Place;
-import main.datatype.petrinet.Transition;
-import main.datatype.petrinet.arc.Arc;
-import main.datatype.petrinet.arc.PlaceToTransitionArc;
-import main.datatype.petrinet.arc.TransitionToPlaceArc;
+import datatype.Event;
+import datatype.petrinet.PetriNet;
+import datatype.petrinet.Place;
+import datatype.petrinet.Transition;
+import datatype.petrinet.arc.Arc;
+import datatype.petrinet.arc.PlaceToTransitionArc;
+import datatype.petrinet.arc.TransitionToPlaceArc;
 // TODO: make serialization its own class? Sure it adds an extra step but it will make maintainability easier, and enforce the correct formatting. Should be considered if serialization format changes frequently.
 public class DataTypeSerializer implements DataTypeVisitor<String> {
+    private String serialization;
+
     @Override
     public String visit(Event e) {
         return "";
@@ -19,7 +21,8 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
      * the transitions, and the arcs. */
     @Override
     public String visit(PetriNet pn) {
-        return pn.getName() + ":" +  ToPNML(pn);
+        this.serialization = pn.getName() + ":" +  ToPNML(pn);
+        return getSerialization();
     }
 
     private String ToPNML(PetriNet pn) {
@@ -73,4 +76,6 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
                 + target
                 + "\"></arc>";
     }
+
+    public String getSerialization() { return serialization; }
 }
