@@ -10,9 +10,12 @@ import datatype.petrinet.arc.TransitionToPlaceArc;
 public class DataTypeSerializer implements DataTypeVisitor<String> {
     private String serialization;
 
+    public String getSerialization() { return serialization; }
+
     @Override
     public String visit(Event e) {
-        return "";
+        this.serialization = e.getName() + ":" + toJXES(e);
+        return getSerialization();
     }
 
     /** converts a PetriNet to a PNML string, based on ISO/IEC 15909-2; in particular "A primer on the Petri Net Markup Language and ISO/IEC 15909-2" by Kindler et al.
@@ -20,8 +23,12 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
      * the transitions, and the arcs. */
     @Override
     public String visit(PetriNet pn) {
-        this.serialization = pn.getName() + ":" +  ToPNML(pn);
+        this.serialization = pn.getName() + ":" + ToPNML(pn);
         return getSerialization();
+    }
+
+    private String toJXES(Event e) {
+        return "";
     }
 
     private String ToPNML(PetriNet pn) {
@@ -75,6 +82,4 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
                 + target
                 + "\"></arc>";
     }
-
-    public String getSerialization() { return serialization; }
 }
