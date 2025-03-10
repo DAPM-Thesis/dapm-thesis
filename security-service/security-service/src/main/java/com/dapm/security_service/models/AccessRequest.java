@@ -64,12 +64,4 @@ public class AccessRequest {
     protected void onCreate() {
         this.requestTime = Instant.now();
     }
-
-    public UUID getId(){
-        return id;
-    }
-
-    public void setId(UUID id){
-        this.id = id;
-    }
 }
