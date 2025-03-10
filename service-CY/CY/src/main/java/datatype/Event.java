@@ -21,6 +21,8 @@ public class Event extends DataType {
     }
 
     public String getCaseID() {return caseID;}
+    public String getActivity() {return activity; }
+    public String getTimestamp() {return timestamp; }
 
     @Override
     public String getName() {

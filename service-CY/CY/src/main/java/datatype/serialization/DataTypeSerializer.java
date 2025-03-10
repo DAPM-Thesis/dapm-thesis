@@ -28,7 +28,12 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
     }
 
     private String toJXES(Event e) {
-        return "";
+        return "{\"traces\": [{" +
+                "\"attrs\": {\"concept:name\": \"" + e.getCaseID() + "\"}, " +
+                "\"events\": [{" +
+                "\"concept:name\": \"" + e.getActivity() +
+                "\", date\": \"" + e.getTimestamp() +
+                "\"}]}]}";
     }
 
     private String ToPNML(PetriNet pn) {
