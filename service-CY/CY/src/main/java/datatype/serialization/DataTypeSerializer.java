@@ -1,5 +1,4 @@
 package datatype.serialization;
-
 import datatype.Event;
 import datatype.petrinet.PetriNet;
 import datatype.petrinet.Place;

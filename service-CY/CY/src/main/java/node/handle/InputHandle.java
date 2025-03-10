@@ -1,9 +1,13 @@
 package node.handle;
 
-import datatype.serialization.deserialization.DataTypeFactory;
-import main.Message;
+import model.Message;
 import datatype.DataType;
-import main.Topic;
+import model.Topic;
+import observerpattern.Publisher;
+import observerpattern.Subscriber;
+import service.Consumer;
+import datatype.serialization.deserialization.DataTypeFactory;
+import datatype.DataType;
 import observerpattern.Publisher;
 import observerpattern.Subscriber;
 import service.Consumer;

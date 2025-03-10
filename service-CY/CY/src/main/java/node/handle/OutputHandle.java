@@ -1,10 +1,10 @@
 package node.handle;
 
 import datatype.DataType;
+import model.Topic;
 import datatype.serialization.DataTypeSerializer;
 import datatype.serialization.DataTypeVisitor;
-import main.Message;
-import main.Topic;
+import model.Message;
 import service.Producer;
 
 /** The component of Node which is responsible for publishing node output to topics. */

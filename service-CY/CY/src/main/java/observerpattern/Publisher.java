@@ -1,8 +1,5 @@
 package observerpattern;
 
-import main.Message;
-import main.Topic;
-
 import java.util.Collection;
 import java.util.HashSet;
 

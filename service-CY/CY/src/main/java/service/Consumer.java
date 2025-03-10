@@ -1,6 +1,8 @@
 package service;
 
-import main.Message;
+
+import model.Message;
+import node.handle.InputHandle;
 import node.handle.InputHandle;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;

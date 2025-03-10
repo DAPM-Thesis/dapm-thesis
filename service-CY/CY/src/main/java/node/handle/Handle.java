@@ -1,7 +1,8 @@
 package node.handle;
 
 import datatype.DataType;
-import main.Topic;
+import datatype.DataType;
+import model.Topic;
 
 public abstract class Handle<T extends DataType> {
     Topic topic;

@@ -1,8 +1,5 @@
-package main;
 
-import datatype.DataType;
-import observerpattern.Publisher;
-import observerpattern.Subscriber;
+package model;
 
 /** The component which the nodes will communicate over. In particular, output handles will publish to them, and
  * input handles will subscribe to them. */

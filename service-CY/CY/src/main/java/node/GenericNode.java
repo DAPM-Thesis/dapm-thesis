@@ -2,8 +2,8 @@ package node;
 
 
 import node.OperatorNode;
-import main.Topic;
-import main.Message;
+import model.Topic;
+import model.Message;
 import algorithms.Algorithm;
 import datatype.DataType;
 import node.handle.InputHandle;

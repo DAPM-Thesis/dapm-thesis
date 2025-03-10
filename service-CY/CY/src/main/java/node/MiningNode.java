@@ -1,7 +1,7 @@
 package node;
 
-import main.Message;
-import main.Topic;
+import model.Message;
+import model.Topic;
 import algorithms.Algorithm;
 import datatype.DataType;
 import node.handle.InputHandle;

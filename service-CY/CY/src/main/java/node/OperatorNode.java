@@ -1,8 +1,8 @@
 package node;
 
-import main.Message;
+import model.Message;
 import datatype.DataType;
-import main.Topic;
+import model.Topic;
 import node.handle.InputHandle;
 import node.handle.OutputHandle;
 import observerpattern.Subscriber;
