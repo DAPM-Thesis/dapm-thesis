@@ -2,6 +2,7 @@ package com.dapm.security_service.models.dtos;
 
 import com.dapm.security_service.models.User;
 import com.dapm.security_service.models.Role;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Set;

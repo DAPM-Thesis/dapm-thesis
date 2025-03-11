@@ -23,7 +23,7 @@ public class Pipeline {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_organization_id", nullable = false)
     private Organization ownerOrganization;
 
@@ -31,7 +31,7 @@ public class Pipeline {
     private String description;
 
     // Pipeline execution role
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "pipeline_role_id", nullable = false)
     private Role pipelineRole;
 
