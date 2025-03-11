@@ -12,8 +12,7 @@ public class OutputHandle<T extends DataType> extends Handle<T> {
 
     private final Producer<String> producer;
 
-    public OutputHandle(Topic topic) {
-        super(topic);
+    public OutputHandle() {
         producer = new Producer<>();
     }
 
@@ -21,7 +20,7 @@ public class OutputHandle<T extends DataType> extends Handle<T> {
         DataTypeSerializer serializer = new DataTypeSerializer();
         msg.data().acceptVisitor(serializer);
         String serialization = serializer.getSerialization();
-        this.producer.publish(getTopic().getName(), new Message<>(serialization));
+        this.producer.publish(this.topic.getName(), new Message<>(serialization));
     }
 
 }

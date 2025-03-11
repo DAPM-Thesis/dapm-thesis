@@ -17,18 +17,24 @@ public class MiningNode<T extends DataType> extends OperatorNode<T>{
     private final Collection<InputHandle<?>> inputHandles;
     private final Algorithm<Pair<T, Boolean>> algorithm;
 
-    public MiningNode(String name, String description, Collection<Topic> inputTopics, Algorithm<Pair<T, Boolean>> algorithm) {
+    public MiningNode(String name, String description, Algorithm<Pair<T, Boolean>> algorithm) {
         super(name, description);
-
-        assert !inputTopics.isEmpty() : "OperatorNode inheritors must have at least 1 inputHandle";
         this.algorithm = algorithm;
-
-        // create input handles
         inputHandles = new HashSet<>();
-        for (Topic topic : inputTopics) {
-            InputHandle<?> handle = makeInputHandle(topic);
-            inputHandles.add(handle);
+    }
+
+    public void setInputTopic(Topic topic) {
+        InputHandle<T> inputHandle = new InputHandle<>();
+        inputHandle.setTopic(topic);
+        inputHandles.add(inputHandle);
+    }
+
+    public Collection<Topic> getInputTopics() {
+        Collection<Topic> inputTopics = new HashSet<>();
+        for (InputHandle<?> inputHandle : inputHandles) {
+            inputTopics.add(inputHandle.getTopic());
         }
+        return inputTopics;
     }
 
     @Override

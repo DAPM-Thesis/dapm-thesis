@@ -17,19 +17,25 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) {
         // an input topic should actually be coming from a Node. So this is a mock topic
+        //     Collection<Topic> inputTopicsDiscovery = new HashSet<>();
+        //     inputTopicsDiscovery.add(inputTopicDiscovery);
         Topic inputTopicDiscovery = new Topic("ingest");
-        Collection<Topic> inputTopicsDiscovery = new HashSet<>();
-        inputTopicsDiscovery.add(inputTopicDiscovery);
+        Topic inputTopicDiscovery2 = new Topic("second");
+        Topic outputTopicDiscovery = new Topic("egest");
+
         BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
 
         MiningNode<PetriNet> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
-                inputTopicsDiscovery,
                 discoveryMiner
         );
 
-        System.out.println(discoveryNode.getOutputTopic().getClass());
+        // Set topics
+        discoveryNode.setInputTopic(inputTopicDiscovery);
+        discoveryNode.setInputTopic(inputTopicDiscovery2);
+        discoveryNode.setOutputTopic(outputTopicDiscovery);
+
         Message<Event> msg = new Message<>(new Event("Bob", "run", "15-13-25:19:50", new HashSet<>()));
         System.out.println(msg.data().getCaseID());
     }
