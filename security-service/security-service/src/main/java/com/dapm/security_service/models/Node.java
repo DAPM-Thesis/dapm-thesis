@@ -3,6 +3,7 @@ package com.dapm.security_service.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,14 +17,14 @@ public class Node {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    private UUID id; // Manually set
+    private UUID id;
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_id", nullable = false)
-    private Pipeline pipeline;
+    @ManyToMany(mappedBy = "nodes")
+    @Builder.Default
+    private Set<Pipeline> pipelines = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_organization_id", nullable = false)
@@ -35,7 +36,8 @@ public class Node {
             joinColumns = @JoinColumn(name = "pipeline_node_id"),
             inverseJoinColumns = @JoinColumn(name = "resource_id")
     )
-    private Set<Resource> allowedResources;
+    @Builder.Default
+    private Set<Resource> allowedResources = new HashSet<>();
 
     @Column(name = "default_execution_count")
     private int defaultExecutionCount;

@@ -1,6 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.Role;
+import com.dapm.security_service.models.dtos.RoleDto;
 import com.dapm.security_service.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +17,8 @@ public class RoleController {
     private RoleRepository roleRepository;
 
     @GetMapping
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+    public List<RoleDto> getAllRoles() {
+        return roleRepository.findAll().stream().map(RoleDto::new).toList();
     }
 
     @GetMapping("/{id}")

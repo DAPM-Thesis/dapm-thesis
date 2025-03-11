@@ -1,6 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.User;
+import com.dapm.security_service.models.dtos.UserDto;
 import com.dapm.security_service.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,27 +17,31 @@ public class UserController {
     private UserRepository userRepository;
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getAllUsers() {
+        return userRepository
+                .findAll()
+                .stream()
+                .map(UserDto::new)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable UUID id) {
-        return userRepository.findById(id).orElse(null);
+    public UserDto getUserById(@PathVariable UUID id) {
+        return userRepository.findById(id).map(UserDto::new).orElse(null);
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
+    public UserDto createUser(@RequestBody User user) {
         if (user.getId() == null) {
             user.setId(UUID.randomUUID());
         }
-        return userRepository.save(user);
+        return new UserDto(userRepository.save(user));
     }
 
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable UUID id, @RequestBody User user) {
+    public UserDto updateUser(@PathVariable UUID id, @RequestBody User user) {
         user.setId(id);
-        return userRepository.save(user);
+        return new UserDto(userRepository.save(user));
     }
 
     @DeleteMapping("/{id}")

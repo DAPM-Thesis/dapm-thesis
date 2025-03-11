@@ -1,5 +1,6 @@
 package com.dapm.security_service.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
