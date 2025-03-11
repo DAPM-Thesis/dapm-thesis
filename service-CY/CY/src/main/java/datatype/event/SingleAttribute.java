@@ -1,10 +1,10 @@
-package datatype;
+package datatype.event;
 
-public class Attribute<T> {
+public class SingleAttribute<T> extends Attribute {
     private final String name;
     private T value;
 
-    public Attribute(String name, T value) {
+    public SingleAttribute(String name, T value) {
         this.name = name;
         this.value = value;
     }

@@ -1,5 +1,6 @@
-package datatype;
+package datatype.event;
 
+import datatype.DataType;
 import datatype.serialization.DataTypeVisitor;
 import datatype.serialization.deserialization.DeserializationStrategy;
 import datatype.serialization.deserialization.EventDeserializationStrategy;
@@ -11,7 +12,7 @@ public class Event extends DataType {
     private final String caseID;
     private final String activity;
     private final String timestamp;
-    private final Collection<Attribute<?>> attributes;
+    private final Collection<Attribute> attributes;
 
     public Event(String caseID, String activity, String timestamp, HashSet<Attribute<?>> attributes) {
         this.caseID = caseID;

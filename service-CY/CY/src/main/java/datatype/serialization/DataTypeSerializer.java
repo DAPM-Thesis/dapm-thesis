@@ -1,5 +1,5 @@
 package datatype.serialization;
-import datatype.Event;
+import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 import datatype.petrinet.Place;
 import datatype.petrinet.Transition;
@@ -28,6 +28,7 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
     }
 
     private String toJXES(Event e) {
+        // TODO: append event attributes, i.e. the collection of additional (non-mining) attributes
         return "{\"traces\": [{" +
                 "\"attrs\": {\"concept:name\": \"" + e.getCaseID() + "\"}, " +
                 "\"events\": [{" +
