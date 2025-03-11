@@ -1,7 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.Pipeline;
-import com.dapm.security_service.repositories.interfaces.IPipelineRepository;
+import com.dapm.security_service.repositories.PipelineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class PipelineController {
 
     @Autowired
-    private IPipelineRepository pipelineRepository;
+    private PipelineRepository pipelineRepository;
 
     @GetMapping
     public List<Pipeline> getAllPipelines() {

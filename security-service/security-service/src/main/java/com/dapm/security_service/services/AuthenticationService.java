@@ -1,22 +1,20 @@
 package com.dapm.security_service.services;
 
 import com.dapm.security_service.models.User;
-import com.dapm.security_service.repositories.interfaces.IUserRepository;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.dapm.security_service.repositories.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthenticationService {
 
-    private final IUserRepository userRepository;
+    private final UserRepository userRepository;
 
     private final TokenService tokenService;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public AuthenticationService(IUserRepository userRepository, TokenService tokenService) {
+    public AuthenticationService(UserRepository userRepository, TokenService tokenService) {
         this.userRepository = userRepository;
         this.tokenService = tokenService;
     }

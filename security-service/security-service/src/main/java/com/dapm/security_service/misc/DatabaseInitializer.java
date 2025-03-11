@@ -1,7 +1,7 @@
 package com.dapm.security_service.misc;
 
 import com.dapm.security_service.models.*;
-import com.dapm.security_service.repositories.interfaces.*;
+import com.dapm.security_service.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,25 +14,25 @@ import java.util.*;
 public class DatabaseInitializer implements CommandLineRunner {
 
     @Autowired
-    private IOrganizationRepository organizationRepository;
+    private OrganizationRepository organizationRepository;
 
     @Autowired
-    private IPermissionRepository permissionRepository;
+    private PermissionRepository permissionRepository;
 
     @Autowired
-    private IRoleRepository roleRepository;
+    private RoleRepository roleRepository;
 
     @Autowired
-    private IUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    private IFacultyRepository facultyRepository;
+    private FacultyRepository facultyRepository;
 
     @Autowired
-    private IDepartmentRepository departmentRepository;
+    private DepartmentRepository departmentRepository;
 
     @Autowired
-    private IPolicyRepository policyRepository;
+    private PolicyRepository policyRepository;
 
     // BCrypt encoder to hash passwords.
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

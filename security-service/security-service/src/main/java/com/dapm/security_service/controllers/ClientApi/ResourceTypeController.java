@@ -1,7 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.ResourceType;
-import com.dapm.security_service.repositories.interfaces.IResourceTypeRepository;
+import com.dapm.security_service.repositories.ResourceTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class ResourceTypeController {
 
     @Autowired
-    private IResourceTypeRepository resourceTypeRepository;
+    private ResourceTypeRepository resourceTypeRepository;
 
     @GetMapping
     public List<ResourceType> getAllResourceTypes() {

@@ -76,7 +76,7 @@ public class TokenService {
      * @param expirationMillis token expiration time in milliseconds
      * @return a signed JWT as a String
      */
-    public String generateTokenForUser(User user, Integer expirationMillis) {
+    public String generateTokenForUser(User user, long expirationMillis) {
         Instant now = Instant.now();
 
         // Build claims from the user model.

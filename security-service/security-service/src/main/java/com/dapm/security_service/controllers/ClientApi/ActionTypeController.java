@@ -1,7 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.ActionType;
-import com.dapm.security_service.repositories.interfaces.IActionTypeRepository;
+import com.dapm.security_service.repositories.ActionTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class ActionTypeController {
 
     @Autowired
-    private IActionTypeRepository actionTypeRepository;
+    private ActionTypeRepository actionTypeRepository;
 
     @GetMapping
     public List<ActionType> getAllActions() {

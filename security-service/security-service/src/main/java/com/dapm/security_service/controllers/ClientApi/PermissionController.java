@@ -1,7 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.Permission;
-import com.dapm.security_service.repositories.interfaces.IPermissionRepository;
+import com.dapm.security_service.repositories.PermissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class PermissionController {
 
     @Autowired
-    private IPermissionRepository permissionRepository;
+    private PermissionRepository permissionRepository;
 
     @GetMapping
     public List<Permission> getAllPermissions() {

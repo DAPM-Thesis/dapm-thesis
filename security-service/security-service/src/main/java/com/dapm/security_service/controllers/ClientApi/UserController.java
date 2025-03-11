@@ -1,7 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.User;
-import com.dapm.security_service.repositories.interfaces.IUserRepository;
+import com.dapm.security_service.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class UserController {
 
     @Autowired
-    private IUserRepository userRepository;
+    private UserRepository userRepository;
 
     @GetMapping
     public List<User> getAllUsers() {

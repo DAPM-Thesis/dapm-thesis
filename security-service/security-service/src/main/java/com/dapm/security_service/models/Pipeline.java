@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -33,6 +34,9 @@ public class Pipeline {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pipeline_role_id", nullable = false)
     private Role pipelineRole;
+
+    @OneToMany(mappedBy = "pipeline", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Node> nodes;
 
     @Column(name = "created_by", nullable = false)
     private UUID createdBy;

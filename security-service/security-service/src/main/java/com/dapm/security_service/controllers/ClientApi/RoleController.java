@@ -1,7 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.Role;
-import com.dapm.security_service.repositories.interfaces.IRoleRepository;
+import com.dapm.security_service.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class RoleController {
 
     @Autowired
-    private IRoleRepository roleRepository;
+    private RoleRepository roleRepository;
 
     @GetMapping
     public List<Role> getAllRoles() {
