@@ -4,9 +4,11 @@ import algorithms.BehavioralPatternsMiner;
 import datatype.Event;
 import datatype.petrinet.PetriNet;
 import model.Message;
+import model.Pipeline;
 import model.Topic;
 import node.MiningNode;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import service.PipeLineBuilder;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -17,26 +19,28 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) {
         // an input topic should actually be coming from a Node. So this is a mock topic
-        //     Collection<Topic> inputTopicsDiscovery = new HashSet<>();
-        //     inputTopicsDiscovery.add(inputTopicDiscovery);
-        Topic inputTopicDiscovery = new Topic("ingest");
-        Topic inputTopicDiscovery2 = new Topic("second");
-        Topic outputTopicDiscovery = new Topic("egest");
 
         BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
-
         MiningNode<PetriNet> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
         );
+        discoveryNode.setInputTopic(new Topic("ingest"));
 
-        // Set topics
-        discoveryNode.setInputTopic(inputTopicDiscovery);
-        discoveryNode.setInputTopic(inputTopicDiscovery2);
-        discoveryNode.setOutputTopic(outputTopicDiscovery);
+        BehavioralPatternsMiner discoveryMiner2 = new BehavioralPatternsMiner();
+        MiningNode<PetriNet> discoveryNode2 = new MiningNode<>(
+                "DUMMY Discovery algorithm2",
+                "DUMMY discovery algorithm taking in events and outputting petri nets",
+                discoveryMiner2
+        );
 
-        Message<Event> msg = new Message<>(new Event("Bob", "run", "15-13-25:19:50", new HashSet<>()));
-        System.out.println(msg.data().getCaseID());
+        PipeLineBuilder pipeLineBuilder = new PipeLineBuilder();
+        pipeLineBuilder.connectNodes(discoveryNode, discoveryNode2);
+        pipeLineBuilder.run();
+
+        for(Topic topic : discoveryNode2.getInputTopics()) {
+            System.out.println(topic.getName());
+        }
     }
 }
