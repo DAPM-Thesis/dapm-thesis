@@ -23,6 +23,7 @@ public class Pipeline {
         connections = new HashMap<Node, Node>();
         topics = new HashSet<>();
         nodes = new HashSet<>();
+    }
 
     public void addNode(Node node) {
         if(!nodes.contains(node)) {
