@@ -50,7 +50,7 @@ class DeSerializerTest {
         DataTypeSerializer serializer = new DataTypeSerializer();
         PetriNet pn = getPetriNetExample();
         String pnml = serializer.visit(pn);
-        PetriNet pn_2 = DeSerializer.PNMLToPetriNet(pnml);
+        PetriNet pn_2 = DeSerializer.PNMLToPetriNet(pnml); // TODO: update pnml deserialization in all tests to use new deserialization
 
         assertEquals(pn, pn_2);
     }
@@ -79,13 +79,18 @@ class DeSerializerTest {
         String timestamp = "15:07Z";
         Attribute<Integer> attr1 = new Attribute<>("int", 5);
         Attribute<List<Double>> attr2 = new Attribute<>("listAttr", Arrays.asList(5.0, 0.0));
-        Event event = new Event(caseID, activity, timestamp, Arrays.asList(attr1, attr2));
+        Set<Attribute<?>> extraAttrs = new HashSet<>(Arrays.asList(attr1, attr2));
+        Event event = new Event(caseID, activity, timestamp, extraAttrs);
 
         // recreate event by serializing and thn deserializing
         DataTypeSerializer serializer = new DataTypeSerializer();
         String JXES = serializer.visit(event);
         System.out.println(JXES);
-        DataType event_2 = DataTypeFactory.deserialize(JXES);
+        Event event_2 = (Event) DataTypeFactory.deserialize(JXES);
+        assertEquals(event.getName(), event_2.getName());
+        assertEquals(event.getActivity(), event_2.getActivity());
+        assertEquals(event.getTimestamp(), event_2.getTimestamp());
+        assertEquals(event.getAttributes(), event_2.getAttributes());
         assertEquals(event, event_2);
 
     }

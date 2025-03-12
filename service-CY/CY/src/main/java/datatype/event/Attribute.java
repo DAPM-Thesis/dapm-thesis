@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class Attribute<T> {
     private final String name;
-    private T value;
-    private Map<String, Attribute<?>> nestedAttributes;
+    private final T value;
+    private final Map<String, Attribute<?>> nestedAttributes;
 
     public Attribute(String name, T value) {
         this(name, value, Collections.emptyMap());
@@ -22,12 +22,9 @@ public class Attribute<T> {
                 : Map.copyOf(nestedAttributes);
     }
 
-    public void setNestedAttributes(Map<String, Attribute<?>> nestedAttributes) {
-        this.nestedAttributes = nestedAttributes;
-    }
-
     public String getName() {return name;}
     public T getValue() {return value;}
+    public Map<String, Attribute<?>> getNestedAttributes() {return nestedAttributes; }
 
     @Override
     public String toString() {
