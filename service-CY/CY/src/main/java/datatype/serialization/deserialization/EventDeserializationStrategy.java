@@ -67,68 +67,60 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
     }
 
     private Attribute<?> parseAttribute(String name, Object value) {
-        // the name (key) is always a string, and therefore we can safely remove quotation marks.
-        name = unWrap(name, '"', '"');
-        if (value instanceof String strValue) { // Attribute is not nested
-            assert !strValue.isEmpty() : "string may not be empty [but is allowed to contain empty quotation marks, i.e. '\"\"']";
-            // TODO: handle empty string?? is it even possible?
-            if (isStringValue(strValue)) {
-                // e.g. turn "\"hi\"" into "hi"
-                return new Attribute<>(name, unWrap(strValue, '"', '"'));
-            } 
-            else if (isBooleanValue(strValue)) {
-                return new Attribute<>(name, Boolean.parseBoolean(strValue));
-            }
-            else if (isInteger(strValue)) {
-                return new Attribute<>(name, Integer.parseInt(strValue));
-            }
-            else if (isFloatValue(strValue)) {
-                return new Attribute<>(name, Float.parseFloat(strValue));
-            }
-            else {
-                throw new IllegalStateException("Unsupported type: " + strValue);
-            }
-        }
-        else if (value instanceof HashMap<?,?>) { // value is a container
-            Map<String, Object> map = (Map<String, Object>) value;
-            if (isNestedAttribute(map)){
-                Attribute<?> attribute = parseAttribute("\"" + name + "\"", map.get("\"value\""));
-                Map<String, Object> nestedAttrsMap = (Map<String, Object>) map.get("\"nested-attrs\"");
-                Map<String, Attribute<?>> nestedAttributes = new HashMap<>();
-                for (Map.Entry<String, Object> entry : nestedAttrsMap.entrySet()) {
-                    String key = entry.getKey();
-                    Object nestedValue = entry.getValue();
-                    Attribute<?> nestedAttr = parseAttribute(key, nestedValue);
-                    nestedAttributes.put(key, nestedAttr);
-                }
-                attribute.setNestedAttributes(nestedAttributes);
-                return attribute;
-            } else { // value is a container
-                Set<Attribute<?>> attributes = new HashSet<>();
-                for (Map.Entry<String, Object> entry : map.entrySet()) {
-                    attributes.add(parseAttribute(entry.getKey(), entry.getValue()));
-                }
-                return new Attribute<>(name, attributes);
-            }
-        }
-        else if (value instanceof List<?>) {
-            List<Map<String, Object>> list = (List<Map<String, Object>>) value;
-            List<Set<Attribute<?>>> attributes = new ArrayList<>();
-            for (Map<String, Object> container : list) {
-                Set<Attribute<?>> set = new HashSet<>();
-                for (Map.Entry<String, Object> entry : container.entrySet()) {
-                    set.add(parseAttribute(entry.getKey(), entry.getValue()));
-                }
-                attributes.add(set);
-            }
-            return new Attribute<>(name, attributes);
+        name = maybeRemoveOuterQuotes(name);
 
+        if (value instanceof Map<?, ?> && isNestedAttribute((Map<String, Object>) value)) {
+            Map<String, Object> map = (Map<String, Object>) value;
+            Object nestedAttrValue = parseAttrValue(map.get("\"value\""));
+            Map<String, Attribute<?>> nestedAttrs = getNestedAttributes((Map<String, Object>) map.get("\"nested-attrs\""));
+            return new Attribute<>(name, nestedAttrValue, nestedAttrs);
+        } else {
+            return new Attribute<>(name, parseAttrValue(value));
         }
-        throw new IllegalStateException("Should be unreachable. Received: " + value);
+    }
+
+    private Object parseAttrValue(Object value) {
+        switch (value) {
+            case String valueStr -> {
+                return getSimpleAttributeValue(valueStr);
+            }
+            case Map<?, ?> map -> {
+                Map<String, Object> container = (Map<String, Object>) value;
+                return getNestedAttributes(container);
+            }
+            case List<?> list -> {
+                List<Object> resultingList = new ArrayList<>();
+                for (Object elem : list) {
+                    resultingList.add(parseAttrValue(elem));
+                }
+                return resultingList;
+            }
+            case null, default -> throw new IllegalStateException("Unsupported type: " + value);
+        }
+    }
+
+    private Object getSimpleAttributeValue(String value) {
+        assert !value.isEmpty() : "string may not be empty [but is allowed to contain empty quotation marks, i.e. '\"\"']";
+        if (isStringValue(value)) { return unWrap(value, '"', '"'); }
+        else if (isBooleanValue(value)) {return Boolean.parseBoolean(value); }
+        else if (isInteger(value)) { return Integer.parseInt(value); }
+        else if (isDouble(value)) { return Double.parseDouble(value); }
+        else { throw new IllegalStateException("Unsupported type: " + value); }
+    }
+
+    private Map<String, Attribute<?>> getNestedAttributes(Map<String, Object> container) {
+        Map<String, Attribute<?>> nestedAttributes = new HashMap<>();
+        for (Map.Entry<String, Object> entry : container.entrySet()) {
+            String name = entry.getKey();
+            Object value = entry.getValue();
+            nestedAttributes.put(name, parseAttribute(name, value));
+        }
+        return nestedAttributes;
     }
 
     private boolean isNestedAttribute(Map<String, Object> map) {
-        return map.containsKey("\"value\""); // "value" is a keyword reserved for nested attributes
+        // "value" and "nested-attrs" are keywords reserved for nested attributes.
+        return map.containsKey("\"value\"") && map.containsKey("\"nested-attrs\"");
     }
 
     private boolean isInteger(String value) {
@@ -140,9 +132,9 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
         }
     }
 
-    private boolean isFloatValue(String value) {
+    private boolean isDouble(String value) {
         try {
-            Float.parseFloat(value);
+            Double.parseDouble(value);
             return true;
         } catch (NumberFormatException e) {
             return false;
