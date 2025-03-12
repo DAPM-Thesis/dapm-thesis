@@ -1,6 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.Node;
+import com.dapm.security_service.models.dtos.NodeDto;
 import com.dapm.security_service.repositories.NodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +17,8 @@ public class PipelineNodeController {
     private NodeRepository nodeRepository;
 
     @GetMapping
-    public List<Node> getAllNodes() {
-        return nodeRepository.findAll();
+    public List<NodeDto> getAllNodes() {
+        return nodeRepository.findAll().stream().map(NodeDto::new).toList();
     }
 
     @GetMapping("/{id}")
