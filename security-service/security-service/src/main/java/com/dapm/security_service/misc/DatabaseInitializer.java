@@ -309,6 +309,8 @@ public class DatabaseInitializer implements CommandLineRunner {
                 .ownerOrganization(orgA)
                 .description("Pipeline with nodes from OrgA and OrgB")
                 .pipelineRole(pipelineRole)
+                .nodes(new HashSet<>())
+                .tokens(new HashSet<>())
                 .createdBy(CREATED_BY_ID)
                 .createdAt(Instant.parse("2025-03-11T13:45:07.455Z"))
                 .updatedAt(Instant.parse("2025-03-11T13:45:07.455Z"))
@@ -339,7 +341,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         // Associate allowed resources with nodes.
         node1.setAllowedResources(new HashSet<>(Arrays.asList(resourceA, resourceB)));
-        node2.setAllowedResources(new HashSet<>()); // No allowed resources for node2.
+        node2.setAllowedResources(new HashSet<>());
         node3.setAllowedResources(new HashSet<>(Collections.singletonList(resourceC)));
 
         // Save nodes.
@@ -348,11 +350,15 @@ public class DatabaseInitializer implements CommandLineRunner {
         node3 = nodeRepository.save(node3);
 
         // 12. Associate nodes with the pipeline (ManyToMany).
-        Set<Node> nodes = new HashSet<>(Arrays.asList(node1, node2, node3));
-        pipeline.setNodes(nodes);
+
+        // Set<Node> nodes = new HashSet<>(Arrays.asList(node1, node2, node3));
+        // pipeline.setNodes(nodes);
+        pipeline.getNodes().clear();
+        pipeline.getNodes().addAll(Arrays.asList(node1,node2,node3));
 
         // 13. Set tokens as empty for now.
-        pipeline.setTokens(new HashSet<>());
+        //pipeline.setTokens(new HashSet<>());
+        pipeline.getTokens().clear();
 
         // Save the pipeline.
         pipeline = pipelineRepository.save(pipeline);

@@ -3,12 +3,9 @@ package com.dapm.security_service.controllers.ClientApi;
 import com.dapm.security_service.models.Pipeline;
 import com.dapm.security_service.models.dtos.PipelineDto;
 import com.dapm.security_service.repositories.PipelineRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
