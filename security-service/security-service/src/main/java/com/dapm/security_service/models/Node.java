@@ -22,10 +22,6 @@ public class Node {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @ManyToMany(mappedBy = "nodes")
-    @Builder.Default
-    private Set<Pipeline> pipelines = new HashSet<>();
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_organization_id", nullable = false)
     private Organization ownerOrganization;
@@ -45,3 +41,4 @@ public class Node {
     @Column(name = "default_duration_hours")
     private int defaultDurationHours;
 }
+
