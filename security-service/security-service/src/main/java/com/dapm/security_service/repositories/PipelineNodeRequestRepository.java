@@ -8,7 +8,4 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PipelineNodeRequestRepository extends JpaRepository<PipelineNodeRequest, UUID> {
-    List<PipelineNodeRequest> findByRequesterId(UUID requesterId);
-    List<PipelineNodeRequest> findByPipelineNodeId(UUID nodeId);
-}
+public interface PipelineNodeRequestRepository extends JpaRepository<PipelineNodeRequest, UUID> { }

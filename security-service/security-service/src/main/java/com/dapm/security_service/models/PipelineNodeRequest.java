@@ -1,7 +1,7 @@
-// ** TODO: Also add the pipeline to the request
-
+// ** TODO: move the token to vault
 package com.dapm.security_service.models;
 
+import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,9 +25,9 @@ public class PipelineNodeRequest {
     @JoinColumn(name = "pipeline_node_id", nullable = false)
     private Node pipelineNode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requester_id", nullable = false)
-    private User requester;
+    // Instead of ManyToOne User, we store a snapshot:
+    @Embedded
+    private RequesterInfo requesterInfo;
 
     @Column(name = "requested_execution_count")
     private int requestedExecutionCount;
@@ -39,8 +39,7 @@ public class PipelineNodeRequest {
     @Column(name = "status", nullable = false)
     private AccessRequestStatus status;
 
-    //  ******* LATER WE HAVE TO MOVE THIS TOKEN TO THE VAULT ************ ///
-    @Column(name = "approval_token")
+    @Column(name = "approval_token", length = 4096)
     private String approvalToken;
 
     @Column(name = "decision_time")
