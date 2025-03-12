@@ -35,7 +35,7 @@ public class Pipeline {
     @JoinColumn(name = "pipeline_role_id", nullable = false)
     private Role pipelineRole;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "pipeline_node_mapping",
             joinColumns = @JoinColumn(name = "pipeline_id"),
@@ -44,7 +44,7 @@ public class Pipeline {
     @Builder.Default
     private Set<Node> nodes = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Token> tokens = new HashSet<>();
 

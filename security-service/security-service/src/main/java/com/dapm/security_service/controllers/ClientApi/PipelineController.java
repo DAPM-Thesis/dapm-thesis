@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/pipelines")
@@ -17,14 +18,23 @@ public class PipelineController {
     @Autowired
     private PipelineRepository pipelineRepository;
 
-    @GetMapping
-    public List<PipelineDto> getAllPipelines() {
-        return pipelineRepository.findAll().stream().map(PipelineDto::new).toList();
+    // READ-ONLY transaction for GET
+    @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    public PipelineDto getPipelineById(@PathVariable UUID id) {
+        return pipelineRepository.findByIdWithNodesAndTokens(id)
+                .map(PipelineDto::new)
+                .orElse(null);
     }
 
-    @GetMapping("/{id}")
-    public PipelineDto getPipelineById(@PathVariable UUID id) {
-        return pipelineRepository.findById(id).map(PipelineDto::new).orElse(null);
+    // READ-ONLY transaction for GET
+    @GetMapping
+    @Transactional(readOnly = true)
+    public List<PipelineDto> getAllPipelines() {
+        return pipelineRepository.findAllWithNodesAndTokens()
+                .stream()
+                .map(PipelineDto::new)
+                .toList();
     }
 
     @PostMapping
