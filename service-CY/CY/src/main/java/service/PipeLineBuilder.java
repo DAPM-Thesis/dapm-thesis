@@ -27,10 +27,8 @@ public class PipeLineBuilder {
 
     public void connectNodes(Node publisher, Node subscriber) {
         pipeline.addNodes(publisher, subscriber);
-
         Topic topic = assignPublisherTopic(publisher);
         assignSubscriberTopic(subscriber, topic);
-        
         pipeline.addConnection(publisher, subscriber);
     }
 
@@ -58,7 +56,7 @@ public class PipeLineBuilder {
         if (subscriber instanceof OperatorNode<?> operatorNode) {
             if (operatorNode instanceof MiningNode<?> miningNode) {
                 miningNode.setInputTopic(topic);
-            } else if (operatorNode instanceof GenericNode<?> genericNode && genericNode.getInputTopic() == null) {
+            } else if (operatorNode instanceof GenericNode<?> genericNode) {
                 genericNode.setInputTopic(topic);
             }
         }

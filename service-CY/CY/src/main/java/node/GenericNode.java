@@ -22,6 +22,9 @@ public class GenericNode<T extends DataType> extends OperatorNode<T> {
     }
 
     public void setInputTopic(Topic topic) {
+        if (inputHandle.getTopic() != null) {
+            throw new IllegalStateException("Generic node can only have 1 input topic");
+        }
         inputHandle.setTopic(topic);
     }
 
