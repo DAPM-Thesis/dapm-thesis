@@ -2,6 +2,7 @@ package com.dapm.security_service.controllers;
 
 import com.dapm.security_service.models.Node;
 import com.dapm.security_service.models.PipelineNodeRequest;
+import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.User;
 import com.dapm.security_service.models.dtos.PipelineNodeRequestDto;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
@@ -75,13 +76,22 @@ public class PipelineNodeRequestClientController {
     private PipelineNodeRequest convertDtoToEntity(PipelineNodeRequestDto dto) {
         Node node = nodeRepository.findById(dto.getPipelineNodeId())
                 .orElseThrow(() -> new RuntimeException("Node not found: " + dto.getPipelineNodeId()));
-        User requester = userRepository.findById(dto.getRequesterId())
+        User user = userRepository.findById(dto.getRequesterId())
                 .orElseThrow(() -> new RuntimeException("Requester not found: " + dto.getRequesterId()));
+
+        RequesterInfo requester = new RequesterInfo();
+        requester.setRequesterId(user.getId());
+        requester.setUsername(user.getUsername());
+        requester.setOrganization(user.getOrganization().getName());
+        requester.setFaculty(user.getFaculty().getName());
+        requester.setDepartment(user.getDepartment().getName());
+        requester.setRole(String.valueOf(user.getRoles().stream().findFirst().orElse(null)));
+        requester.setPermissions("");
 
         return PipelineNodeRequest.builder()
                 .id(dto.getId() != null ? dto.getId() : UUID.randomUUID())
                 .pipelineNode(node)
-                .requester(requester)
+                .requesterInfo(requester)
                 .requestedExecutionCount(dto.getRequestedExecutionCount())
                 .requestedDurationHours(dto.getRequestedDurationHours())
                 .status(dto.getStatus())

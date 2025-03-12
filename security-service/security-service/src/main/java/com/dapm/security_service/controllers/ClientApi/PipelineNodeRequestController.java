@@ -19,7 +19,7 @@ public class PipelineNodeRequestController {
     private PipelineNodeRequestRepository requestRepository;
 
     @Autowired
-    private TokenService tokenService; // Used for generating JWT tokens
+    private TokenService tokenService;
 
     // Get all pipeline node requests.
     @GetMapping
@@ -54,8 +54,8 @@ public class PipelineNodeRequestController {
         // Generate a token using the requester info and the requested duration.
         // Here, we assume the token's expiration reflects the allowed duration (in milliseconds).
         long expirationMillis = request.getRequestedDurationHours() * 3600000L;
-        String token = tokenService.generateTokenForUser(request.getRequester(), expirationMillis);
-        request.setApprovalToken(token);
+        //String token = tokenService.generateTokenForUser(request.getRequesterInfo(), expirationMillis);
+        //request.setApprovalToken(token);
         request.setStatus(AccessRequestStatus.APPROVED);
         request.setDecisionTime(Instant.now());
         return requestRepository.save(request);
