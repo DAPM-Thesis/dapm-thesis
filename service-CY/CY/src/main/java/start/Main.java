@@ -35,11 +35,20 @@ public class Main {
                 discoveryMiner2
         );
 
+        // Pretend it is a conformance node
+        BehavioralPatternsMiner conformanceAlgorithm = new BehavioralPatternsMiner();
+        MiningNode<PetriNet> conformanceNode = new MiningNode<>(
+                "DUMMY CONFORMANCE",
+                "TESTING CONFORMANCE INPUT HANDLES",
+                conformanceAlgorithm
+        );
+
         PipeLineBuilder pipeLineBuilder = new PipeLineBuilder();
-        pipeLineBuilder.connectNodes(discoveryNode, discoveryNode2);
+        pipeLineBuilder.connectNodes(discoveryNode, conformanceNode);
+        pipeLineBuilder.connectNodes(discoveryNode2, conformanceNode);
         pipeLineBuilder.run();
 
-        for(Topic topic : discoveryNode2.getInputTopics()) {
+        for(Topic topic : conformanceNode.getInputTopics()) {
             System.out.println(topic.getName());
         }
     }

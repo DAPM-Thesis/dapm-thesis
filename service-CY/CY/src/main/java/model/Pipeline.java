@@ -17,18 +17,16 @@ public class Pipeline {
 
     private final Map<Node, Node> connections;
     private final Collection<Topic> topics;
-    private final Collection<Node> nodes;
+    private final Collection<Node> allNodes;
 
     public Pipeline() {
         connections = new HashMap<Node, Node>();
         topics = new HashSet<>();
-        nodes = new HashSet<>();
+        allNodes = new HashSet<>();
     }
 
-    public void addNode(Node node) {
-        if(!nodes.contains(node)) {
-            nodes.add(node);
-        }
+    public void addNodes(Node... nodes) {
+        allNodes.addAll(Arrays.asList(nodes));
     }
 
     public void addConnection(Node from, Node to) {

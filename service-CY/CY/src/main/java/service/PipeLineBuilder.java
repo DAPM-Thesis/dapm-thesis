@@ -26,36 +26,42 @@ public class PipeLineBuilder {
     }
 
     public void connectNodes(Node publisher, Node subscriber) {
-        pipeline.addNode(publisher);
-        pipeline.addNode(subscriber);
+        pipeline.addNodes(publisher, subscriber);
 
-        String topicName = publisher.getName().replaceAll("[^a-zA-Z0-9._-]", "_") + "_output";
-        Topic topic = new Topic(topicName);
-
-        if(publisher instanceof OperatorNode<?> operatorNode) {
-            if(operatorNode.getOutputTopic() == null) {
-                createKafkaTopic(topic.getName()); // Create Kafka topic
-                operatorNode.setOutputTopic(topic);
-                pipeline.addTopic(topic);
-            }
-            else {
-                topic = operatorNode.getOutputTopic();
-            }
-        }
-        if(subscriber instanceof OperatorNode<?> operatorNode) {
-            if(operatorNode instanceof MiningNode<?> miningNode) {
-                miningNode.setInputTopic(topic);
-            }
-            else if(operatorNode instanceof GenericNode<?> genericNode) {
-                genericNode.setInputTopic(topic);
-            }
-        }
+        Topic topic = assignPublisherTopic(publisher);
+        assignSubscriberTopic(subscriber, topic);
+        
         pipeline.addConnection(publisher, subscriber);
     }
 
     public void run() {
         // Logic to run the pipeline, I think this only makes sense if we start the source.
         // The source is supposed to kickstart the entire pipeline
+    }
+
+    private Topic assignPublisherTopic(Node publisher) {
+        if (publisher instanceof OperatorNode<?> operatorNode) {
+            if (operatorNode.getOutputTopic() == null) {
+                String topicName = publisher.getName().replaceAll("[^a-zA-Z0-9._-]", "_") + "_output";
+                Topic topic = new Topic(topicName);
+                createKafkaTopic(topic.getName()); // Create a new Kafka topic
+                operatorNode.setOutputTopic(topic);
+                pipeline.addTopic(topic);
+                return topic;
+            }
+            return operatorNode.getOutputTopic();
+        }
+        return null;
+    }
+
+    private void assignSubscriberTopic(Node subscriber, Topic topic) {
+        if (subscriber instanceof OperatorNode<?> operatorNode) {
+            if (operatorNode instanceof MiningNode<?> miningNode) {
+                miningNode.setInputTopic(topic);
+            } else if (operatorNode instanceof GenericNode<?> genericNode && genericNode.getInputTopic() == null) {
+                genericNode.setInputTopic(topic);
+            }
+        }
     }
 
     // We have to create a Kafka topic like this because there is no source publishing to the first topic.
