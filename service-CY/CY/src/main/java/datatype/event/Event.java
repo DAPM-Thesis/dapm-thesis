@@ -12,9 +12,9 @@ public class Event extends DataType {
     private final String caseID;
     private final String activity;
     private final String timestamp;
-    private final Collection<Attribute> attributes;
+    private final Collection<Attribute<?>> attributes;
 
-    public Event(String caseID, String activity, String timestamp, HashSet<Attribute<?>> attributes) {
+    public Event(String caseID, String activity, String timestamp, Collection<Attribute<?>> attributes) {
         this.caseID = caseID;
         this.activity = activity;
         this.timestamp = timestamp;
@@ -24,6 +24,7 @@ public class Event extends DataType {
     public String getCaseID() {return caseID;}
     public String getActivity() {return activity; }
     public String getTimestamp() {return timestamp; }
+    public Collection<Attribute<?>> getAttributes() {return attributes;}
 
     @Override
     public String getName() {
@@ -38,5 +39,10 @@ public class Event extends DataType {
     @Override
     public DeserializationStrategy getDeserializationStrategy() {
         return new EventDeserializationStrategy();
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(caseID, activity, timestamp, attributes);
     }
 }

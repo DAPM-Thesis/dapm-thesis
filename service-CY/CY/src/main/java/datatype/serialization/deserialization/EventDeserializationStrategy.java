@@ -2,7 +2,6 @@ package datatype.serialization.deserialization;
 
 import datatype.DataType;
 import datatype.event.Event;
-import datatype.event.NestedAttribute;
 import utils.Pair;
 import datatype.event.Attribute;
 
@@ -24,39 +23,140 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
         Map<String, Object> globalAttributes = getGlobalAttributes(jsonMap);
         globalAttributes.putAll(getTracesAttributes(jsonMap));
 
-        // parse event
-        List<Map<String, Object>> events = (List<Map<String, Object>>) jsonMap.get("\"events\"");
-        assert events != null && events.size() == 1: "incorrectly formatted events";
-        Map<String, Object> eventMap = events.get(0);
+        // parse event.
+        List<Map<String, Object>> events = getEvents(jsonMap);
+        assert events != null && events.size() == 1: "currently assumes there is only 1 event!";
+        Map<String, Object> eventMap = events.getFirst();
         String identifier = "\"concept:name\"";
         String caseID = (String) globalAttributes.get(identifier); // the caseID must be a string
         String activity = (String) eventMap.get(identifier);
         String timestamp = getTimestamp(globalAttributes, eventMap);
-        List<Attribute> attributes = parseNonEssentialAttributes(globalAttributes, eventMap);
+        Set<Attribute<?>> attributes = parseNonEssentialAttributes(globalAttributes, eventMap);
 
-        return null;
+        return new Event(maybeRemoveOuterQuotes(caseID),
+                maybeRemoveOuterQuotes(activity),
+                maybeRemoveOuterQuotes(timestamp), attributes) ;
     }
 
-    private List<Attribute> parseNonEssentialAttributes(Map<String, Object> globalAttributes, Map<String, Object> eventMap) {
+    private String maybeRemoveOuterQuotes(String str) {
+        if (isWrapped(str, '\"', '\"')) {
+            return unWrap(str, '\"', '\"');
+        }
+        return str;
+    }
+
+    /** currently assumes there is only 1 trace in "traces" */
+    private List<Map<String, Object>> getEvents(Map<String, Object> jsonMap) {
+        List<Map<String, List<Map<String, Object>>>> traces = (List<Map<String, List<Map<String, Object>>>>) jsonMap.get("\"traces\"");
+        assert traces != null && traces.size() == 1: "incorrectly formatted traces";
+        List<Map<String, Object>> events = traces.getFirst().get("\"events\"");
+        assert events != null;
+        return events;
+    }
+
+    private Set<Attribute<?>> parseNonEssentialAttributes(Map<String, Object> globalAttributes, Map<String, Object> eventMap) {
         globalAttributes.putAll(eventMap); // merge the two maps, keeping eventMap values when both have the same key
+        Set<Attribute<?>> attributes = new HashSet<>();
         for (Map.Entry<String, Object> entry : globalAttributes.entrySet()) {
             String name = entry.getKey();
             if (isEssentialAttributeKey(name)) { continue; }
+            Attribute<?> attr = parseAttribute(name, entry.getValue());
+            attributes.add(attr);
+        }
+        return attributes;
+    }
 
-            Attribute attr = parseAttribute(entry.getValue());
+    private Attribute<?> parseAttribute(String name, Object value) {
+        // the name (key) is always a string, and therefore we can safely remove quotation marks.
+        name = unWrap(name, '"', '"');
+        if (value instanceof String strValue) { // Attribute is not nested
+            assert !strValue.isEmpty() : "string may not be empty [but is allowed to contain empty quotation marks, i.e. '\"\"']";
+            // TODO: handle empty string?? is it even possible?
+            if (isStringValue(strValue)) {
+                // e.g. turn "\"hi\"" into "hi"
+                return new Attribute<>(name, unWrap(strValue, '"', '"'));
+            } 
+            else if (isBooleanValue(strValue)) {
+                return new Attribute<>(name, Boolean.parseBoolean(strValue));
+            }
+            else if (isInteger(strValue)) {
+                return new Attribute<>(name, Integer.parseInt(strValue));
+            }
+            else if (isFloatValue(strValue)) {
+                return new Attribute<>(name, Float.parseFloat(strValue));
+            }
+            else {
+                throw new IllegalStateException("Unsupported type: " + strValue);
+            }
+        }
+        else if (value instanceof HashMap<?,?>) { // value is a container
+            Map<String, Object> map = (Map<String, Object>) value;
+            if (isNestedAttribute(map)){
+                Attribute<?> attribute = parseAttribute("\"" + name + "\"", map.get("\"value\""));
+                Map<String, Object> nestedAttrsMap = (Map<String, Object>) map.get("\"nested-attrs\"");
+                Map<String, Attribute<?>> nestedAttributes = new HashMap<>();
+                for (Map.Entry<String, Object> entry : nestedAttrsMap.entrySet()) {
+                    String key = entry.getKey();
+                    Object nestedValue = entry.getValue();
+                    Attribute<?> nestedAttr = parseAttribute(key, nestedValue);
+                    nestedAttributes.put(key, nestedAttr);
+                }
+                attribute.setNestedAttributes(nestedAttributes);
+                return attribute;
+            } else { // value is a container
+                Set<Attribute<?>> attributes = new HashSet<>();
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    attributes.add(parseAttribute(entry.getKey(), entry.getValue()));
+                }
+                return new Attribute<>(name, attributes);
+            }
+        }
+        else if (value instanceof List<?>) {
+            List<Map<String, Object>> list = (List<Map<String, Object>>) value;
+            List<Set<Attribute<?>>> attributes = new ArrayList<>();
+            for (Map<String, Object> container : list) {
+                Set<Attribute<?>> set = new HashSet<>();
+                for (Map.Entry<String, Object> entry : container.entrySet()) {
+                    set.add(parseAttribute(entry.getKey(), entry.getValue()));
+                }
+                attributes.add(set);
+            }
+            return new Attribute<>(name, attributes);
 
+        }
+        throw new IllegalStateException("Should be unreachable. Received: " + value);
+    }
+
+    private boolean isNestedAttribute(Map<String, Object> map) {
+        return map.containsKey("\"value\""); // "value" is a keyword reserved for nested attributes
+    }
+
+    private boolean isInteger(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 
-    private Attribute parseAttribute(Object value) {
-        String valueStr = (String) value;
-        if (isContainer(valueStr)) {
-            Attribute nestedAttr = new NestedAttribute();
-// TODO: implement
-// TODO: figure out if actually the JSON-map is always a tree where nodes are hashmaps and values therefore always are
-//  strings/hashmaps; figure out through debugging.
+    private boolean isFloatValue(String value) {
+        try {
+            Float.parseFloat(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
+
+    private boolean isBooleanValue(String value) {
+        return value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false");
+    }
+
+    private boolean isStringValue(String value) {
+        return isWrapped(value, '"', '"');
+    }
+
 
     private boolean isEssentialAttributeKey(String key) {
         return key.equals("\"date\"") || key.equals("\"concept:name\"");
@@ -84,7 +184,7 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
         List<Map<String, Map<String, Object>>> traces = (List<Map<String, Map<String, Object>>>) jsonMap.get("\"traces\"");
         assert traces != null : String.format("invalid format of jsonMap: %s", jsonMap);
 
-        Map<String, Object> traceAttributes = traces.get(0).get("\"attrs\"");
+        Map<String, Object> traceAttributes = traces.getFirst().get("\"attrs\"");
         assert traceAttributes != null : String.format("invalid format of jsonMap: %s", jsonMap);
 
         return traceAttributes;
@@ -96,8 +196,8 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
 
         if (globalAttributes == null) { return new HashMap<>(); }
 
-        HashMap<String, Object> allAttrs = globalAttributes.get("trace");
-        HashMap<String, Object> eventAttrs = globalAttributes.get("event");
+        HashMap<String, Object> allAttrs = globalAttributes.get("\"trace\"");
+        HashMap<String, Object> eventAttrs = globalAttributes.get("\"event\"");
         if (allAttrs == null) { allAttrs = new HashMap<>(); }
         if (eventAttrs == null) { eventAttrs = new HashMap<>(); }
 
@@ -110,15 +210,15 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
     /** Recursively parses a json-formatted String to extract a json-like Map.
      *  @param jsonStr a json-formatted String.
      *  @return A nested map representing the given json string; It has a tree-like structure where a non-leaf node is
-     *  a Hashmap from String to Hashmap, and a leaf is a String. When decoded, a value that is supposed to be a string
-     * will be wrapped in quotation marks, whereas a non-string will not. Hence the leaf "\"hi\"" is a String, but
-     * "5.0" is not [it is a float]. */
+     *  a Hashmap from String to Hashmap, and a leaf is either a List (e.g. of events [represented as HashMaps] in a
+     *  trace) or a String. When decoded, a value that is supposed to be a string will be wrapped in quotation marks,
+     *  whereas a non-string will not. Hence, the leaf "\"hi\"" is a String, but "5.0" is not [it is a float]. */
     private Map<String, Object> getJsonMap(String jsonStr) {
         return getContainer(jsonStr);
     }
 
     private Map<String, Object> getContainer(String container) {
-        Object value = new Object();
+        Object value;
         Map<String, Object> containerMap = new HashMap<>();
         String contents = unWrap(container, '{', '}');
         List<String> keyValuePairs = commaSplit(contents);
@@ -143,15 +243,21 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
     }
 
 
-    /** returns the list of containers in the given list ('[' and ']' wrapped) string */
-    private List<Map<String, Object>> getList(String listStr) {
-        List<Map<String, Object>> containers = new ArrayList<>();
+    /** returns the list of items in the given list ('[' and ']' wrapped string */
+    private List<Object> getList(String listStr) {
+        List<Object> elements = new ArrayList<>();
         listStr = unWrap(listStr, '[', ']');
-        List<String> elements = commaSplit(listStr);
-        for (String container : elements) {
-           containers.add(getContainer(container));
+        List<String> stringElements = commaSplit(listStr);
+        // list items can be either containers [e.g. events in a trace] or string values [e.g. in classifiers]
+        for (String elem : stringElements) {
+            if (isContainer(elem)) {
+                elements.add(getContainer(elem));
+            } else {
+                assert !isList(elem) : "cannot be a list";
+                elements.add(getStringValue(elem));
+            }
         }
-        return containers;
+        return elements;
     }
 
     private Pair<String, String> splitAndStripKeyAndValue(String pair) {
@@ -162,9 +268,10 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
         assert endQuoteIndex != -1 : String.format("no starting quotation in: %s", pair);
         endQuoteIndex = pair.indexOf('\"', endQuoteIndex+1);
         assert endQuoteIndex != -1 : String.format("no closing quotation in: %s", pair);
+        int colonIndex = pair.indexOf(':', endQuoteIndex);
 
-        String key = pair.substring(0, endQuoteIndex).strip();
-        String value = pair.substring(endQuoteIndex+1).strip();
+        String key = pair.substring(0, colonIndex).strip();
+        String value = pair.substring(colonIndex+1).strip();
         return new Pair<>(key, value);
     }
 
@@ -173,6 +280,7 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
      *  @return The strings between commas of the contents input. The strings will be stripped of whitespace, \n, \t,
      *  and \r in both ends. */
     private List<String> commaSplit(String contents) {
+        if (contents.isEmpty()) { return new ArrayList<>(); }
         // since contents can be nested [they can contain lists/containers], we must only split at the current level
         int openedCurly = 0;
         int openedSquare = 0;
@@ -183,7 +291,7 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
         for (int i = 0; i < contents.length(); i++) {
             char ch = contents.charAt(i);
             if (ch == ',' && openedCurly == 0 && openedSquare == 0) {
-                commaSeparatedStrings.add(contents.substring(currentStart, i-1));
+                commaSeparatedStrings.add(contents.substring(currentStart, i));
                 currentStart = i+1;
             }
             else if (ch == '{') { openedCurly++; }
@@ -210,16 +318,23 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
         return isWrapped(str, '[', ']');
     }
 
-    /** A string is wrapped iff its content is wrapped by 'start' and 'end'. */
+    /** A string is wrapped iff the first non-whitespace character is start and the last non-whitespace character is
+     *  end. */
     private boolean isWrapped(String str, char start, char end) {
-        for (int i = 0; i < str.length(); i++) {
+        int first = findNonWhitespaceIndex(str, 0, 1, start);
+        if (first == -1) return false; // Start wrapper not found
+
+        int last = findNonWhitespaceIndex(str, str.length() - 1, -1, end);
+        return last != -1; // End wrapper found
+    }
+
+    private static int findNonWhitespaceIndex(String str, int start, int step, char target) {
+        for (int i = start; i >= 0 && i < str.length(); i += step) {
             char ch = str.charAt(i);
-            if (ch == ' ' || ch == '\n' || ch == '\t' || ch == '\r')
-                {continue;}
-            else if (ch == start) { return true;}
-            assert (ch != end) : "there was no '"+ start +"' before this '"+ end + "'";
+            if (ch == target) return i;
+            if (!Character.isWhitespace(ch)) return -1;
         }
-        return false;
+        return -1;
     }
 
 }

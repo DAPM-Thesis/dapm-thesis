@@ -1,4 +1,5 @@
 package datatype.serialization;
+import datatype.event.Attribute;
 import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 import datatype.petrinet.Place;
@@ -6,6 +7,9 @@ import datatype.petrinet.Transition;
 import datatype.petrinet.arc.Arc;
 import datatype.petrinet.arc.PlaceToTransitionArc;
 import datatype.petrinet.arc.TransitionToPlaceArc;
+
+import java.util.Collection;
+
 // TODO: make serialization its own class? Sure it adds an extra step but it will make maintainability easier, and enforce the correct formatting. Should be considered if serialization format changes frequently.
 public class DataTypeSerializer implements DataTypeVisitor<String> {
     private String serialization;
@@ -33,8 +37,18 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
                 "\"attrs\": {\"concept:name\": \"" + e.getCaseID() + "\"}, " +
                 "\"events\": [{" +
                 "\"concept:name\": \"" + e.getActivity() +
-                "\", date\": \"" + e.getTimestamp() +
-                "\"}]}]}";
+                "\", \"date\": \"" + e.getTimestamp() +
+                "\", " + commaSeparatedAttributesString(e.getAttributes()) + "}]}]}";
+    }
+
+    private String commaSeparatedAttributesString(Collection<Attribute<?>> attributes) {
+        if (attributes.isEmpty()) {return "";}
+        StringBuilder sb = new StringBuilder();
+        for (Attribute<?> attr : attributes) {
+            sb.append(attr.toString()).append(',');
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
     }
 
     private String ToPNML(PetriNet pn) {

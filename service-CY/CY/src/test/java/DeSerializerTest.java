@@ -1,5 +1,7 @@
 
 import datatype.DeSerializer;
+import datatype.event.Attribute;
+import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 import datatype.petrinet.Place;
 import datatype.petrinet.Transition;
@@ -7,15 +9,15 @@ import datatype.petrinet.arc.Arc;
 import datatype.petrinet.arc.PlaceToTransitionArc;
 import datatype.petrinet.arc.TransitionToPlaceArc;
 import datatype.serialization.DataTypeSerializer;
+import datatype.DataType;
 import datatype.DeSerializer;
+import datatype.serialization.deserialization.DataTypeFactory;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,4 +70,32 @@ class DeSerializerTest {
 
         assertEquals(pn, pn_2);
     }
+
+    @Test
+    void testDeserializeSingleEventJXES() {
+        // make event
+        String caseID = "id1";
+        String activity = "a1";
+        String timestamp = "15:07Z";
+        Attribute<Integer> attr1 = new Attribute<>("int", 5);
+        Attribute<List<Double>> attr2 = new Attribute<>("listAttr", Arrays.asList(5.0, 0.0));
+        Event event = new Event(caseID, activity, timestamp, Arrays.asList(attr1, attr2));
+
+        // recreate event by serializing and thn deserializing
+        DataTypeSerializer serializer = new DataTypeSerializer();
+        String JXES = serializer.visit(event);
+        System.out.println(JXES);
+        DataType event_2 = DataTypeFactory.deserialize(JXES);
+        assertEquals(event, event_2);
+
+    }
+
+    @Test
+    void testDeserializeEventExample() throws IOException {
+        String JXESPathString = "service-CY/CY/src/test/resources/jxes_example.json";
+        String JXESContents = Files.readString(Paths.get(JXESPathString));
+        Event e = new Event("","","",new HashSet<>());
+        e.getDeserializationStrategy().deserialize(JXESContents);
+    }
+
 }

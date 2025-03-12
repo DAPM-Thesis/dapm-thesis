@@ -1,5 +1,46 @@
 package datatype.event;
 
-public abstract class Attribute {
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+public class Attribute<T> {
+    private final String name;
+    private T value;
+    private Map<String, Attribute<?>> nestedAttributes;
+
+    public Attribute(String name, T value) {
+        this(name, value, Collections.emptyMap());
+    }
+
+    public Attribute(String name, T value, Map<String, Attribute<?>> nestedAttributes) {
+        this.name = name;
+        this.value = value;
+        this.nestedAttributes = nestedAttributes == null
+                ? Collections.emptyMap()
+                : Map.copyOf(nestedAttributes);
+    }
+
+    public void setNestedAttributes(Map<String, Attribute<?>> nestedAttributes) {
+        this.nestedAttributes = nestedAttributes;
+    }
+
+    public String getName() {return name;}
+    public T getValue() {return value;}
+
+    @Override
+    public String toString() {
+        return "\"" + name + "\": " + value;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) return true;
+        if (!(other instanceof Attribute<?> otherAttribute)) return false;
+        return name.equals(otherAttribute.name);
+    }
+
+    @Override
+    public int hashCode() { return name.hashCode(); }
 }
