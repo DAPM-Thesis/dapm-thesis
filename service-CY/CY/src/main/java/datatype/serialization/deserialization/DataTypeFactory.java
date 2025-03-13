@@ -1,7 +1,7 @@
 package datatype.serialization.deserialization;
 
 import datatype.DataType;
-import datatype.Event;
+import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 
 import java.util.HashMap;

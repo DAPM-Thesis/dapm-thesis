@@ -1,6 +1,7 @@
 package start;
 
 import algorithms.BehavioralPatternsMiner;
+import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 import model.Organization;
 import model.Topic;

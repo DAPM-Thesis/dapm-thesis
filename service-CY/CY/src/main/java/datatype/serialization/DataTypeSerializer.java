@@ -1,18 +1,25 @@
 package datatype.serialization;
-import datatype.Event;
+import datatype.event.Attribute;
+import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 import datatype.petrinet.Place;
 import datatype.petrinet.Transition;
 import datatype.petrinet.arc.Arc;
 import datatype.petrinet.arc.PlaceToTransitionArc;
 import datatype.petrinet.arc.TransitionToPlaceArc;
+
+import java.util.Collection;
+
 // TODO: make serialization its own class? Sure it adds an extra step but it will make maintainability easier, and enforce the correct formatting. Should be considered if serialization format changes frequently.
 public class DataTypeSerializer implements DataTypeVisitor<String> {
     private String serialization;
 
+    public String getSerialization() { return serialization; }
+
     @Override
     public String visit(Event e) {
-        return "";
+        this.serialization = e.getName() + ":" + toJXES(e);
+        return getSerialization();
     }
 
     /** converts a PetriNet to a PNML string, based on ISO/IEC 15909-2; in particular "A primer on the Petri Net Markup Language and ISO/IEC 15909-2" by Kindler et al.
@@ -20,8 +27,28 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
      * the transitions, and the arcs. */
     @Override
     public String visit(PetriNet pn) {
-        this.serialization = pn.getName() + ":" +  ToPNML(pn);
+        this.serialization = pn.getName() + ":" + ToPNML(pn);
         return getSerialization();
+    }
+
+    private String toJXES(Event e) {
+        // TODO: append event attributes, i.e. the collection of additional (non-mining) attributes
+        return "{\"traces\": [{" +
+                "\"attrs\": {\"concept:name\": \"" + e.getCaseID() + "\"}, " +
+                "\"events\": [{" +
+                "\"concept:name\": \"" + e.getActivity() +
+                "\", \"date\": \"" + e.getTimestamp() +
+                "\", " + commaSeparatedAttributesString(e.getAttributes()) + "}]}]}";
+    }
+
+    private String commaSeparatedAttributesString(Collection<Attribute<?>> attributes) {
+        if (attributes.isEmpty()) {return "";}
+        StringBuilder sb = new StringBuilder();
+        for (Attribute<?> attr : attributes) {
+            sb.append(attr.toString()).append(',');
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
     }
 
     private String ToPNML(PetriNet pn) {
@@ -75,6 +102,4 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
                 + target
                 + "\"></arc>";
     }
-
-    public String getSerialization() { return serialization; }
 }

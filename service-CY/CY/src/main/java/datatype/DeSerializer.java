@@ -1,5 +1,6 @@
 package datatype;
 
+import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 import datatype.petrinet.Place;
 import datatype.petrinet.Transition;

@@ -113,8 +113,7 @@ public class PetriNetDeserializationStrategy implements DeserializationStrategy 
         return flowRelation;
     }
 
-    /** Fails if there is no pair of quotations in the given string starting from startIndex.
-     * @return The next quote content [String] and the index right after the end quote's index, i.e. if i_e is the end
+    /** @return The next quote content [String] and the index right after the end quote's index, i.e. if i_e is the end
      * quote index, the returned integer is (i_e+1). */
     private static Pair<String, Integer> getNextQuoteContent(String str, int startIndex) {
         int startQuoteIndex = str.indexOf('\"', startIndex);
