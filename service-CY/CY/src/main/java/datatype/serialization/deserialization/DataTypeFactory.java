@@ -6,9 +6,7 @@ import datatype.Trace;
 import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class DataTypeFactory {
     private static final HashMap<String, DeserializationStrategy> strategyMap = new HashMap<>();
@@ -16,7 +14,8 @@ public class DataTypeFactory {
     static {
         register(new Event("contents don't matter here; just give a constructor", "", "", new HashSet<>()));
         register(new PetriNet());
-        register(new Alignment(new Trace(new ArrayList<>()), new Trace(new ArrayList<>())));
+        register(new Alignment(new Trace(List.of(new Event("c", "a", "1", new HashSet<>()))),
+                               new Trace(List.of(new Event("c", "a", "1", new HashSet<>())))));
         register(new Trace(new ArrayList<>()));
     }
 

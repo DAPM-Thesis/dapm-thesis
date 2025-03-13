@@ -22,4 +22,9 @@ public class Trace extends DataType{
     public DeserializationStrategy getDeserializationStrategy() {
         return null;
     }
+
+    public int length() {
+        return trace.size();
+    }
+
 }

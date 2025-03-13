@@ -16,6 +16,8 @@ public class Event extends DataType {
     private final String timestamp;
     private final Set<Attribute<?>> attributes;
 
+    // Note that there deliberately is no constructor other constructor than this one. This is to emphasize that an
+    // event is atomic, and therefore e.g. attributes cannot be added after the event's digital twin's initialization.
     public Event(String caseID, String activity, String timestamp, Set<Attribute<?>> attributes) {
         this.caseID = caseID;
         this.activity = activity;
