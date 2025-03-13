@@ -1,17 +1,13 @@
 package start;
 
 import algorithms.BehavioralPatternsMiner;
-import datatype.Event;
 import datatype.petrinet.PetriNet;
-import model.Message;
-import model.Pipeline;
+import model.Organization;
 import model.Topic;
 import node.MiningNode;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import service.PipeLineBuilder;
-
-import java.util.Collection;
-import java.util.HashSet;
+import service.NodeRegistry;
+import service.PipelineBuilder;
 
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
@@ -43,9 +39,17 @@ public class Main {
                 conformanceAlgorithm
         );
 
-        PipeLineBuilder pipeLineBuilder = new PipeLineBuilder();
-        pipeLineBuilder.connectNodes(discoveryNode, conformanceNode);
-        pipeLineBuilder.connectNodes(discoveryNode2, conformanceNode);
+        Organization organization1 = new Organization(1, "O1");
+        Organization organization2 = new Organization(2, "O2");
+
+        NodeRegistry nodeRegistry = NodeRegistry.getInstance();
+        nodeRegistry.addNode(organization1, discoveryNode);
+        nodeRegistry.addNode(organization2, discoveryNode2);
+        nodeRegistry.addNode(organization2, conformanceNode);
+
+        PipelineBuilder pipeLineBuilder = PipelineBuilder.getInstance();
+        pipeLineBuilder.connectNodes(discoveryNode.getID(), conformanceNode.getID());
+        pipeLineBuilder.connectNodes(discoveryNode2.getID(), conformanceNode.getID());
         pipeLineBuilder.run();
 
         for(Topic topic : conformanceNode.getInputTopics()) {

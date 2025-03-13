@@ -1,0 +1,12 @@
+package model;
+
+public class Organization {
+
+    private int id;
+    private String name;
+
+    public Organization(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+}

@@ -17,17 +17,46 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-public class PipeLineBuilder {
+public class PipelineBuilder {
 
+    private static volatile PipelineBuilder instance;
     private final Pipeline pipeline;
+    private final NodeRegistry nodeRegistry;
 
-    public PipeLineBuilder() {
+    private PipelineBuilder() {
         this.pipeline = new Pipeline();
+        nodeRegistry = NodeRegistry.getInstance();
     }
 
-    public void connectNodes(Node publisher, Node subscriber) {
+    public static PipelineBuilder getInstance() {
+        if (instance == null) {
+            synchronized (PipelineBuilder.class) {
+                if (instance == null) {
+                    instance = new PipelineBuilder();
+                }
+            }
+        }
+        return instance;
+    }
+
+    public void connectNodes(int publisherID, int subscriberID) {
+        Node publisher = nodeRegistry.getNodeByID(publisherID);
+
+        if (publisher == null) {
+            throw new IllegalArgumentException("Node (publisher) with ID " + publisherID + " not found");
+        }
+
+        Node subscriber = nodeRegistry.getNodeByID(subscriberID);
+
+        if (subscriber == null) {
+            throw new IllegalArgumentException("Node (subscriber) with ID " + subscriberID + " not found");
+        }
         pipeline.addNodes(publisher, subscriber);
         Topic topic = assignPublisherTopic(publisher);
+
+        if(topic == null) {
+            throw new IllegalArgumentException("Unable to assign topic to publisher" + publisherID);
+        }
         assignSubscriberTopic(subscriber, topic);
         pipeline.addConnection(publisher, subscriber);
     }
