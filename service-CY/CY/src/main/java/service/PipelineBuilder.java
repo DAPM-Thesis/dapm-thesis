@@ -12,20 +12,17 @@ import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.KafkaFuture;
 
-import java.util.Collections;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 public class PipelineBuilder {
 
     private static volatile PipelineBuilder instance;
-    private final Pipeline pipeline;
-    private final NodeRegistry nodeRegistry;
+    private final HashMap<Integer, Pipeline> pipelines;
 
     private PipelineBuilder() {
-        this.pipeline = new Pipeline();
-        nodeRegistry = NodeRegistry.getInstance();
+        this.pipelines = new HashMap<>();
     }
 
     public static PipelineBuilder getInstance() {
@@ -39,19 +36,38 @@ public class PipelineBuilder {
         return instance;
     }
 
-    public void connectNodes(Node publisher, Node subscriber) {
+    public void createPipeline(int pipelineID) {
+        if (!pipelines.containsKey(pipelineID)) {
+            Pipeline newPipeline = new Pipeline(pipelineID);
+            pipelines.put(pipelineID, newPipeline);
+        }
+    }
+
+    public PipelineBuilder connectNodes(int pipelineID, Node publisher, Node subscriber) {
+        Pipeline pipeline = getPipeline(pipelineID);
+        assert pipeline != null;
         pipeline.addNodes(publisher, subscriber);
         Topic topic = assignPublisherTopic(publisher);
         if (topic == null) {
             throw new IllegalArgumentException("Unable to assign topic to publisher node.");
         }
+        pipeline.addTopic(topic);
         assignSubscriberTopic(subscriber, topic);
         pipeline.addConnection(publisher, subscriber);
+        return this;
     }
 
     public void run() {
         // Logic to run the pipeline, I think this only makes sense if we start the source.
         // The source is supposed to kickstart the entire pipeline
+    }
+
+    public Pipeline getPipeline(int pipelineID) {
+        return pipelines.get(pipelineID);
+    }
+
+    public HashMap<Integer, Pipeline> getPipelines() {
+        return pipelines;
     }
 
     private Topic assignPublisherTopic(Node publisher) {
@@ -61,7 +77,6 @@ public class PipelineBuilder {
                 Topic topic = new Topic(topicName);
                 createKafkaTopic(topic.getName()); // Create a new Kafka topic
                 operatorNode.setOutputTopic(topic);
-                pipeline.addTopic(topic);
                 return topic;
             }
             return operatorNode.getOutputTopic();
@@ -103,5 +118,9 @@ public class PipelineBuilder {
         } catch (InterruptedException | ExecutionException e) {
             System.err.println("Failed to create Kafka topic: " + e.getMessage());
         }
+    }
+
+    public void reset() {
+        pipelines.clear();
     }
 }

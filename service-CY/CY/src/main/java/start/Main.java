@@ -1,7 +1,6 @@
 package start;
 
 import algorithms.BehavioralPatternsMiner;
-import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 import model.Organization;
 import model.Topic;
@@ -57,11 +56,11 @@ public class Main {
         discoveryNode2 = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization2.getId(), discoveryNode2.getID());
         conformanceNode = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization2.getId(), conformanceNode.getID());
 
-        PipelineBuilder pipeLineBuilder = PipelineBuilder.getInstance();
-        pipeLineBuilder.connectNodes(discoveryNode, discoveryNode2);
-        pipeLineBuilder.connectNodes(discoveryNode, conformanceNode);
-        pipeLineBuilder.connectNodes(discoveryNode2, conformanceNode);
-        pipeLineBuilder.run();
+        PipelineBuilder pipelineBuilder = PipelineBuilder.getInstance();
+        pipelineBuilder.createPipeline(1);
+        pipelineBuilder.connectNodes(1, discoveryNode, discoveryNode2)
+                .connectNodes(1, discoveryNode, conformanceNode)
+                .connectNodes(1, discoveryNode2, conformanceNode);
 
         for(Topic topic : conformanceNode.getInputTopics()) {
             System.out.println(topic.getName());

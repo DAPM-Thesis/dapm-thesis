@@ -15,11 +15,13 @@ import java.util.concurrent.ExecutionException;
 
 public class Pipeline {
 
+    private final int ID;
     private final Map<Node, Node> connections;
     private final Collection<Topic> topics;
     private final Collection<Node> allNodes;
 
-    public Pipeline() {
+    public Pipeline(int ID) {
+        this.ID = ID;
         connections = new HashMap<Node, Node>();
         topics = new HashSet<>();
         allNodes = new HashSet<>();
@@ -37,4 +39,16 @@ public class Pipeline {
         topics.add(topic);
     }
 
+    public int getID() {
+        return ID;
+    }
+
+    public Node getNodeByID(int id) {
+        for(Node node : allNodes) {
+            if(node.getID() == id) {
+                return node;
+            }
+        }
+        return null;
+    }
 }
