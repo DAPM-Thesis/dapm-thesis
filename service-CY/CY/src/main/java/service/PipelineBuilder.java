@@ -39,23 +39,11 @@ public class PipelineBuilder {
         return instance;
     }
 
-    public void connectNodes(int publisherID, int subscriberID) {
-        Node publisher = nodeRegistry.getNodeByID(publisherID);
-
-        if (publisher == null) {
-            throw new IllegalArgumentException("Node (publisher) with ID " + publisherID + " not found");
-        }
-
-        Node subscriber = nodeRegistry.getNodeByID(subscriberID);
-
-        if (subscriber == null) {
-            throw new IllegalArgumentException("Node (subscriber) with ID " + subscriberID + " not found");
-        }
+    public void connectNodes(Node publisher, Node subscriber) {
         pipeline.addNodes(publisher, subscriber);
         Topic topic = assignPublisherTopic(publisher);
-
-        if(topic == null) {
-            throw new IllegalArgumentException("Unable to assign topic to publisher" + publisherID);
+        if (topic == null) {
+            throw new IllegalArgumentException("Unable to assign topic to publisher node.");
         }
         assignSubscriberTopic(subscriber, topic);
         pipeline.addConnection(publisher, subscriber);

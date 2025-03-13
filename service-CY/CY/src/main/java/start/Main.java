@@ -5,6 +5,7 @@ import datatype.petrinet.PetriNet;
 import model.Organization;
 import model.Topic;
 import node.MiningNode;
+import node.Node;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import service.NodeRegistry;
 import service.PipelineBuilder;
@@ -42,14 +43,23 @@ public class Main {
         Organization organization1 = new Organization(1, "O1");
         Organization organization2 = new Organization(2, "O2");
 
+        // An organization registry could be useful
+
+        // Organizations add nodes to registry
         NodeRegistry nodeRegistry = NodeRegistry.getInstance();
-        nodeRegistry.addNode(organization1, discoveryNode);
-        nodeRegistry.addNode(organization2, discoveryNode2);
-        nodeRegistry.addNode(organization2, conformanceNode);
+        nodeRegistry.addNode(organization1.getId(), discoveryNode);
+        nodeRegistry.addNode(organization2.getId(), discoveryNode2);
+        nodeRegistry.addNode(organization2.getId(), conformanceNode);
+
+        // Retrieve nodes from registry to build pipeline
+        discoveryNode = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization1.getId(), discoveryNode.getID());
+        discoveryNode2 = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization2.getId(), discoveryNode2.getID());
+        conformanceNode = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization2.getId(), conformanceNode.getID());
 
         PipelineBuilder pipeLineBuilder = PipelineBuilder.getInstance();
-        pipeLineBuilder.connectNodes(discoveryNode.getID(), conformanceNode.getID());
-        pipeLineBuilder.connectNodes(discoveryNode2.getID(), conformanceNode.getID());
+        pipeLineBuilder.connectNodes(discoveryNode, discoveryNode2);
+        pipeLineBuilder.connectNodes(discoveryNode, conformanceNode);
+        pipeLineBuilder.connectNodes(discoveryNode2, conformanceNode);
         pipeLineBuilder.run();
 
         for(Topic topic : conformanceNode.getInputTopics()) {
