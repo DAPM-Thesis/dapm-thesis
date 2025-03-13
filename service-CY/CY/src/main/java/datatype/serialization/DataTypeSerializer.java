@@ -1,4 +1,5 @@
 package datatype.serialization;
+import datatype.DataMap;
 import datatype.event.Attribute;
 import datatype.event.Event;
 import datatype.petrinet.PetriNet;
@@ -29,6 +30,16 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
     public String visit(PetriNet pn) {
         this.serialization = pn.getName() + ":" + ToPNML(pn);
         return getSerialization();
+    }
+
+    @Override
+    public String visit(DataMap dm) {
+        this.serialization = dm.getName() + ":" + toJSON(dm);
+    }
+
+    private String toJSON(DataMap dm) {
+        // TODO: implement
+        throw new IllegalStateException("Not implemented yet");
     }
 
     private String toJXES(Event e) {

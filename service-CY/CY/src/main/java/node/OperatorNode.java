@@ -23,7 +23,6 @@ public abstract class OperatorNode<T extends DataType> extends Node implements S
 
     /**
      * Creates a (new) input handle for the node.
-     *
      * @param topic the topic that the input handle subscribes to receive streamed items.
      * @return A (new) InputHandle subscribed to the given topic.
      */
