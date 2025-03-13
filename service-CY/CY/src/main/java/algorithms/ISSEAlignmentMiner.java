@@ -15,6 +15,7 @@ import java.util.List;
  * */
 public class ISSEAlignmentMiner implements Algorithm<Event, Pair<Alignment, Boolean>> {
     @Override
+<<<<<<< HEAD
     public Pair<Alignment, Boolean> runAlgorithm(Event item) {
         // TODO: should probably ultimately output a DataMap containing the data output by the article's implementation's output
         Event el1 = new Event("C1", "A1", "1", new HashSet<>());
@@ -26,5 +27,19 @@ public class ISSEAlignmentMiner implements Algorithm<Event, Pair<Alignment, Bool
         Alignment alignment = new Alignment(logTrace, modelTrace);
 
         return new Pair<>(alignment, true);
+=======
+    public Pair<DataMap, Boolean> runAlgorithm(Event item) {
+        Event e11 = new Event("C1", "A1", "1", new HashSet<>());
+        Event e12 = new Event("C1", "A2", "2", new HashSet<>());
+        Event e21 = new Event("C1", "A1", "00", new HashSet<>());
+        Event e22 = new Event("C1", "A3", "00", new HashSet<>());
+        Trace logTrace = new Trace(List.of(e11, e12));
+        Trace modelTrace = new Trace(List.of(e21, e22));
+        Alignment alignment = new Alignment(logTrace, modelTrace);
+        DataMap dataMap = new DataMap();
+        dataMap.put("alignment", alignment);
+
+        return new Pair<>(dataMap, true);
+>>>>>>> 75f2d54cff6beaaa4e338598e965f92e13c23d6e
     }
 }
