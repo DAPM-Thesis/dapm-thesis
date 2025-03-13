@@ -13,7 +13,7 @@ import java.util.Set;
 public class Event extends DataType {
     private final String caseID;
     private final String activity;
-    private final String timestamp;
+    private final String timestamp; // TODO: make timestamp a different type than String? If it is a DateTime-like type, the Trace class can assert that each event in the trace happened in temporal order.
     private final Set<Attribute<?>> attributes;
 
     // Note that there deliberately is no constructor other constructor than this one. This is to emphasize that an

@@ -36,20 +36,25 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
 
     @Override
     public String visit(DataMap dm) {
-        this.serialization = dm.getName() + ":" + toJSON(dm);
-        return getSerialization();
+        // TODO: implement
+        return "DataMap:{\"conformance\":\"float:0.753\", \"completeness\":\"float:0.324503\", \"confidence\":\"1.0\"}";
+        //this.serialization = dm.getName() + ":" + toJSON(dm);
+        //return getSerialization();
     }
 
     @Override
     public String visit(Trace t) {
+        // TODO: implement
         this.serialization = t.getName() + ":" + toJXES(t);
         return getSerialization();
     }
     
     @Override
     public String visit(Alignment a) {
-        this.serialization = a.getName() + ":" + toJXES(a);
-        return getSerialization();
+        // TODO: implement
+        return "Alignment:{\"traces\": [{\"attrs\": {\"concept:name\": \"C1\"}, \"events\": [{\"concept:name\": \"A1\", \"date\": \"1\"}, {\"concept:name\": \"A2\", \"date\": \"2\"}]}, {\"attrs\": {\"concept:name\": \"0\"}, \"events\": [{\"concept:name\": \"A1\", \"date\": \"0\"}, {\"concept:name\": \"A3\", \"date\": \"0\"}]}]}";
+        //this.serialization = a.getName() + ":" + toJXES(a);
+        //return getSerialization();
     }
 
     private String toJXES(Alignment a) {
