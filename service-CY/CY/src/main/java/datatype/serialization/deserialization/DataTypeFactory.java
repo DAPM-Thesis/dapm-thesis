@@ -1,9 +1,12 @@
 package datatype.serialization.deserialization;
 
+import datatype.Alignment;
 import datatype.DataType;
+import datatype.Trace;
 import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -11,8 +14,10 @@ public class DataTypeFactory {
     private static final HashMap<String, DeserializationStrategy> strategyMap = new HashMap<>();
 
     static {
-        register(new PetriNet());
         register(new Event("contents don't matter here; just give a constructor", "", "", new HashSet<>()));
+        register(new PetriNet());
+        register(new Alignment(new Trace(new ArrayList<>()), new Trace(new ArrayList<>())));
+        register(new Trace(new ArrayList<>()));
     }
 
     private static void register(DataType instance) {

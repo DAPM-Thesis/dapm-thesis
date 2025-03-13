@@ -1,6 +1,7 @@
 package start;
 
 import algorithms.BehavioralPatternsMiner;
+import datatype.DataMap;
 import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 import model.Message;
@@ -20,13 +21,13 @@ public class Main {
         Topic inputTopicDiscovery = new Topic("ingest");
         Collection<Topic> inputTopicsDiscovery = new HashSet<>();
         inputTopicsDiscovery.add(inputTopicDiscovery);
-        BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
+        BehavioralPatternsMiner behavioralDynamicConformance = new BehavioralPatternsMiner();
 
-        MiningNode<PetriNet> discoveryNode = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 inputTopicsDiscovery,
-                discoveryMiner
+                behavioralDynamicConformance
         );
 
         System.out.println(discoveryNode.getOutputTopic().getClass());
