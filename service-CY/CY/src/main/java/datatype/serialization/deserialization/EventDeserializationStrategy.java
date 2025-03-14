@@ -274,30 +274,43 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
      *  and \r in both ends. */
     private List<String> commaSplit(String contents) {
         // TODO: refactor
-        if (contents.isEmpty()) { return new ArrayList<>(); }
-        // since contents can be nested [they can contain lists/containers], we must only split at the current level
+        List<String> commaSeparatedStrings = new ArrayList<>();
+        if (contents.isEmpty()) { return commaSeparatedStrings; }
+        // since contents can be nested [they can contain lists/containers/quotes], we must only split at the current level
         int openedCurly = 0;
         int openedSquare = 0;
         boolean openedQuote = false;
         int currentStart = 0;
 
-        List<String> commaSeparatedStrings = new ArrayList<>();
-
         for (int i = 0; i < contents.length(); i++) {
             char ch = contents.charAt(i);
-            if (ch == ',' && openedCurly == 0 && openedSquare == 0 && !openedQuote) {
-                commaSeparatedStrings.add(contents.substring(currentStart, i));
-                currentStart = i+1;
+
+            if (ch == '"') {
+                if (shouldFlipQuote(contents, i)) {
+                    openedQuote = !openedQuote;
+                }
+            } else if (!openedQuote) {
+                if (ch == ',' && openedCurly == 0 && openedSquare == 0) {
+                    commaSeparatedStrings.add(contents.substring(currentStart, i));
+                    currentStart = i+1;
+                }
+                else if (ch == '{') { openedCurly++; }
+                else if (ch == '}') { openedCurly--; }
+                else if (ch == '[') { openedSquare++; }
+                else if (ch == ']') { openedSquare--; }
             }
-            else if (ch == '{') { openedCurly++; }
-            else if (ch == '}') { openedCurly--; }
-            else if (ch == '[') { openedSquare++; }
-            else if (ch == ']') { openedSquare--; }
-            else if (ch == '"') { openedQuote = !openedQuote; }
         }
         // remember to add the last
         commaSeparatedStrings.add(contents.substring(currentStart));
         return commaSeparatedStrings;
+    }
+
+    private boolean shouldFlipQuote(String str, int quoteIndex) {
+        // the quotes should only be flipped if there are no quotes in the given string, or if the quotes in the given
+        // string are closed. Both cases only happen if the number of backslashes in the string is even.
+        int backslashCount = 0;
+        while (--quoteIndex >= 0 && str.charAt(quoteIndex) == '\\') {backslashCount++;}
+        return backslashCount % 2 == 0;
     }
 
     private String unWrap(String str, char startWrapper, int endWrapper) {
@@ -318,20 +331,11 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
      *  end. */
     private boolean isWrapped(String str, char start, char end) {
         // TODO: refactor isWrapped
-        /*
         int first = findNonWhitespaceIndex(str, 0, 1, start);
         if (first == -1) return false; // Start wrapper not found
 
         int last = findNonWhitespaceIndex(str, str.length() - 1, -1, end);
         return last != -1; // End wrapper found
-        */
-        // This method was created with the assistance of ChatGPT
-        // ensure that escaped characters such as '{', '[', or '\"' are treated as literals
-        String escapedStart = Pattern.quote(String.valueOf(start));
-        String escapedEnd = Pattern.quote(String.valueOf(end));
-
-        String regexPattern = String.format("(?s)^\\s*%s.*?%s\\s*$", escapedStart, escapedEnd);
-        return Pattern.matches(regexPattern, str);
     }
 
     /** @param str The string to be searched.
