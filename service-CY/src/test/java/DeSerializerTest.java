@@ -105,7 +105,7 @@ class DeSerializerTest {
 
     @Test
     void testDeserializationEventCommaActivityNameExample() throws IOException {
-        String JXESPathString = "service-CY/CY/src/test/resources/jxes_event_comma_activity_name.json";
+        String JXESPathString = "src/test/resources/jxes_event_comma_activity_name.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         Event e = new Event("","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
@@ -113,7 +113,7 @@ class DeSerializerTest {
 
     @Test
     void testDeserializationEventQuotationActivityNameExample() throws IOException {
-        String JXESPathString = "service-CY/CY/src/test/resources/jxes_event_quotation_activity_name.json";
+        String JXESPathString = "src/test/resources/jxes_event_quotation_activity_name.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         Event e = new Event("","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
