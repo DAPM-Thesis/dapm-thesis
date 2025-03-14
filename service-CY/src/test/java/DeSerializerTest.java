@@ -64,7 +64,7 @@ class DeSerializerTest {
         pn.addTransition(t1);
         pn.addArc(new PlaceToTransitionArc("a1", p1, t1));
 
-        String XMLPathString = "service-CY/CY/src/test/resources/pnml/article.xml";
+        String XMLPathString = "src/test/resources/pnml/article.xml";
         String XMLContents = Files.readString(Paths.get(XMLPathString));
         PetriNet pn_2 = DeSerializer.PNMLToPetriNet(XMLContents);
 
@@ -97,7 +97,7 @@ class DeSerializerTest {
 
     @Test
     void testDeserializeEventExample() throws IOException {
-        String JXESPathString = "service-CY/CY/src/test/resources/jxes_example.json";
+        String JXESPathString = "src/test/resources/jxes_example.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         Event e = new Event("","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
