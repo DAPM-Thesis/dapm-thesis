@@ -1,7 +1,6 @@
 package algorithms;
 
 import datatype.Alignment;
-import datatype.DataMap;
 import datatype.DataType;
 import datatype.Trace;
 import datatype.event.Event;
@@ -12,7 +11,7 @@ import java.util.List;
 
 /** An implementation of Schuster and van Zelst's paper "Online Process Monitoring Using Incremental State-Space
  * Expansion: An Exact Algorithm", and the implementation complementing the paper:
- * https://github.com/fit-daniel-schuster/online_process_monitoring_using_incremental_state-space_expansion_an_exact_algorithm/blob/master/pm4py/algo/conformance/alignments/incremental_a_star/incremental_a_star_approach.py
+ * <a href="https://github.com/fit-daniel-schuster/online_process_monitoring_using_incremental_state-space_expansion_an_exact_algorithm/blob/master/pm4py/algo/conformance/alignments/incremental_a_star/incremental_a_star_approach.py">repo code</a>
  * */
 public class ISSEAlignmentMiner implements Algorithm<Pair<Alignment, Boolean>> {
     @Override

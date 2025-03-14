@@ -1,9 +1,7 @@
 package node.handle;
 
 import datatype.DataType;
-import model.Topic;
 import datatype.serialization.DataTypeSerializer;
-import datatype.serialization.DataTypeVisitor;
 import model.Message;
 import service.Producer;
 

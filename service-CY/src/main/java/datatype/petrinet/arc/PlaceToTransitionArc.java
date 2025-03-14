@@ -1,6 +1,5 @@
 package datatype.petrinet.arc;
 
-import datatype.petrinet.PetriNet;
 import datatype.petrinet.Place;
 import datatype.petrinet.Transition;
 

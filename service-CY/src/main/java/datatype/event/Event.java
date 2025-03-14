@@ -1,13 +1,11 @@
 package datatype.event;
 
 import datatype.DataType;
-import datatype.petrinet.PetriNet;
 import datatype.serialization.DataTypeVisitor;
 import datatype.serialization.deserialization.DeserializationStrategy;
 import datatype.serialization.deserialization.EventDeserializationStrategy;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 public class Event extends DataType {

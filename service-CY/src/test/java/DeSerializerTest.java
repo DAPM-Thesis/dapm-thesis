@@ -9,8 +9,6 @@ import datatype.petrinet.arc.Arc;
 import datatype.petrinet.arc.PlaceToTransitionArc;
 import datatype.petrinet.arc.TransitionToPlaceArc;
 import datatype.serialization.DataTypeSerializer;
-import datatype.DataType;
-import datatype.DeSerializer;
 import datatype.serialization.deserialization.DataTypeFactory;
 import org.junit.jupiter.api.Test;
 

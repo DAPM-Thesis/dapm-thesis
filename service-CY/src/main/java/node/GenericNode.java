@@ -1,15 +1,10 @@
 package node;
 
-
-import node.OperatorNode;
 import model.Topic;
 import model.Message;
 import algorithms.Algorithm;
 import datatype.DataType;
 import node.handle.InputHandle;
-import node.handle.OutputHandle;
-
-import java.util.Collection;
 
 public class GenericNode<T extends DataType> extends OperatorNode<T> {
     private final Algorithm<T> algorithm;

@@ -6,7 +6,6 @@ import utils.Pair;
 import datatype.event.Attribute;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class EventDeserializationStrategy implements DeserializationStrategy {
 
@@ -273,7 +272,6 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
      *  @return The strings between commas of the contents input. The strings will be stripped of whitespace, \n, \t,
      *  and \r in both ends. */
     private List<String> commaSplit(String contents) {
-        // TODO: refactor
         List<String> commaSeparatedStrings = new ArrayList<>();
         if (contents.isEmpty()) { return commaSeparatedStrings; }
         // since contents can be nested [they can contain lists/containers/quotes], we must only split at the current level
@@ -330,7 +328,6 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
     /** A string is wrapped iff the first non-whitespace character is start and the last non-whitespace character is
      *  end. */
     private boolean isWrapped(String str, char start, char end) {
-        // TODO: refactor isWrapped
         int first = findNonWhitespaceIndex(str, 0, 1, start);
         if (first == -1) return false; // Start wrapper not found
 

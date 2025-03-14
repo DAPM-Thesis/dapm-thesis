@@ -3,7 +3,6 @@ package service;
 
 import model.Message;
 import node.handle.InputHandle;
-import node.handle.InputHandle;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -28,7 +27,7 @@ public class Consumer {
 
         this.kafkaConsumer = new KafkaConsumer<>(props);
     }
-
+    // TODO: add parametrization to InputHandle
     public void subscribe(String topic, InputHandle inputHandle) {
         new Thread(() -> {
             kafkaConsumer.subscribe(List.of(topic));

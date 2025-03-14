@@ -1,7 +1,7 @@
 package datatype.petrinet;
 
 public class Place {
-    private String ID;
+    private final String ID;
     private int marking;
 
     public Place(String ID, int marking) {

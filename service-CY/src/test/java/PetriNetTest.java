@@ -6,7 +6,6 @@ import datatype.petrinet.arc.PlaceToTransitionArc;
 import datatype.petrinet.arc.TransitionToPlaceArc;
 import org.junit.jupiter.api.Test;
 
-import datatype.DeSerializer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

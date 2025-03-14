@@ -12,7 +12,7 @@ public class DataMap extends DataType {
 
 
     public DataMap() {
-        keyValuePairs = new HashMap<String, Object>();
+        keyValuePairs = new HashMap<>();
     }
     public DataMap(Map<String, Object> keyValuePairs) {
         this.keyValuePairs = keyValuePairs;

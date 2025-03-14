@@ -1,4 +1,5 @@
 import algorithms.BehavioralPatternsMiner;
+import datatype.DataMap;
 import datatype.petrinet.PetriNet;
 import model.Pipeline;
 import model.Topic;
@@ -100,13 +101,13 @@ public class PipelineBuilderTest {
 
         // Create nodes
         BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
-        MiningNode<PetriNet> discoveryNode = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
         );
 
-        MiningNode<PetriNet> discoveryNode2 = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode2 = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
@@ -142,13 +143,13 @@ public class PipelineBuilderTest {
 
         // Create nodes
         BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
-        MiningNode<PetriNet> discoveryNode = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
         );
 
-        MiningNode<PetriNet> discoveryNode2 = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode2 = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
@@ -189,13 +190,13 @@ public class PipelineBuilderTest {
 
         // Create nodes
         BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
-        MiningNode<PetriNet> discoveryNode = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
         );
 
-        MiningNode<PetriNet> discoveryNode2 = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode2 = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
@@ -224,19 +225,19 @@ public class PipelineBuilderTest {
 
         // Create nodes
         BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
-        MiningNode<PetriNet> discoveryNode = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
         );
 
-        MiningNode<PetriNet> discoveryNode2 = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode2 = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
         );
 
-        MiningNode<PetriNet> discoveryNode3 = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode3 = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner

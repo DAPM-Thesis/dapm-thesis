@@ -2,7 +2,6 @@ package algorithms;
 
 import datatype.DataMap;
 import datatype.DataType;
-import datatype.petrinet.PetriNet;
 import utils.Pair;
 
 import java.util.HashMap;

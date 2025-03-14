@@ -3,12 +3,9 @@ package node;
 import model.Message;
 import datatype.DataType;
 import model.Topic;
-import node.handle.InputHandle;
 import node.handle.OutputHandle;
 import observerpattern.Subscriber;
 
-import java.util.Collection;
-import java.util.HashSet;
 
 public abstract class OperatorNode<T extends DataType> extends Node implements Subscriber<Message<T>> {
 

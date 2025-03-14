@@ -1,7 +1,6 @@
 package algorithms;
 
 import datatype.DataType;
-import utils.Pair;
 
 /** Algorithm<T> where T is the output type of the runAlgorithm(), e.g. PetriNet or Event. Organization algorithms
  * must implement this interface. */

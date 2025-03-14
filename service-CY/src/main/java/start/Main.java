@@ -1,6 +1,7 @@
 package start;
 
 import algorithms.BehavioralPatternsMiner;
+import datatype.DataMap;
 import datatype.petrinet.PetriNet;
 import model.Organization;
 import model.Topic;
@@ -10,6 +11,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import service.NodeRegistry;
 import service.PipelineBuilder;
 
+import javax.xml.crypto.Data;
+
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
  @SpringBootApplication
@@ -18,14 +21,14 @@ public class Main {
         // an input topic should actually be coming from a Node. So this is a mock topic
 
         BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
-        MiningNode<PetriNet> discoveryNode = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
         );
-
+        // TODO: change nodes to the newly added nodes? So instead of only using BehavioralPatternsMiner, use ISSEAlignmentMiner and HeuristicsMiner
         BehavioralPatternsMiner discoveryMiner2 = new BehavioralPatternsMiner();
-        MiningNode<PetriNet> discoveryNode2 = new MiningNode<>(
+        MiningNode<DataMap> discoveryNode2 = new MiningNode<>(
                 "DUMMY Discovery algorithm2",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner2
@@ -33,7 +36,7 @@ public class Main {
 
         // Pretend it is a conformance node
         BehavioralPatternsMiner conformanceAlgorithm = new BehavioralPatternsMiner();
-        MiningNode<PetriNet> conformanceNode = new MiningNode<>(
+        MiningNode<DataMap> conformanceNode = new MiningNode<>(
                 "DUMMY CONFORMANCE",
                 "TESTING CONFORMANCE INPUT HANDLES",
                 conformanceAlgorithm
@@ -51,7 +54,7 @@ public class Main {
         nodeRegistry.addNode(organization2.getId(), conformanceNode);
 
         // Retrieve nodes from registry to build pipeline
-        discoveryNode = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization1.getId(), discoveryNode.getID());
+        discoveryNode = (MiningNode<DataMap>) nodeRegistry.getNodeByID(organization1.getId(), discoveryNode.getID());
 
         discoveryNode.setInputTopic(new Topic("ingest"));
         discoveryNode.setOutputTopic(new Topic("sink"));

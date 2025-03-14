@@ -1,7 +1,7 @@
 package datatype.petrinet;
 
 public class Transition {
-    private String ID;
+    private final String ID;
 
     public Transition(String ID) {
         assert ID.matches("^[A-Za-z0-9_]+$");

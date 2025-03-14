@@ -51,7 +51,7 @@ public class PetriNet extends DataType {
         if (a instanceof PlaceToTransitionArc pta) {
             assert places.contains(pta.getSource()) && transitions.contains(pta.getTarget()) : "An arc must be between an existing place and transition";
         } else if (a instanceof TransitionToPlaceArc tpa) {
-            assert transitions.contains(tpa.getSource()) : "An arc must be between an existing transition and place";;
+            assert transitions.contains(tpa.getSource()) : "An arc must be between an existing transition and place";
         } else {
             throw new IllegalCallerException("The given arc is not supported");
         }

@@ -1,7 +1,6 @@
 package service;
 
 
-import datatype.DataType;
 import model.Message;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -26,7 +25,7 @@ public class Producer<T> {
     }
 
     public void publish(String topic, Message<T> message) {
-        ProducerRecord<String, Message<T>> record = new ProducerRecord<String, Message<T>>(topic, message);
+        ProducerRecord<String, Message<T>> record = new ProducerRecord<>(topic, message);
         this.kafkaProducer.send(record, (metadata, exception) -> {
             if (exception != null) {
                 exception.printStackTrace();
