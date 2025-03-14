@@ -99,7 +99,7 @@ class DeSerializerTest {
     void testDeserializeEventExample() throws IOException {
         String JXESPathString = "service-CY/CY/src/test/resources/jxes_example.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
-        Event e = new Event("","","",new HashSet<>());
+        Event e = new Event("random instance to call getDeserializationStrategy() on the above JXES.","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
     }
 

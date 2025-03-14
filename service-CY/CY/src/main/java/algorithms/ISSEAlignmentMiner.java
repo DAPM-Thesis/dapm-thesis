@@ -2,6 +2,7 @@ package algorithms;
 
 import datatype.Alignment;
 import datatype.DataMap;
+import datatype.DataType;
 import datatype.Trace;
 import datatype.event.Event;
 import utils.Pair;
@@ -13,9 +14,9 @@ import java.util.List;
  * Expansion: An Exact Algorithm", and the implementation complementing the paper:
  * https://github.com/fit-daniel-schuster/online_process_monitoring_using_incremental_state-space_expansion_an_exact_algorithm/blob/master/pm4py/algo/conformance/alignments/incremental_a_star/incremental_a_star_approach.py
  * */
-public class ISSEAlignmentMiner implements Algorithm<Event, Pair<Alignment, Boolean>> {
+public class ISSEAlignmentMiner implements Algorithm<Pair<Alignment, Boolean>> {
     @Override
-    public Pair<Alignment, Boolean> runAlgorithm(Event item) {
+    public Pair<Alignment, Boolean> runAlgorithm(DataType item) {
         // TODO: should probably ultimately output a DataMap containing the data output by the article's implementation's output
         Event el1 = new Event("C1", "A1", "1", new HashSet<>());
         Event el2 = new Event("C1", "A2", "2", new HashSet<>());

@@ -30,6 +30,7 @@ public abstract class OperatorNode<T extends DataType> extends Node implements S
         return InputHandle.createForTopic(topic, this);
     }
 
+
     public Topic getOutputTopic() { return outputHandle.getTopic(); }
 
     public void publish(Message<T> message) {

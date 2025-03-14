@@ -1,5 +1,6 @@
 package algorithms;
 
+import datatype.DataType;
 import datatype.event.Event;
 import datatype.petrinet.PetriNet;
 import datatype.petrinet.Place;
@@ -13,9 +14,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class HeuristicMiner implements Algorithm<Event, Pair<PetriNet, Boolean>>{
+public class HeuristicsMiner implements Algorithm<Pair<PetriNet, Boolean>>{
     @Override
-    public Pair<PetriNet, Boolean> runAlgorithm(Event item) {
+    public Pair<PetriNet, Boolean> runAlgorithm(DataType item) {
         // DUMMY petri net
         Place p1 = new Place("p1", 0);
         Place p2 = new Place("p2", 0);

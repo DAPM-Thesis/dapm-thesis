@@ -8,7 +8,7 @@ import utils.Pair;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BehavioralPatternsMiner implements Algorithm<DataType, Pair<DataMap, Boolean>> {
+public class BehavioralPatternsMiner implements Algorithm<Pair<DataMap, Boolean>> {
     AlgorithmConfiguration configuration;
 
     @Override

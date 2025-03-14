@@ -1,32 +1,39 @@
 {
+  "log-properties": {
+    "xes.version": "2.0",
+    "xes.features":"nested-attributes"
+  },
+  "log-attrs":{
+    "meta_org:resource_events_standard_deviation": 19
+  },
+  "extensions":[{"name": "Concept","prefix": "concept","uri": "http://www.xes-standard.org/concept.xesext"}],
+  "global-attrs":{"trace":{ "Key 1": 1 },"event":{ "Key 2": 2}},
+  "classifiers":{
+    "Activity classifier":["concept:name","lifecycle:transition"]
+  },
   "traces": [
     {
       "attrs": {
-        "concept:name": "C1"
-        },
-      "events": [
+        "string": "hi",
+        "date": "2013-10-21T13:28:06.419Z",
+        "int": 1,
+        "float": 1.0,
+        "boolean": true,
+        "list": [{ "key": 1 },{ "key":2 },{ "new key": "new value" }],
+        "container":
         {
-          "concept:name": "A1",
-          "date": "1"
+          "key":1,
+          "new key":"new value"
         },
-        {
-          "concept:name": "A2",
-          "date": "2"
-        }
-      ]
-    },
-    {
-      "attrs": {
-        "concept:name": "0"
+        "nested-attribute": {"value": 1,"nested-attrs": {}},
+        "concept:name": "case ID",
+        "layla": [{"aaa":  "111", "bbb":  "222"}, {"ccc": "333"}]
       },
       "events": [
         {
-          "concept:name": "A1",
-          "date": "0"
-        },
-        {
-          "concept:name": "A3",
-          "date": "0"
+          "concept:name": "Activity 1",
+          "date": "2013-10-21T14:23:06.419Z",
+          "org:resource": "Resource A"
         }
       ]
     }

@@ -9,7 +9,7 @@ public class Alignment extends DataType {
 
     public Alignment(Trace logTrace, Trace modelTrace) {
         assert logTrace != null && modelTrace != null;
-        assert logTrace.length() > 1 && modelTrace.length() > 1;
+        assert logTrace.length() > 0 && modelTrace.length() > 0;
         assert logTrace.length() == modelTrace.length();
 
         this.logTrace = logTrace;

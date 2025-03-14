@@ -15,9 +15,9 @@ import java.util.HashSet;
  * the output.*/
 public class MiningNode<T extends DataType> extends OperatorNode<T>{
     private final Collection<InputHandle<?>> inputHandles;
-    private final Algorithm<DataType, Pair<T, Boolean>> algorithm;
+    private final Algorithm<Pair<T, Boolean>> algorithm;
 
-    public MiningNode(String name, String description, Collection<Topic> inputTopics, Algorithm<DataType, Pair<T, Boolean>> algorithm) {
+    public MiningNode(String name, String description, Collection<Topic> inputTopics, Algorithm<Pair<T, Boolean>> algorithm) {
         super(name, description);
 
         assert !inputTopics.isEmpty() : "OperatorNode inheritors must have at least 1 inputHandle";
