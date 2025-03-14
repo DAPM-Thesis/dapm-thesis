@@ -2,9 +2,10 @@ package client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import datatype.event.Event;
+import datatype.serialization.DataTypeSerializer;
 import json.EventJson;
 import service.Producer;
-import model.Event;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.util.retry.Retry;
@@ -12,6 +13,7 @@ import util.JXESParser;
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.HashSet;
 
 @Service
 public class StreamClient {
@@ -50,13 +52,18 @@ public class StreamClient {
                         sink.next(new Event(
                                 eventJson.getTitle(),
                                 eventJson.getType(),
-                                new Date(eventJson.getTimestamp() * 1000)
+                                new Date(eventJson.getTimestamp() * 1000).toString(),
+                                new HashSet<>()
                         ));
                     })
                     .subscribe(event -> {
-                        System.out.println("Received: \n" + event);
 
-                        this.producer.publish("ingest", JXESParser.eventToJXES(event));
+                        DataTypeSerializer dataTypeSerializer = new DataTypeSerializer();
+                        String JXESEvent = dataTypeSerializer.visit(event);
+
+                        System.out.println("Received: \n" + JXESEvent);
+
+                        this.producer.publish("ingest", JXESEvent);
                     });
         }
         catch (Exception e) {
