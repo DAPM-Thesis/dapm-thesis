@@ -26,10 +26,16 @@ public class InputHandle<T extends DataType> extends Handle<T> implements Subscr
     @Override
     public void observe(Message<String> message) {
         // Pass on the message received from the Topic to the input handle's Node.
-        T data = (T) DataTypeFactory.deserialize(message.data());
-        Message<T> dataTypeMessage = new Message<>(data);
-        System.out.println("Received in input handle: " + dataTypeMessage);
-        publish(dataTypeMessage);
+        try {
+            T data = (T) DataTypeFactory.deserialize(message.data());
+            Message<T> dataTypeMessage = new Message<>(data);
+            System.out.println("Received in input handle: " + dataTypeMessage);
+            publish(dataTypeMessage);
+        } catch (Exception e) {
+            System.out.println("Error in observe: " + message.data());
+            throw new RuntimeException(e);
+        }
+
     }
 
     public void setTopic(Topic topic) {

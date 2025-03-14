@@ -25,13 +25,6 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
             <version>3.4.2</version>
         </dependency>
-        <!-- Json (jackson is recommended according to
-         the paper: JXES: JSON Support for the XES Event Log Standard-->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
@@ -42,6 +35,11 @@
             <artifactId>slf4j-api</artifactId>
             <version>2.0.16</version>
         </dependency>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>service-CY</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -49,6 +47,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.5.4</version>
                 <executions>
                     <execution>
                         <goals>

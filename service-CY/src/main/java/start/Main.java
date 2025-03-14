@@ -23,7 +23,6 @@ public class Main {
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
                 discoveryMiner
         );
-        discoveryNode.setInputTopic(new Topic("ingest"));
 
         BehavioralPatternsMiner discoveryMiner2 = new BehavioralPatternsMiner();
         MiningNode<PetriNet> discoveryNode2 = new MiningNode<>(
@@ -53,14 +52,15 @@ public class Main {
 
         // Retrieve nodes from registry to build pipeline
         discoveryNode = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization1.getId(), discoveryNode.getID());
-        discoveryNode2 = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization2.getId(), discoveryNode2.getID());
-        conformanceNode = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization2.getId(), conformanceNode.getID());
 
-        PipelineBuilder pipelineBuilder = PipelineBuilder.getInstance();
-        pipelineBuilder.createPipeline(1);
-        pipelineBuilder.connectNodes(1, discoveryNode, discoveryNode2)
-                .connectNodes(1, discoveryNode, conformanceNode)
-                .connectNodes(1, discoveryNode2, conformanceNode);
+        discoveryNode.setInputTopic(new Topic("ingest"));
+        discoveryNode.setOutputTopic(new Topic("sink"));
+  //      discoveryNode2 = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization2.getId(), discoveryNode2.getID());
+ //       conformanceNode = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization2.getId(), conformanceNode.getID());
+
+  //      PipelineBuilder pipelineBuilder = PipelineBuilder.getInstance();
+  //      pipelineBuilder.createPipeline(1);
+ //       pipelineBuilder.connectNodes(1, discoveryNode, discoveryNode2);
 
         for(Topic topic : conformanceNode.getInputTopics()) {
             System.out.println(topic.getName());
