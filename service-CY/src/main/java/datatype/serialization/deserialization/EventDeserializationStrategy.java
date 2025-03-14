@@ -6,6 +6,7 @@ import utils.Pair;
 import datatype.event.Attribute;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class EventDeserializationStrategy implements DeserializationStrategy {
 
@@ -272,28 +273,44 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
      *  @return The strings between commas of the contents input. The strings will be stripped of whitespace, \n, \t,
      *  and \r in both ends. */
     private List<String> commaSplit(String contents) {
-        if (contents.isEmpty()) { return new ArrayList<>(); }
-        // since contents can be nested [they can contain lists/containers], we must only split at the current level
+        // TODO: refactor
+        List<String> commaSeparatedStrings = new ArrayList<>();
+        if (contents.isEmpty()) { return commaSeparatedStrings; }
+        // since contents can be nested [they can contain lists/containers/quotes], we must only split at the current level
         int openedCurly = 0;
         int openedSquare = 0;
+        boolean openedQuote = false;
         int currentStart = 0;
-
-        List<String> commaSeparatedStrings = new ArrayList<>();
 
         for (int i = 0; i < contents.length(); i++) {
             char ch = contents.charAt(i);
-            if (ch == ',' && openedCurly == 0 && openedSquare == 0) {
-                commaSeparatedStrings.add(contents.substring(currentStart, i));
-                currentStart = i+1;
+
+            if (ch == '"') {
+                if (shouldFlipQuote(contents, i)) {
+                    openedQuote = !openedQuote;
+                }
+            } else if (!openedQuote) {
+                if (ch == ',' && openedCurly == 0 && openedSquare == 0) {
+                    commaSeparatedStrings.add(contents.substring(currentStart, i));
+                    currentStart = i+1;
+                }
+                else if (ch == '{') { openedCurly++; }
+                else if (ch == '}') { openedCurly--; }
+                else if (ch == '[') { openedSquare++; }
+                else if (ch == ']') { openedSquare--; }
             }
-            else if (ch == '{') { openedCurly++; }
-            else if (ch == '}') { openedCurly--; }
-            else if (ch == '[') { openedSquare++; }
-            else if (ch == ']') { openedSquare--; }
         }
         // remember to add the last
         commaSeparatedStrings.add(contents.substring(currentStart));
         return commaSeparatedStrings;
+    }
+
+    private boolean shouldFlipQuote(String str, int quoteIndex) {
+        // the quotes should only be flipped if there are no quotes in the given string, or if the quotes in the given
+        // string are closed. Both cases only happen if the number of backslashes in the string is even.
+        int backslashCount = 0;
+        while (--quoteIndex >= 0 && str.charAt(quoteIndex) == '\\') {backslashCount++;}
+        return backslashCount % 2 == 0;
     }
 
     private String unWrap(String str, char startWrapper, int endWrapper) {
@@ -313,6 +330,7 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
     /** A string is wrapped iff the first non-whitespace character is start and the last non-whitespace character is
      *  end. */
     private boolean isWrapped(String str, char start, char end) {
+        // TODO: refactor isWrapped
         int first = findNonWhitespaceIndex(str, 0, 1, start);
         if (first == -1) return false; // Start wrapper not found
 
@@ -320,6 +338,13 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
         return last != -1; // End wrapper found
     }
 
+    /** @param str The string to be searched.
+     *  @param start The index at which to start the search.
+     *  @param step The step with which to (iteratively) search. step=1 is moving forward, and step=-1 is moving backward.
+     *  @param target The looked for index
+     *  @return returns the index in str that matches the first occurrence of target. If the search finds a
+     *          non-whitespace character from start with step size 'step' before finding target, or if no target char
+     *          is found, then it returns -1. */
     private static int findNonWhitespaceIndex(String str, int start, int step, char target) {
         for (int i = start; i >= 0 && i < str.length(); i += step) {
             char ch = str.charAt(i);

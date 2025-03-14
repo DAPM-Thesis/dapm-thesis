@@ -50,7 +50,7 @@ class DeSerializerTest {
         DataTypeSerializer serializer = new DataTypeSerializer();
         PetriNet pn = getPetriNetExample();
         String pnml = serializer.visit(pn);
-        PetriNet pn_2 = DeSerializer.PNMLToPetriNet(pnml);
+        PetriNet pn_2 = DeSerializer.PNMLToPetriNet(pnml); // TODO: update pnml deserialization in all tests to use new deserialization
 
         assertEquals(pn, pn_2);
     }
@@ -64,7 +64,7 @@ class DeSerializerTest {
         pn.addTransition(t1);
         pn.addArc(new PlaceToTransitionArc("a1", p1, t1));
 
-        String XMLPathString = "service-CY/CY/src/test/resources/pnml/article.xml";
+        String XMLPathString = "src/test/resources/pnml/article.xml";
         String XMLContents = Files.readString(Paths.get(XMLPathString));
         PetriNet pn_2 = DeSerializer.PNMLToPetriNet(XMLContents);
 
@@ -97,7 +97,23 @@ class DeSerializerTest {
 
     @Test
     void testDeserializeEventExample() throws IOException {
-        String JXESPathString = "service-CY/CY/src/test/resources/jxes_example.json";
+        String JXESPathString = "src/test/resources/jxes_example.json";
+        String JXESContents = Files.readString(Paths.get(JXESPathString));
+        Event e = new Event("","","",new HashSet<>());
+        e.getDeserializationStrategy().deserialize(JXESContents);
+    }
+
+    @Test
+    void testDeserializationEventCommaActivityNameExample() throws IOException {
+        String JXESPathString = "src/test/resources/jxes_event_comma_activity_name.json";
+        String JXESContents = Files.readString(Paths.get(JXESPathString));
+        Event e = new Event("","","",new HashSet<>());
+        e.getDeserializationStrategy().deserialize(JXESContents);
+    }
+
+    @Test
+    void testDeserializationEventQuotationActivityNameExample() throws IOException {
+        String JXESPathString = "src/test/resources/jxes_event_quotation_activity_name.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         Event e = new Event("random instance to call getDeserializationStrategy() on the above JXES.","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
