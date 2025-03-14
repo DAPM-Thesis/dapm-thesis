@@ -13,7 +13,7 @@ import java.util.Collection;
 
 public class GenericNode<T extends DataType> extends OperatorNode<T> {
     private final Algorithm<T> algorithm;
-    private final InputHandle<?> inputHandle;
+    private final InputHandle<T> inputHandle;
 
     public GenericNode(String name, String description, Algorithm<T> algorithm) {
         super(name, description);
@@ -26,6 +26,7 @@ public class GenericNode<T extends DataType> extends OperatorNode<T> {
             throw new IllegalStateException("Generic node can only have 1 input topic");
         }
         inputHandle.setTopic(topic);
+        inputHandle.subscribe(this);
     }
 
     public Topic getInputTopic() {

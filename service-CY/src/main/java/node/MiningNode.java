@@ -26,6 +26,7 @@ public class MiningNode<T extends DataType> extends OperatorNode<T>{
     public void setInputTopic(Topic topic) {
         InputHandle<T> inputHandle = new InputHandle<>();
         inputHandle.setTopic(topic);
+        inputHandle.subscribe(this);
         inputHandles.add(inputHandle);
     }
 
