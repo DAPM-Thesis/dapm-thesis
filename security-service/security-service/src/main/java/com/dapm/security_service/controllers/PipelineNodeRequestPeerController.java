@@ -2,9 +2,7 @@ package com.dapm.security_service.controllers;
 
 import com.dapm.security_service.models.PipelineNodeRequest;
 import com.dapm.security_service.models.RequesterInfo;
-import com.dapm.security_service.models.dtos.peer.UserDto;
-import com.dapm.security_service.models.dtos.peer.PipelineNodeRequestDto;
-import com.dapm.security_service.models.dtos.peer.RequestResponse;
+import com.dapm.security_service.models.dtos.peer.*;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
 import com.dapm.security_service.repositories.NodeRepository;
 import com.dapm.security_service.repositories.PipelineNodeRequestRepository;
@@ -24,21 +22,23 @@ public class PipelineNodeRequestPeerController {
      * OrgA calls this endpoint to create a request in OrgB's DB.
      */
     @PostMapping
-    public RequestResponse createRequest(@RequestBody PipelineNodeRequestDto requestDto) {
+    public RequestResponse createRequest(@RequestBody PipelineNodeRequestOutboundDto requestDto) {
         // Generate an ID if not provided
-        if (requestDto.getRequestId() == null) {
-            requestDto.setRequestId(UUID.randomUUID());
+        if (requestDto.getId() == null) {
+            requestDto.setId(UUID.randomUUID());
+//
         }
+        System.out.println(requestDto.getRequesterInfo()+"i think here is here");
 
         var request = PipelineNodeRequest.builder()
-                .id(requestDto.getRequestId())
+                .id(requestDto.getId())
                 .pipelineNode(nodeRepository.getById(requestDto.getPipelineNodeId()))
-                .requesterInfo(convertToRequesterInfo(requestDto.getRequester()))
+                .requesterInfo(convertToRequesterInfo(requestDto.getRequesterInfo()))
                 .requestedExecutionCount(0)
                 .requestedExecutionCount(0)
                 .status(AccessRequestStatus.PENDING)
                 .build();
-
+//
         var savedRequest = requestRepository.save(request);
 
         var response = new RequestResponse();
@@ -47,6 +47,7 @@ public class PipelineNodeRequestPeerController {
         response.setToken("");
 
         return response;
+
     }
 
     /**
@@ -66,9 +67,9 @@ public class PipelineNodeRequestPeerController {
         return (req == null) ? null : req.getStatus();
     }
 
-    private RequesterInfo convertToRequesterInfo(UserDto userDto) {
+    private RequesterInfo convertToRequesterInfo(RequesterInfoDto userDto) {
         RequesterInfo info = new RequesterInfo();
-        info.setRequesterId(UUID.fromString(userDto.getId()));
+        info.setRequesterId(userDto.getRequesterId());
         info.setUsername(userDto.getUsername());
         info.setFaculty(userDto.getFaculty());
         info.setDepartment(userDto.getDepartment());

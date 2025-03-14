@@ -1,6 +1,8 @@
 package com.dapm.security_service.services;
 
 import com.dapm.security_service.models.PipelineNodeRequest;
+import com.dapm.security_service.models.dtos.PipelineNodeRequestDto;
+import com.dapm.security_service.models.dtos.peer.PipelineNodeRequestOutboundDto;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,9 +20,22 @@ public class OrgBRequestService {
     /**
      * Send a new request to OrgB's PeerApi.
      */
-    public PipelineNodeRequest sendRequestToOrgB(PipelineNodeRequest request) {
-        return restTemplate.postForObject(ORG_B_BASE_URL, request, PipelineNodeRequest.class);
+//    public PipelineNodeRequest sendRequestToOrgB( PipelineNodeRequestDto request) {
+//        return restTemplate.postForObject(ORG_B_BASE_URL, request, PipelineNodeRequest.class);
+//    }
+    public PipelineNodeRequestOutboundDto sendRequestToOrgB(PipelineNodeRequestOutboundDto requestDto) {
+        System.out.println(restTemplate.postForObject(
+                ORG_B_BASE_URL,
+                requestDto,
+                PipelineNodeRequestOutboundDto.class)+"templaaate");
+        // Send the DTO to OrgB and expect the same DTO type in response
+        return restTemplate.postForObject(
+                ORG_B_BASE_URL,
+                requestDto,
+                PipelineNodeRequestOutboundDto.class
+        );
     }
+
 
     /**
      * Poll OrgB's PeerApi for the status of a request.
