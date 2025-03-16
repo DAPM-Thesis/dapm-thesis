@@ -16,6 +16,9 @@ public class Alignment extends DataType {
         this.modelTrace = modelTrace;
     }
 
+    public Trace getLogTrace() { return logTrace; }
+    public Trace getModelTrace() { return modelTrace; }
+
     @Override
     public void acceptVisitor(DataTypeVisitor<?> v) {
         v.visit(this);

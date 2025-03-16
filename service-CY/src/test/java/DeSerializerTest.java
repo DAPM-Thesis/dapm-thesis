@@ -1,5 +1,5 @@
 
-import datatype.DeSerializer;
+import datatype.DataType;
 import datatype.event.Attribute;
 import datatype.event.Event;
 import datatype.petrinet.PetriNet;
@@ -12,6 +12,7 @@ import datatype.serialization.DataTypeSerializer;
 import datatype.serialization.deserialization.DataTypeFactory;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,6 +23,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class DeSerializerTest {
 
     public PetriNet getPetriNetExample() {
+        /*
+         *             --> p2 -
+         *            /        \
+         *   p1 --> t1          --> t2 --> p4
+         *            \        /
+         *             --> p3 -
+         * */
         Place p1 = new Place("p1", 0);
         Place p2 = new Place("p2", 0);
         Place p3 = new Place("p3", 0);
@@ -38,8 +46,6 @@ class DeSerializerTest {
         Set<Place> places = new HashSet<>(Arrays.asList(p1,p2,p3,p4));
         Set<Transition> transitions = new HashSet<>(Arrays.asList(t1, t2));
         Set<Arc> flowRelation = new HashSet<>(Arrays.asList(a1,a2_1,a2_2, a3_1, a3_2, a4));
-        // Note that firing every transition when enabled in this petri net results in 2 tokens in p4 at the end
-        // so this is not a workflow net
         return new PetriNet(places, transitions, flowRelation);
     }
 
@@ -48,7 +54,7 @@ class DeSerializerTest {
         DataTypeSerializer serializer = new DataTypeSerializer();
         PetriNet pn = getPetriNetExample();
         String pnml = serializer.visit(pn);
-        PetriNet pn_2 = DeSerializer.PNMLToPetriNet(pnml); // TODO: update pnml deserialization in all tests to use new deserialization
+        DataType pn_2 = DataTypeFactory.deserialize(pnml);
 
         assertEquals(pn, pn_2);
     }
@@ -64,7 +70,8 @@ class DeSerializerTest {
 
         String XMLPathString = "src/test/resources/pnml/article.xml";
         String XMLContents = Files.readString(Paths.get(XMLPathString));
-        PetriNet pn_2 = DeSerializer.PNMLToPetriNet(XMLContents);
+        String expected = pn.getName() + ":" + XMLContents;
+        DataType pn_2 = DataTypeFactory.deserialize(expected);
 
         assertEquals(pn, pn_2);
     }
@@ -95,7 +102,7 @@ class DeSerializerTest {
 
     @Test
     void testDeserializeEventExample() throws IOException {
-        String JXESPathString = "src/test/resources/jxes_example.json";
+        String JXESPathString = "src/test/resources/event/jxes_example.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         Event e = new Event("","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
@@ -103,7 +110,7 @@ class DeSerializerTest {
 
     @Test
     void testDeserializationEventCommaActivityNameExample() throws IOException {
-        String JXESPathString = "src/test/resources/jxes_event_comma_activity_name.json";
+        String JXESPathString = "src/test/resources/event/jxes_event_comma_activity_name.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         Event e = new Event("","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
@@ -111,7 +118,7 @@ class DeSerializerTest {
 
     @Test
     void testDeserializationEventQuotationActivityNameExample() throws IOException {
-        String JXESPathString = "src/test/resources/jxes_event_quotation_activity_name.json";
+        String JXESPathString = "src/test/resources/event/jxes_event_quotation_activity_name.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         Event e = new Event("random instance to call getDeserializationStrategy() on the above JXES.","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
