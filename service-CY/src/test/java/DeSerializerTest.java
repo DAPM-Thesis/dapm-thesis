@@ -12,7 +12,6 @@ import datatype.serialization.DataTypeSerializer;
 import datatype.serialization.deserialization.DataTypeFactory;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
