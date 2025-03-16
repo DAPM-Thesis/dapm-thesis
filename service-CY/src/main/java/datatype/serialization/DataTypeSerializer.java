@@ -20,8 +20,10 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
     public String getSerialization() { return serialization; }
 
     @Override
-    public String visit(Event e) {
-        this.serialization = e.getName() + ":" + toJXES(e);
+    public String visit(Event event) {
+        this.serialization = "event:" + "{\"traces\": [{" +
+                                            "\"attrs\": {\"concept:name\": \"" + event.getCaseID() + "\"}, " +
+                                            "\"events\": [" + toJXES(event) + "]}]}";
         return getSerialization();
     }
 
@@ -29,8 +31,8 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
      * Note that serializations from this method will only include the necessary components of a (single) petri net. That is, it includes the petri net's places with their marking,
      * the transitions, and the arcs. */
     @Override
-    public String visit(PetriNet pn) {
-        this.serialization = pn.getName() + ":" + ToPNML(pn);
+    public String visit(PetriNet petriNet) {
+        this.serialization = petriNet.getName() + ":" + ToPNML(petriNet);
         return getSerialization();
     }
 
@@ -43,28 +45,33 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
     }
 
     @Override
-    public String visit(Trace t) {
-        // TODO: implement
-        this.serialization = t.getName() + ":" + toJXES(t);
+    public String visit(Trace trace) {
+        this.serialization = trace.getName() + ":" + "{\"traces\": [" + toJXES(trace) +"]}";
         return getSerialization();
     }
     
     @Override
-    public String visit(Alignment a) {
-        // TODO: implement
-        return "Alignment:{\"traces\": [{\"attrs\": {\"concept:name\": \"C1\"}, \"events\": [{\"concept:name\": \"A1\", \"date\": \"1\"}, {\"concept:name\": \"A2\", \"date\": \"2\"}]}, {\"attrs\": {\"concept:name\": \"0\"}, \"events\": [{\"concept:name\": \"A1\", \"date\": \"0\"}, {\"concept:name\": \"A3\", \"date\": \"0\"}]}]}";
-        //this.serialization = a.getName() + ":" + toJXES(a);
-        //return getSerialization();
+    public String visit(Alignment alignment) {
+        this.serialization = alignment.getName() + ":" + "{\"traces\": ["
+                + toJXES(alignment.getLogTrace()) + ", "
+                + toJXES(alignment.getModelTrace())
+                + "]}";
+        return getSerialization();
     }
 
-    private String toJXES(Alignment a) {
-        // TODO: implement
-        throw new IllegalStateException("Not implemented yet");
-    }
+    private String toJXES(Trace trace) {
+        assert trace != null && !trace.isEmpty()
+                : "Trace is empty. This is currently not supported but may be in the future if relevant";
 
-    private String toJXES(Trace t) {
-        // TODO: implement
-        throw new IllegalStateException("Not implemented yet");
+        StringBuilder sb = new StringBuilder("[");
+        for (Event e : trace) {
+            sb.append(toJXES(e)).append(", ");
+        }
+        if (!trace.isEmpty()) { sb.delete(sb.length() - 2, sb.length()); } // delete last ", "
+        sb.append(']');
+
+        return "{\"attrs\": {\"concept:name\": \"" + trace.getCaseID() + "\"}, " +
+                    "\"events\": " + sb.toString() +"}";
     }
 
     private String toJSON(DataMap dm) {
@@ -72,15 +79,13 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
         throw new IllegalStateException("Not implemented yet");
     }
 
-    private String toJXES(Event e) {
+    private String toJXES(Event event) {
         // TODO: append event attributes, i.e. the collection of additional (non-mining) attributes
-        return "{\"traces\": [{" +
-                "\"attrs\": {\"concept:name\": \"" + e.getCaseID() + "\"}, " +
-                "\"events\": [{" +
-                "\"concept:name\": \"" + e.getActivity() +
-                "\", \"date\": \"" + e.getTimestamp() +
-                "\"" + commaSeparatedAttributesString(e.getAttributes()) + "}]}]}";
+        return "{\"concept:name\": \"" + event.getActivity() +
+                "\", \"date\": \"" + event.getTimestamp() +
+                "\"" + commaSeparatedAttributesString(event.getAttributes()) + '}';
     }
+
 
     private String commaSeparatedAttributesString(Collection<Attribute<?>> attributes) {
         if (attributes.isEmpty()) {return "";}
@@ -95,7 +100,7 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
         StringBuilder sb = new StringBuilder();
         sb.append("<pnml xmlns=\"https://www.pnml.org/version-2009/version-2009.php\">")
                 .append("<net id=\"pn\" type=\"https://orbit.dtu.dk/en/publications/a-primer-on-the-petri-net-markup-language-and-isoiec-15909-2\">")
-                .append("<page id=\"top-level\"><name><text>Petri Net name</name></text></page>");
+                .append("<page id=\"top-level\"><name><text>Petri Net name</text></name>");
 
         for (Place p : pn.getPlaces()) { sb.append(serializePlace(p)); }
         for (Transition t : pn.getTransitions()) { sb.append(serializeTransition(t)); }

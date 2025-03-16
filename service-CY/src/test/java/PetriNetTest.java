@@ -15,6 +15,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class PetriNetTest {
     @Test
     void testPetriNet() {
+        /*
+         *             --> p2 -
+         *            /        \
+         *   p1 --> t1          --> t2 --> p4
+         *            \        /
+         *             --> p3 -
+         * */
         Place p1 = new Place("p1", 0);
         Place p2 = new Place("p2", 0);
         Place p3 = new Place("p3", 0);

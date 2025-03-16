@@ -26,7 +26,9 @@ public class Attribute<T> {
 
     @Override
     public String toString() {
-        return "\"" + name + "\": " + value;
+        // if the attribute is a string, wrap it in quotes
+        String outputValue = (value instanceof String) ? "\"" + value + "\"" : value.toString();
+        return "\"" + name + "\": " + outputValue;
     }
 
     @Override
