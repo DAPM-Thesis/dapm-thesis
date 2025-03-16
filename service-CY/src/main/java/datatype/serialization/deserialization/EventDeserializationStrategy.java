@@ -54,6 +54,7 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
         return events;
     }
 
+    /** Parses attributes that are not the case ID, activity, and time stamp */
     private Set<Attribute<?>> parseNonEssentialAttributes(Map<String, Object> globalAttributes, Map<String, Object> eventMap) {
         globalAttributes.putAll(eventMap); // merge the two maps, keeping eventMap values when both have the same key
         Set<Attribute<?>> attributes = new HashSet<>();

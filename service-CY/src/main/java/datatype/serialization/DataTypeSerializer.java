@@ -79,16 +79,15 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
                 "\"events\": [{" +
                 "\"concept:name\": \"" + e.getActivity() +
                 "\", \"date\": \"" + e.getTimestamp() +
-                "\", " + commaSeparatedAttributesString(e.getAttributes()) + "}]}]}";
+                "\"" + commaSeparatedAttributesString(e.getAttributes()) + "}]}]}";
     }
 
     private String commaSeparatedAttributesString(Collection<Attribute<?>> attributes) {
         if (attributes.isEmpty()) {return "";}
         StringBuilder sb = new StringBuilder();
         for (Attribute<?> attr : attributes) {
-            sb.append(attr.toString()).append(',');
+            sb.append(", ").append(attr.toString());
         }
-        sb.deleteCharAt(sb.length() - 1);
         return sb.toString();
     }
 

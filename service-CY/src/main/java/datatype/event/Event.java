@@ -44,6 +44,11 @@ public class Event extends DataType {
     }
 
     @Override
+    public String toString() {
+        return String.format("Event [caseID=%s, activity=%s, timestamp=%s, attributes=%s]",caseID,activity,timestamp,attributes);
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (other == this) return true;
         if (!(other instanceof Event otherEvent)) return false;
