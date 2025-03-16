@@ -1,4 +1,5 @@
-package com.dapm.security_service.controllers;
+
+        package com.dapm.security_service.controllers;
 
 import com.dapm.security_service.models.PipelineNodeRequest;
 import com.dapm.security_service.models.RequesterInfo;
@@ -26,9 +27,7 @@ public class PipelineNodeRequestPeerController {
         // Generate an ID if not provided
         if (requestDto.getId() == null) {
             requestDto.setId(UUID.randomUUID());
-//
         }
-        System.out.println(requestDto.getRequesterInfo()+"i think here is here");
 
         var request = PipelineNodeRequest.builder()
                 .id(requestDto.getId())
@@ -38,7 +37,7 @@ public class PipelineNodeRequestPeerController {
                 .requestedExecutionCount(0)
                 .status(AccessRequestStatus.PENDING)
                 .build();
-//
+
         var savedRequest = requestRepository.save(request);
 
         var response = new RequestResponse();
@@ -80,3 +79,4 @@ public class PipelineNodeRequestPeerController {
         return info;
     }
 }
+

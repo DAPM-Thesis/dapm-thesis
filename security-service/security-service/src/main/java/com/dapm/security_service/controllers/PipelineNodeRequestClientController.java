@@ -6,6 +6,7 @@ import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.User;
 import com.dapm.security_service.models.dtos.PipelineNodeRequestDto;
 import com.dapm.security_service.models.dtos.peer.PipelineNodeRequestOutboundDto;
+import com.dapm.security_service.models.dtos.peer.RequestResponse;
 import com.dapm.security_service.models.dtos.peer.RequesterInfoDto;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
 import com.dapm.security_service.repositories.NodeRepository;
@@ -32,7 +33,7 @@ public class PipelineNodeRequestClientController {
      * We forward the request to OrgB's PeerApi.
      */
     @PostMapping("/peer")
-    public String initiatePeerRequest(@RequestBody PipelineNodeRequestDto requestDto) {
+    public RequestResponse initiatePeerRequest(@RequestBody PipelineNodeRequestDto requestDto) {
         PipelineNodeRequest request = convertDtoToEntity(requestDto);
 
         // 2. Save locally
@@ -44,16 +45,16 @@ public class PipelineNodeRequestClientController {
 
         // 4. Send the outbound DTO to OrgB
         // (orgBRequestService should accept the outbound DTO instead of the entity)
-        PipelineNodeRequestOutboundDto remoteResponseDto = orgBRequestService.sendRequestToOrgB(outboundDto);
-        System.out.println(remoteResponseDto +"this is outbounddto");
-        // Update the local record with any details returned from OrgB (e.g., approval token, updated status).
-        localRequest.setApprovalToken(remoteResponseDto.getApprovalToken());
-        localRequest.setStatus(remoteResponseDto.getStatus());
-        localRequest.setDecisionTime(remoteResponseDto.getDecisionTime());
-        localRequest = pipelineNodeRequestRepository.save(localRequest);
+        RequestResponse remoteResponseDto = orgBRequestService.sendRequestToOrgB(outboundDto);
+
+//        // Update the local record with any details returned from OrgB (e.g., approval token, updated status).
+//        localRequest.setApprovalToken(remoteResponseDto.getApprovalToken());
+//        localRequest.setStatus(remoteResponseDto.getStatus());
+//        localRequest.setDecisionTime(remoteResponseDto.getDecisionTime());
+//        localRequest = pipelineNodeRequestRepository.save(localRequest);
 
         // Return the updated local record.
-        return "localRequest";
+        return remoteResponseDto;
     }
 
     /**
