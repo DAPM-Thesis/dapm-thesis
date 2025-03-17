@@ -18,6 +18,8 @@ public class DataMap extends DataType {
         this.keyValuePairs = keyValuePairs;
     }
 
+    public Map<String, Object> getKeyValuePairs() { return keyValuePairs; }
+
     @Override
     public void acceptVisitor(DataTypeVisitor<?> v) { v.visit(this); }
 
@@ -28,4 +30,5 @@ public class DataMap extends DataType {
 
     public void put(String key, Object value) { keyValuePairs.put(key, value); }
 
+    public boolean isEmpty() { return keyValuePairs.isEmpty(); }
 }

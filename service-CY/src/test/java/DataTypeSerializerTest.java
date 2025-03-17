@@ -1,4 +1,5 @@
 import datatype.Alignment;
+import datatype.DataMap;
 import datatype.Trace;
 import datatype.event.Attribute;
 import datatype.event.Event;
@@ -117,6 +118,31 @@ public class DataTypeSerializerTest {
         String expected_json = Files.readString(Paths.get(pathString));
         String expected = alignment.getName() + ':' + expected_json;
         assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
+    }
+
+    @Test
+    public void dataMapTest() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("string", "str");
+        map.put("int", 5);
+        map.put("boolean", true);
+        map.put("double", 5.0);
+        map.put("list", new ArrayList<>(List.of('a', 'b', 'c')));
+
+        Map<String, Integer> innerMap = new HashMap<>();
+        innerMap.put("first", 1);
+        innerMap.put("second", 2);
+        map.put("HashMap", innerMap);
+
+        Attribute<Double> attr = new Attribute<>("attrDoubleKey", 10.0);
+        map.put("event", new Event("c1", "a1", "t1", new HashSet<>(List.of(attr))));
+        DataMap dataMap = new DataMap(map);
+        DataTypeSerializer serializer = new DataTypeSerializer();
+        String output = serializer.visit(dataMap);
+
+        String expected = "datatype.DataMap:{boolean:java.lang.Boolean:true, string:java.lang.String:str, HashMap:java.util.HashMap:{first=1, second=2}, double:java.lang.Double:5.0, list:java.util.ArrayList:[a, b, c], event:event:{\"traces\": [{\"attrs\": {\"concept:name\": \"c1\"}, \"events\": [{\"concept:name\": \"a1\", \"date\": \"t1\", \"attrDoubleKey\": 10.0}]}]}, int:java.lang.Integer:5}";
+        assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
+
     }
 
 

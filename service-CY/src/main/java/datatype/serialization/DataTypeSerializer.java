@@ -1,6 +1,7 @@
 package datatype.serialization;
 import datatype.Alignment;
 import datatype.DataMap;
+import datatype.DataType;
 import datatype.Trace;
 import datatype.event.Attribute;
 import datatype.event.Event;
@@ -12,8 +13,10 @@ import datatype.petrinet.arc.PlaceToTransitionArc;
 import datatype.petrinet.arc.TransitionToPlaceArc;
 
 import java.util.Collection;
+import java.util.Map;
 
 // TODO: make serialization its own class? Sure it adds an extra step but it will make maintainability easier, and enforce the correct formatting. Should be considered if serialization format changes frequently.
+/** Class for serializing DataType's. Note that any given instance of this class only is safe to use in a synchronous context. */
 public class DataTypeSerializer implements DataTypeVisitor<String> {
     private String serialization;
 
@@ -37,11 +40,9 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
     }
 
     @Override
-    public String visit(DataMap dm) {
-        // TODO: implement
-        return "DataMap:{\"conformance\":\"float:0.753\", \"completeness\":\"float:0.324503\", \"confidence\":\"1.0\"}";
-        //this.serialization = dm.getName() + ":" + toJSON(dm);
-        //return getSerialization();
+    public String visit(DataMap dataMap) {
+        this.serialization = dataMap.getName() + ":" + toJSON(dataMap);
+        return getSerialization();
     }
 
     @Override
@@ -74,9 +75,24 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
                     "\"events\": " + sb.toString() +"}";
     }
 
-    private String toJSON(DataMap dm) {
-        // TODO: implement
-        throw new IllegalStateException("Not implemented yet");
+    private String toJSON(DataMap dataMap) {
+        assert !dataMap.isEmpty() : "Currently not supporting empty DataMap's because we can think of no context in which one would want to serialize an empty DataMap.";
+
+        StringBuilder sb = new StringBuilder("{");
+        for (Map.Entry<String, Object> keyValuePair : dataMap.getKeyValuePairs().entrySet()) {
+            Object value = keyValuePair.getValue();
+            String valueStr;
+            if (value instanceof DataType dtValue) {
+                dtValue.acceptVisitor(this);
+                valueStr = getSerialization();
+            } else {
+                valueStr = value.getClass().getName() + ":" + value;
+            }
+            sb.append(keyValuePair.getKey()).append(":").append(valueStr).append(", ");
+        }
+        sb.setLength(sb.length() - 2);
+        sb.append("}");
+        return sb.toString();
     }
 
     private String toJXES(Event event) {
