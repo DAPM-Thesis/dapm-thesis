@@ -14,6 +14,7 @@ public class PipelineNodeRequestOutboundDto {
     private UUID id;
     private UUID pipelineNodeId;
     private RequesterInfoDto requesterInfo;
+    private UUID pipelineId;
 
     private int requestedExecutionCount;
     private int requestedDurationHours;
