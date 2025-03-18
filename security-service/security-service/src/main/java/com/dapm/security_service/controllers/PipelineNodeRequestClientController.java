@@ -89,6 +89,7 @@ public class PipelineNodeRequestClientController {
                 .id(dto.getId() != null ? dto.getId() : UUID.randomUUID())
                 .pipelineNode(node)
                 .requesterInfo(requester)
+                .pipelineId(dto.getPipelineId())
                 .requestedExecutionCount(dto.getRequestedExecutionCount())
                 .requestedDurationHours(dto.getRequestedDurationHours())
                 .status(dto.getStatus())
@@ -106,6 +107,8 @@ public class PipelineNodeRequestClientController {
         dto.setStatus(entity.getStatus());
         dto.setApprovalToken(entity.getApprovalToken());
         dto.setDecisionTime(entity.getDecisionTime());
+
+        dto.setPipelineId(entity.getPipelineId());
 
         // 2) PipelineNode ID
         if (entity.getPipelineNode() != null) {

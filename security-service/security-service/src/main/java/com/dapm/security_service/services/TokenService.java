@@ -1,7 +1,9 @@
 package com.dapm.security_service.services;
 
+import com.dapm.security_service.models.PipelineNodeRequest;
 import com.dapm.security_service.models.Role;
 import com.dapm.security_service.models.User;
+import com.dapm.security_service.models.dtos.ApproveNodeRequestDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
@@ -95,6 +97,29 @@ public class TokenService {
                 .setSubject(user.getId().toString())
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusMillis(expirationMillis)))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
+    }
+
+    public String generateTokenForNodeRequest(PipelineNodeRequest request){
+        Instant now = Instant.now();
+
+        Map<String, Object> claims = new HashMap<>();
+
+        claims.put("pipelineId", request.getPipelineId().toString());
+        claims.put("pipelineNodeId", request.getPipelineNode().getId().toString());
+
+        claims.put("requesterIdUsername", request.getRequesterInfo().getRequesterId());
+
+        claims.put("allowedExecutions", request.getRequestedExecutionCount());
+        claims.put("allowedDurationHours", request.getRequestedDurationHours());
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(request.getId().toString())
+                //.setIssuer("OrgB")
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plusMillis(request.getAllowedDurationHours())))
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }

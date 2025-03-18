@@ -1,6 +1,7 @@
 
         package com.dapm.security_service.controllers;
 
+import com.dapm.security_service.models.ConfirmationResponse;
 import com.dapm.security_service.models.PipelineNodeRequest;
 import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.dtos.peer.*;
@@ -32,6 +33,7 @@ public class PipelineNodeRequestPeerController {
 
         var request = PipelineNodeRequest.builder()
                 .id(requestDto.getId())
+                .pipelineId(requestDto.getPipelineId())
                 .pipelineNode(nodeRepository.getById(requestDto.getPipelineNodeId()))
                 .requesterInfo(convertToRequesterInfo(requestDto.getRequesterInfo()))
                 .requestedExecutionCount(0)
@@ -65,6 +67,28 @@ public class PipelineNodeRequestPeerController {
     @GetMapping("/{id}/status")
     public CompletableFuture<AccessRequestStatus> getRequestStatus(@PathVariable UUID id) {
         return CompletableFuture.supplyAsync(() -> requestRepository.findById(id).map(PipelineNodeRequest::getStatus).orElse(null));
+    }
+
+    // OrgB call this endpoint to send approval of the request.
+    @PostMapping("/approve")
+    public ConfirmationResponse approveRequest(@RequestBody RequestResponse requestResponse){
+        var request = requestRepository.getById(requestResponse.getRequestId());
+
+        if(request.getId() == null){
+            var confirmationRespone = new ConfirmationResponse();
+            confirmationRespone.setMessageReceived(false);
+            return confirmationRespone;
+        }
+
+        request.setApprovalToken(requestResponse.getToken());
+        request.setStatus(requestResponse.getRequestStatus());
+
+        requestRepository.save(request);
+
+        var confirmationResponse = new ConfirmationResponse();
+        confirmationResponse.setMessageReceived(true);
+
+        return confirmationResponse;
     }
 
     private RequesterInfo convertToRequesterInfo(RequesterInfoDto userDto) {

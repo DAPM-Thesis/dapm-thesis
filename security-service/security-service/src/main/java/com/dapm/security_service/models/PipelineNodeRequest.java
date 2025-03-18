@@ -3,6 +3,7 @@ package com.dapm.security_service.models;
 
 import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
+import io.micrometer.core.annotation.Counted;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +26,9 @@ public class PipelineNodeRequest {
     @JoinColumn(name = "pipeline_node_id", nullable = false)
     private Node pipelineNode;
 
+    @Column(name = "pipeline_id", nullable = false)
+    private UUID pipelineId;
+
     // Instead of ManyToOne User, we store a snapshot:
     @Embedded
     private RequesterInfo requesterInfo;
@@ -38,6 +42,15 @@ public class PipelineNodeRequest {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private AccessRequestStatus status;
+
+    @Column(name = "allowedDurationHours", nullable = true)
+    private Integer allowedDurationHours;
+
+    @Column(name = "allowedNoExecutions", nullable = true)
+    private Integer allowedNoExecutions;
+
+    @Column(name = "allowedDataUsagePercentage", nullable = true)
+    private Integer allowedDataUsagePercentage;
 
     @Column(name = "approval_token", length = 4096)
     private String approvalToken;

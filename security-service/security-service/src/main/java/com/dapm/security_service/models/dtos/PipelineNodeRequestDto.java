@@ -13,6 +13,8 @@ public class PipelineNodeRequestDto {
     private UUID pipelineNodeId;
     private UUID requesterId;
 
+    private UUID pipelineId;
+
     private int requestedExecutionCount;
     private int requestedDurationHours;
     private AccessRequestStatus status;
