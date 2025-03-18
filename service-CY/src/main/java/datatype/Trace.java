@@ -3,6 +3,7 @@ package datatype;
 import datatype.event.Event;
 import datatype.serialization.DataTypeVisitor;
 import datatype.serialization.deserialization.DeserializationStrategy;
+import datatype.serialization.deserialization.TraceDeserializationStrategy;
 import jakarta.annotation.Nonnull;
 
 import java.util.*;
@@ -28,12 +29,12 @@ public class Trace extends DataType implements Iterable<Event> {
 
     @Override
     public DeserializationStrategy getDeserializationStrategy() {
-        return null;
+        return new TraceDeserializationStrategy();
     }
 
     public boolean add(Event event) {
         if (trace.isEmpty()) { this.caseID = event.getCaseID(); }
-        assert event.getCaseID().equals(caseID);
+        assert event.getCaseID().equals(caseID) : String.format("All events in a trace must have the same case ID. (TraceCID, givenCID) = (\"%s\", \"%s\")", caseID, event.getCaseID());
         return trace.add(event);
     }
 
@@ -44,5 +45,12 @@ public class Trace extends DataType implements Iterable<Event> {
     @Override @Nonnull
     public Iterator<Event> iterator() {
         return trace.iterator();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Trace otherTrace)) return false;
+        return trace.equals(otherTrace.trace);
     }
 }

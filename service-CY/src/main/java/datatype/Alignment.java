@@ -1,6 +1,7 @@
 package datatype;
 
 import datatype.serialization.DataTypeVisitor;
+import datatype.serialization.deserialization.AlignmentDeserializationStrategy;
 import datatype.serialization.deserialization.DeserializationStrategy;
 
 public class Alignment extends DataType {
@@ -26,6 +27,6 @@ public class Alignment extends DataType {
 
     @Override
     public DeserializationStrategy getDeserializationStrategy() {
-        return null;
+        return new AlignmentDeserializationStrategy();
     }
 }

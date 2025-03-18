@@ -39,6 +39,8 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
         return getSerialization();
     }
 
+    /** Serialize a DataMap. Essentially like making a JSON from a HashMap (of key-value pairs). Serialization is
+     *  supported for primitive types, HashMap, ArrayList, and DataType. */
     @Override
     public String visit(DataMap dataMap) {
         this.serialization = dataMap.getName() + ":" + toJSON(dataMap);
@@ -125,7 +127,6 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
         sb.append("</page></net></pnml>");
 
         String pnmlString = sb.toString();
-        System.out.println(pnmlString);
         // credit to https://www.baeldung.com/java-count-chars for this syntax
         assert pnmlString.chars().filter(ch -> ch == '<').count() == pnmlString.chars().filter(ch -> ch == '>').count()
                 : "Not every '<' has a '>' or vice versa.";
