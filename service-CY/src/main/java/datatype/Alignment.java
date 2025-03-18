@@ -10,7 +10,7 @@ public class Alignment extends DataType {
 
     public Alignment(Trace logTrace, Trace modelTrace) {
         assert logTrace != null && modelTrace != null;
-        assert logTrace.length() > 0 && modelTrace.length() > 0;
+        assert !logTrace.isEmpty() && !modelTrace.isEmpty();
         assert logTrace.length() == modelTrace.length();
 
         this.logTrace = logTrace;
@@ -28,5 +28,12 @@ public class Alignment extends DataType {
     @Override
     public DeserializationStrategy getDeserializationStrategy() {
         return new AlignmentDeserializationStrategy();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) return true;
+        if (!(other instanceof Alignment otherAlignment)) return false;
+        return logTrace.equals(otherAlignment.logTrace) && modelTrace.equals(otherAlignment.modelTrace);
     }
 }

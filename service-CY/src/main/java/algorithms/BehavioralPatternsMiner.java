@@ -2,6 +2,7 @@ package algorithms;
 
 import datatype.DataMap;
 import datatype.DataType;
+import datatype.serialization.DataTypeSerializer;
 import utils.Pair;
 
 import java.util.HashMap;
@@ -12,7 +13,6 @@ public class BehavioralPatternsMiner implements Algorithm<Pair<DataMap, Boolean>
 
     @Override
     public Pair<DataMap, Boolean> runAlgorithm(DataType item) {
-        // TODO: implement
         Map<String, Object> conformanceOutput = new HashMap<>();
         conformanceOutput.put("conformance", 0.753);
         conformanceOutput.put("completeness", 0.324503);

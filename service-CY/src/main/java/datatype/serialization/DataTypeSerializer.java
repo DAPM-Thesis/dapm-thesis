@@ -52,7 +52,9 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
         this.serialization = trace.getName() + ":" + "{\"traces\": [" + toJXES(trace) +"]}";
         return getSerialization();
     }
-    
+
+    /** Serializes an alignment into a JXES-formatted string such that the resulting JXES contains two traces:
+     *  the first one being the log trace, and the second one being the model trace. */
     @Override
     public String visit(Alignment alignment) {
         this.serialization = alignment.getName() + ":" + "{\"traces\": ["
