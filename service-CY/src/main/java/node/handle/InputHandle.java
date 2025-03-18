@@ -43,6 +43,14 @@ public class InputHandle<T extends DataType> extends Handle<T> implements Subscr
         consumer.subscribe(topic.getName(), this);
     }
 
+    public void stopInput() {
+        consumer.stop();
+    }
+
+    public void resumeInput() {
+        consumer.resume();
+    }
+
     @Override
     public void subscribe(Subscriber<Message<T>> subscriber) {
         this.node = subscriber;

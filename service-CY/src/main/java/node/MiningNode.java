@@ -16,6 +16,7 @@ import java.util.HashSet;
 public class MiningNode<T extends DataType> extends OperatorNode<T>{
     private final Collection<InputHandle<?>> inputHandles;
     private final Algorithm<Pair<T, Boolean>> algorithm;
+    private boolean isRunning = false;
 
     public MiningNode(String name, String description, Algorithm<Pair<T, Boolean>> algorithm) {
         super(name, description);
@@ -27,6 +28,7 @@ public class MiningNode<T extends DataType> extends OperatorNode<T>{
         InputHandle<T> inputHandle = new InputHandle<>();
         inputHandle.setTopic(topic);
         inputHandle.subscribe(this);
+        isRunning = true;
         inputHandles.add(inputHandle);
     }
 
@@ -36,6 +38,26 @@ public class MiningNode<T extends DataType> extends OperatorNode<T>{
             inputTopics.add(inputHandle.getTopic());
         }
         return inputTopics;
+    }
+
+    public void stopInput() {
+        for (InputHandle<?> inputHandle : inputHandles) {
+            inputHandle.stopInput();
+        }
+
+        isRunning = false;
+    }
+
+    public void resumeInput() {
+        for (InputHandle<?> inputHandle : inputHandles) {
+            inputHandle.resumeInput();
+        }
+
+        isRunning = true;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
     }
 
     @Override
