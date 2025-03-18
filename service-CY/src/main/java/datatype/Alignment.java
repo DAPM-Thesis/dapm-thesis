@@ -36,4 +36,9 @@ public class Alignment extends DataType {
         if (!(other instanceof Alignment otherAlignment)) return false;
         return logTrace.equals(otherAlignment.logTrace) && modelTrace.equals(otherAlignment.modelTrace);
     }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(logTrace, modelTrace);
+    }
 }

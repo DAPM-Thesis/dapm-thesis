@@ -1,0 +1,9 @@
+{
+  "boolean":"java.lang.Boolean:true",
+  "string":"java.lang.String:str",
+  "HashMap":"java.util.HashMap:{first=1, second=2}",
+  "double":"java.lang.Double:5.0",
+  "list":"java.util.ArrayList:[a, b, c]",
+  "event":"event:{"traces": [{"attrs": {"concept:name": "c1"}, "events": [{"concept:name": "a1", "date": "t1", "attrDoubleKey": 10.0}]}]}",
+  "int":"java.lang.Integer:5"
+}

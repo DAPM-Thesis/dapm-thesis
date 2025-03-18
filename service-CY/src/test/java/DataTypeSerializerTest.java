@@ -121,7 +121,7 @@ public class DataTypeSerializerTest {
     }
 
     @Test
-    public void dataMapTest() {
+    public void dataMapTest() throws IOException {
         Map<String, Object> map = new HashMap<>();
         map.put("string", "str");
         map.put("int", 5);
@@ -140,8 +140,11 @@ public class DataTypeSerializerTest {
         DataTypeSerializer serializer = new DataTypeSerializer();
         String output = serializer.visit(dataMap);
 
-        String expected = "datatype.DataMap:{boolean:java.lang.Boolean:true, string:java.lang.String:str, HashMap:java.util.HashMap:{first=1, second=2}, double:java.lang.Double:5.0, list:java.util.ArrayList:[a, b, c], event:event:{\"traces\": [{\"attrs\": {\"concept:name\": \"c1\"}, \"events\": [{\"concept:name\": \"a1\", \"date\": \"t1\", \"attrDoubleKey\": 10.0}]}]}, int:java.lang.Integer:5}";
-        assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
+        String pathString = "src/test/resources/datamap/datamap.json";
+        String expected_json = Files.readString(Paths.get(pathString));
+        String expected = dataMap.getName() + ':' + expected_json;
+
+        assertEquals(expected.replaceAll("\\s+", ""), output.replaceAll("\\s+", ""));
 
     }
 

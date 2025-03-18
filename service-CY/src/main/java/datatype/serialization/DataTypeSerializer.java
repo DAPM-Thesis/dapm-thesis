@@ -90,9 +90,11 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
                 dtValue.acceptVisitor(this);
                 valueStr = getSerialization();
             } else {
-                valueStr = value.getClass().getName() + ":" + value;
+                valueStr = value.getClass().getName() + ':' + value;
             }
-            sb.append(keyValuePair.getKey()).append(":").append(valueStr).append(", ");
+            String key = '\"' + keyValuePair.getKey() + '\"';
+            valueStr = '\"' + valueStr + '\"';
+            sb.append(key).append(":").append(valueStr).append(", ");
         }
         sb.setLength(sb.length() - 2);
         sb.append("}");
