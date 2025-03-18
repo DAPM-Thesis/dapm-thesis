@@ -1,4 +1,5 @@
 
+import datatype.Alignment;
 import datatype.DataType;
 import datatype.Trace;
 import datatype.event.Attribute;
@@ -123,6 +124,60 @@ class DeSerializerTest {
         DataType multipleTrace_2 = DataTypeFactory.deserialize(serialization);
 
         assertEquals(multipleTrace, multipleTrace_2);
+    }
+
+    @Test
+    void alignmentTest() throws IOException {
+        Event el1 = new Event("C1", "A1", "1", new HashSet<>());
+        Event el2 = new Event("C1", "A2", "2", new HashSet<>());
+        Trace logTrace = new Trace(new ArrayList<>(List.of(el1, el2)));
+        Event em1 = new Event("00", "A1", "00", new HashSet<>());
+        Event em2 = new Event("00", "A3", "00", new HashSet<>());
+        Trace modelTrace = new Trace(new ArrayList<>(List.of(em1, em2)));
+        Alignment expected = new Alignment(logTrace, modelTrace);
+
+        String JXESPathString = "src/test/resources/alignment/alignment.json";
+        String JXESContents = Files.readString(Paths.get(JXESPathString));
+        String serialization = Alignment.class.getName() + ":" + JXESContents;
+        DataType output = DataTypeFactory.deserialize(serialization);
+        assertEquals(expected, output);
+
+    }
+
+    @Test
+    void alignmentInverseTest() {
+        Event el1 = new Event("C1", "A1", "1", new HashSet<>());
+        Event el2 = new Event("C1", "A2", "2", new HashSet<>());
+        Trace logTrace = new Trace(new ArrayList<>(List.of(el1, el2)));
+        Event em1 = new Event("00", "A1", "00", new HashSet<>());
+        Event em2 = new Event("00", "A3", "00", new HashSet<>());
+        Trace modelTrace = new Trace(new ArrayList<>(List.of(em1, em2)));
+        Alignment alignment = new Alignment(logTrace, modelTrace);
+
+        DataTypeSerializer serializer = new DataTypeSerializer();
+        String serialization = serializer.visit(alignment);
+        DataType alignment_2 = DataTypeFactory.deserialize(serialization);
+        assertEquals(alignment, alignment_2);
+    }
+
+    @Test
+    void alignmentTraceSwapInverseTest() throws IOException {
+        // Serialization and deserialization is currently dependent on ordering of traces in a JXES string. Therefore,
+        // they are only valid if alignments are given in the correct order
+        Event el1 = new Event("C1", "A1", "1", new HashSet<>());
+        Event el2 = new Event("C1", "A2", "2", new HashSet<>());
+        Trace logTrace = new Trace(new ArrayList<>(List.of(el1, el2)));
+        Event em1 = new Event("00", "A1", "00", new HashSet<>());
+        Event em2 = new Event("00", "A3", "00", new HashSet<>());
+        Trace modelTrace = new Trace(new ArrayList<>(List.of(em1, em2)));
+        Alignment alignment_1 = new Alignment(logTrace, modelTrace);
+        Alignment alignment_2 = new Alignment(modelTrace, logTrace);
+
+        DataTypeSerializer serializer = new DataTypeSerializer();
+        String output_1 = serializer.visit(alignment_1);
+        String output_2 = serializer.visit(alignment_2);
+        assertNotEquals(DataTypeFactory.deserialize(output_1),
+                        DataTypeFactory.deserialize(output_2));
     }
 
 
