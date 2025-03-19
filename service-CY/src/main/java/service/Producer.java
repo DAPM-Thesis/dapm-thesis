@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 import java.util.Properties;
 
 @Service
-public class Producer<T> {
+public class Producer {
 
-    private final KafkaProducer<String, Message<T>> kafkaProducer;
+    private final KafkaProducer<String, String> kafkaProducer;
 
     public Producer() {
         Properties props = new Properties();
@@ -24,8 +24,8 @@ public class Producer<T> {
         this.kafkaProducer = new KafkaProducer<>(props);
     }
 
-    public void publish(String topic, Message<T> message) {
-        ProducerRecord<String, Message<T>> record = new ProducerRecord<>(topic, message);
+    public void publish(String topic, Message<String> message) {
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, message.data());
         this.kafkaProducer.send(record, (metadata, exception) -> {
             if (exception != null) {
                 exception.printStackTrace();
