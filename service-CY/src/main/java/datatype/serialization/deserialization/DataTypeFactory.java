@@ -1,6 +1,7 @@
 package datatype.serialization.deserialization;
 
 import datatype.Alignment;
+import datatype.DataMap;
 import datatype.DataType;
 import datatype.Trace;
 import datatype.event.Event;
@@ -17,6 +18,7 @@ public class DataTypeFactory {
         register(new Alignment(new Trace(List.of(new Event("c", "a", "1", new HashSet<>()))),
                                new Trace(List.of(new Event("c", "a", "1", new HashSet<>())))));
         register(new Trace(new ArrayList<>()));
+        register(new DataMap());
     }
 
     private static void register(DataType instance) {

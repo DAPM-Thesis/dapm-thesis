@@ -9,6 +9,7 @@ import java.util.Map;
 public class DataMapDeserializationStrategy implements DeserializationStrategy {
     @Override
     public DataType deserialize(String payload) {
+
         Map<String, Object> conformanceOutput = new HashMap<>();
         conformanceOutput.put("conformance", 0.753);
         conformanceOutput.put("completeness", 0.324503);

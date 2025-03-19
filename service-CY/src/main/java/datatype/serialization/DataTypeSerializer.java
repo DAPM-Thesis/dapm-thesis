@@ -43,8 +43,9 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
      *  supported for primitive types, HashMap, ArrayList, and DataType. */
     @Override
     public String visit(DataMap dataMap) {
-        this.serialization = dataMap.getName() + ":" + toJSON(dataMap);
-        return getSerialization();
+        throw new IllegalStateException("not yet implemented");
+        /*this.serialization = dataMap.getName() + ":" + toJSON(dataMap);
+        return getSerialization();*/
     }
 
     @Override
@@ -82,13 +83,15 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
     private String toJSON(DataMap dataMap) {
         assert !dataMap.isEmpty() : "Currently not supporting empty DataMap's because we can think of no context in which one would want to serialize an empty DataMap.";
 
-        StringBuilder sb = new StringBuilder("{");
+        throw new IllegalStateException("Not yet implemented");
+        /*StringBuilder sb = new StringBuilder("{");
         for (Map.Entry<String, Object> keyValuePair : dataMap.getKeyValuePairs().entrySet()) {
             Object value = keyValuePair.getValue();
             String valueStr;
             if (value instanceof DataType dtValue) {
                 dtValue.acceptVisitor(this);
-                valueStr = getSerialization();
+                String serialization = getSerialization();
+
             } else {
                 valueStr = value.getClass().getName() + ':' + value;
             }
@@ -98,7 +101,7 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
         }
         sb.setLength(sb.length() - 2);
         sb.append("}");
-        return sb.toString();
+        return sb.toString();*/
     }
 
     private String toJXES(Event event) {

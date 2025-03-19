@@ -31,4 +31,14 @@ public class DataMap extends DataType {
     public void put(String key, Object value) { keyValuePairs.put(key, value); }
 
     public boolean isEmpty() { return keyValuePairs.isEmpty(); }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof DataMap otherDataMap)) return false;
+        return keyValuePairs.equals(otherDataMap.keyValuePairs);
+    }
+
+    @Override
+    public int hashCode() { return keyValuePairs.hashCode(); }
 }

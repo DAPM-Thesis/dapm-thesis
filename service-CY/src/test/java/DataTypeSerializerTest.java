@@ -149,6 +149,8 @@ public class DataTypeSerializerTest {
     }
 
 
+
+
     public PetriNet getExamplePetriNet(){
         /*
          *             --> p2 -

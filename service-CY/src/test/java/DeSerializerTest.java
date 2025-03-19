@@ -1,5 +1,6 @@
 
 import datatype.Alignment;
+import datatype.DataMap;
 import datatype.DataType;
 import datatype.Trace;
 import datatype.event.Attribute;
@@ -178,6 +179,32 @@ class DeSerializerTest {
         String output_2 = serializer.visit(alignment_2);
         assertNotEquals(DataTypeFactory.deserialize(output_1),
                         DataTypeFactory.deserialize(output_2));
+    }
+
+    @Test
+    void dataMapInverseTest() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("string", "str");
+        map.put("int", 5);
+        map.put("boolean", true);
+        map.put("double", 5.0);
+        map.put("list", new ArrayList<>(List.of('a', 'b', 'c')));
+
+        Map<String, Integer> innerMap = new HashMap<>();
+        innerMap.put("first", 1);
+        innerMap.put("second", 2);
+        map.put("HashMap", innerMap);
+
+        Attribute<Double> attr = new Attribute<>("attrDoubleKey", 10.0);
+        map.put("event", new Event("c1", "a1", "t1", new HashSet<>(List.of(attr))));
+        DataMap dataMap = new DataMap(map);
+
+        DataTypeSerializer serializer = new DataTypeSerializer();
+        String serialization = serializer.visit(dataMap);
+        DataType dataMap_2 = DataTypeFactory.deserialize(serialization);
+        assertEquals(dataMap, dataMap_2);
+
+
     }
 
 
