@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/client/pipeline-node-requests")
@@ -34,7 +33,7 @@ public class PipelineNodeRequestClientController {
      * We forward the request to OrgB's PeerApi.
      */
     @PostMapping("/peer")
-    public CompletableFuture<RequestResponse> initiatePeerRequest(@RequestBody PipelineNodeRequestDto requestDto) {
+    public RequestResponse initiatePeerRequest(@RequestBody PipelineNodeRequestDto requestDto) {
         PipelineNodeRequest request = convertDtoToEntity(requestDto);
 
         // 2. Save locally
@@ -43,8 +42,19 @@ public class PipelineNodeRequestClientController {
         // 3. Convert entity → outbound DTO
         PipelineNodeRequestOutboundDto outboundDto = toOutboundDto(localRequest);
 
+
+        // 4. Send the outbound DTO to OrgB
+        // (orgBRequestService should accept the outbound DTO instead of the entity)
+        RequestResponse remoteResponseDto = orgBRequestService.sendRequestToOrgB(outboundDto);
+
+//        // Update the local record with any details returned from OrgB (e.g., approval token, updated status).
+//        localRequest.setApprovalToken(remoteResponseDto.getApprovalToken());
+//        localRequest.setStatus(remoteResponseDto.getStatus());
+//        localRequest.setDecisionTime(remoteResponseDto.getDecisionTime());
+//        localRequest = pipelineNodeRequestRepository.save(localRequest);
+
         // Return the updated local record.
-        return orgBRequestService.sendRequestToOrgB(outboundDto);
+        return remoteResponseDto;
     }
 
     /**
@@ -52,12 +62,15 @@ public class PipelineNodeRequestClientController {
      * This method calls OrgB's PeerApi to retrieve the latest status.
      */
     @GetMapping("/{id}/status")
-    public CompletableFuture<AccessRequestStatus> getRequestStatus(@PathVariable UUID id) {
+    public AccessRequestStatus getRequestStatus(@PathVariable UUID id) {
         return orgBRequestService.getRequestStatusFromOrgB(id);
     }
 
+    /**
+     * Get the final approved request record from OrgB (which may contain the JWT token).
+     */
     @GetMapping("/{id}/details")
-    public CompletableFuture<PipelineNodeRequest> getRequestDetails(@PathVariable UUID id) {
+    public PipelineNodeRequest getRequestDetails(@PathVariable UUID id) {
         return orgBRequestService.getRequestDetailsFromOrgB(id);
     }
 

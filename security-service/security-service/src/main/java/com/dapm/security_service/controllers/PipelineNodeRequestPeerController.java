@@ -1,5 +1,5 @@
 
-        package com.dapm.security_service.controllers;
+package com.dapm.security_service.controllers;
 
 import com.dapm.security_service.models.ConfirmationResponse;
 import com.dapm.security_service.models.PipelineNodeRequest;
@@ -10,7 +10,7 @@ import com.dapm.security_service.repositories.NodeRepository;
 import com.dapm.security_service.repositories.PipelineNodeRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import java.util.concurrent.CompletableFuture;
+
 import java.util.UUID;
 
 @RestController
@@ -24,8 +24,7 @@ public class PipelineNodeRequestPeerController {
      * OrgA calls this endpoint to create a request in OrgB's DB.
      */
     @PostMapping
-    public CompletableFuture<RequestResponse> createRequest(@RequestBody PipelineNodeRequestOutboundDto requestDto) {
-        return CompletableFuture.supplyAsync(() -> {
+    public RequestResponse createRequest(@RequestBody PipelineNodeRequestOutboundDto requestDto) {
         // Generate an ID if not provided
         if (requestDto.getId() == null) {
             requestDto.setId(UUID.randomUUID());
@@ -49,7 +48,6 @@ public class PipelineNodeRequestPeerController {
         response.setToken("");
 
         return response;
-        });
 
     }
 
@@ -57,16 +55,17 @@ public class PipelineNodeRequestPeerController {
      * OrgA calls this endpoint to retrieve the entire request record (including the token if approved).
      */
     @GetMapping("/{id}")
-    public CompletableFuture<PipelineNodeRequest> getRequestById(@PathVariable UUID id) {
-        return CompletableFuture.supplyAsync(() -> requestRepository.findById(id).orElse(null));
+    public PipelineNodeRequest getRequestById(@PathVariable UUID id) {
+        return requestRepository.findById(id).orElse(null);
     }
 
     /**
      * OrgA can call this to just get the status (if it doesn't want the entire request object).
      */
     @GetMapping("/{id}/status")
-    public CompletableFuture<AccessRequestStatus> getRequestStatus(@PathVariable UUID id) {
-        return CompletableFuture.supplyAsync(() -> requestRepository.findById(id).map(PipelineNodeRequest::getStatus).orElse(null));
+    public AccessRequestStatus getRequestStatus(@PathVariable UUID id) {
+        PipelineNodeRequest req = requestRepository.findById(id).orElse(null);
+        return (req == null) ? null : req.getStatus();
     }
 
     // OrgB call this endpoint to send approval of the request.
@@ -104,4 +103,3 @@ public class PipelineNodeRequestPeerController {
         return info;
     }
 }
-

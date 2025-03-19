@@ -1,48 +1,50 @@
 package com.dapm.security_service.services;
 
 import com.dapm.security_service.models.PipelineNodeRequest;
+import com.dapm.security_service.models.dtos.PipelineNodeRequestDto;
 import com.dapm.security_service.models.dtos.peer.PipelineNodeRequestOutboundDto;
 import com.dapm.security_service.models.dtos.peer.RequestResponse;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class OrgBRequestService {
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    // In a real app, load this from a config property, e.g., "orgB.peerApi.baseUrl"
     private final String ORG_B_BASE_URL = "http://localhost:8080/api/peer/pipeline-node-requests";
 
     /**
-     * Asynchronously send a new request to OrgB's PeerApi.
+     * Send a new request to OrgB's PeerApi.
      */
-    @Async
-    public CompletableFuture<RequestResponse> sendRequestToOrgB(PipelineNodeRequestOutboundDto requestDto) {
-        RequestResponse response = restTemplate.postForObject(ORG_B_BASE_URL, requestDto, RequestResponse.class);
-        return CompletableFuture.completedFuture(response);
+    public RequestResponse sendRequestToOrgB(PipelineNodeRequestOutboundDto requestDto) {
+
+        // Send the DTO to OrgB and expect the same DTO type in response
+        return restTemplate.postForObject(
+                ORG_B_BASE_URL,
+                requestDto,
+                RequestResponse.class
+        );
     }
 
+
     /**
-     * Asynchronously poll OrgB's PeerApi for the status of a request.
+     * Poll OrgB's PeerApi for the status of a request.
      */
-    @Async
-    public CompletableFuture<AccessRequestStatus> getRequestStatusFromOrgB(UUID requestId) {
+    public AccessRequestStatus getRequestStatusFromOrgB(UUID requestId) {
         String url = ORG_B_BASE_URL + "/" + requestId + "/status";
-        AccessRequestStatus status = restTemplate.getForObject(url, AccessRequestStatus.class);
-        return CompletableFuture.completedFuture(status);
+        return restTemplate.getForObject(url, AccessRequestStatus.class);
     }
 
     /**
-     * Asynchronously retrieve the entire request record from OrgB.
+     * Retrieve the entire request record from OrgB, which may include an approvalToken if approved.
      */
-    @Async
-    public CompletableFuture<PipelineNodeRequest> getRequestDetailsFromOrgB(UUID requestId) {
+    public PipelineNodeRequest getRequestDetailsFromOrgB(UUID requestId) {
         String url = ORG_B_BASE_URL + "/" + requestId;
-        PipelineNodeRequest request = restTemplate.getForObject(url, PipelineNodeRequest.class);
-        return CompletableFuture.completedFuture(request);
+        return restTemplate.getForObject(url, PipelineNodeRequest.class);
     }
 }
