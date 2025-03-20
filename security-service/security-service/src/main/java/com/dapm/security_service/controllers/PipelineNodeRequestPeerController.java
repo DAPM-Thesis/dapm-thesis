@@ -37,6 +37,7 @@ public class PipelineNodeRequestPeerController {
                 .requesterInfo(convertToRequesterInfo(requestDto.getRequesterInfo()))
                 .requestedExecutionCount(0)
                 .requestedExecutionCount(0)
+                .webhookUrl(requestDto.getWebhookUrl())
                 .status(AccessRequestStatus.PENDING)
                 .build();
 

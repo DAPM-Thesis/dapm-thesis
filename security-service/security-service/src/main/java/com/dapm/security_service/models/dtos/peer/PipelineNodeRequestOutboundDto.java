@@ -22,4 +22,5 @@ public class PipelineNodeRequestOutboundDto {
 
     private String approvalToken;
     private Instant decisionTime;
+    private String webhookUrl;
 }

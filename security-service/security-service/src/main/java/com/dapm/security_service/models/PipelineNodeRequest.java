@@ -57,4 +57,7 @@ public class PipelineNodeRequest {
 
     @Column(name = "decision_time")
     private Instant decisionTime;
+
+    @Column(name = "webhook_url")
+    private String webhookUrl;
 }

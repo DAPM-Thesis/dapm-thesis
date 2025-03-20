@@ -27,6 +27,25 @@ public class PipelineNodeRequestClientController {
     @Autowired private PipelineNodeRequestRepository pipelineNodeRequestRepository;
     @Autowired private NodeRepository nodeRepository;
     @Autowired private UserRepository userRepository;
+     //  Receive a webhook notification from OrgB about request status changes.
+    @PostMapping("/webhook")
+    public String handleWebhookNotification(@RequestBody RequestResponse requestResponse) {
+        UUID requestId = requestResponse.getRequestId();
+        // Fetch the corresponding request from the database
+        PipelineNodeRequest request = pipelineNodeRequestRepository.findById(requestId).orElseThrow(() -> new RuntimeException("Request not found: " + requestId));
+
+        // Update the status and other details based on the webhook response
+        request.setStatus(requestResponse.getRequestStatus());
+        request.setApprovalToken(requestResponse.getToken());
+
+        // Save the updated request
+        pipelineNodeRequestRepository.save(request);
+
+        // Optionally log or send a response indicating the webhook was received successfully
+        System.out.println("Webhook received by Org A for request ID: " + requestId);
+        System.out.println(requestResponse);
+        return "webhook received";
+    }
 
     /**
      * Alice calls this to request use of a node owned by OrgB.
@@ -35,6 +54,8 @@ public class PipelineNodeRequestClientController {
     @PostMapping("/peer")
     public RequestResponse initiatePeerRequest(@RequestBody PipelineNodeRequestDto requestDto) {
         PipelineNodeRequest request = convertDtoToEntity(requestDto);
+        String webhookUrl = "http://localhost:8080/api/client/pipeline-node-requests/webhook";
+        request.setWebhookUrl(webhookUrl);
 
         // 2. Save locally
         PipelineNodeRequest localRequest = pipelineNodeRequestRepository.save(request);
@@ -120,6 +141,7 @@ public class PipelineNodeRequestClientController {
         dto.setStatus(entity.getStatus());
         dto.setApprovalToken(entity.getApprovalToken());
         dto.setDecisionTime(entity.getDecisionTime());
+        dto.setWebhookUrl(entity.getWebhookUrl());
 
         dto.setPipelineId(entity.getPipelineId());
 
