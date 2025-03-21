@@ -15,7 +15,7 @@ public class MyOperator extends Operator<Event, String, String, String> {
     }
 
     @Override
-    protected boolean publishCondition() {
+    protected boolean publishCondition(String s) {
         return true;
     }
 
