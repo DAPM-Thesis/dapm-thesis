@@ -3,9 +3,10 @@ package impl;
 import algorithm.Algorithm;
 import datatype.impl.event.Event;
 import datatype.serialization.DataTypeSerializer;
+import datatype.serialization.deserialization.DataTypeFactory;
 import pipeline.processingelement.Operator;
 
-public class MyOperator extends Operator<Event, String, String, String> {
+public class MyOperator extends Operator<Event, Event, String, String> {
 
     private final DataTypeSerializer dataTypeSerializer;
 
@@ -15,7 +16,7 @@ public class MyOperator extends Operator<Event, String, String, String> {
     }
 
     @Override
-    protected boolean publishCondition() {
+    protected boolean publishCondition(String algorithmOutput) {
         return true;
     }
 
@@ -25,7 +26,7 @@ public class MyOperator extends Operator<Event, String, String, String> {
     }
 
     @Override
-    protected String convertOutput(String s) {
-        return s;
+    protected Event convertOutput(String s) {
+        return (Event) DataTypeFactory.deserialize(s);
     }
 }
