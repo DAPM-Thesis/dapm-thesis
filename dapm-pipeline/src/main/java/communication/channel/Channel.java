@@ -1,4 +1,7 @@
-package communication;
+package communication.channel;
+
+import communication.Publisher;
+import communication.Subscriber;
 
 import java.util.HashSet;
 import java.util.Set;
