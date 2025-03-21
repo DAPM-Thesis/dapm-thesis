@@ -14,13 +14,13 @@ public abstract class Operator<I,O,AI,AO> extends ProcessingElement implements S
     public void observe(I input) {
         AI algorithmInput = convertInput(input);
         AO algorithmOutput = algorithm.run(algorithmInput);
-        O operatorOutput = convertOutput(algorithmOutput);
-        if (publishCondition()) {
+        if (publishCondition(algorithmOutput)) {
+            O operatorOutput = convertOutput(algorithmOutput);
             publish(operatorOutput);   
         }
     }
 
-    protected abstract boolean publishCondition();
+    protected abstract boolean publishCondition(AO algorithmOutput);
 
     protected abstract AI convertInput(I i);
 
