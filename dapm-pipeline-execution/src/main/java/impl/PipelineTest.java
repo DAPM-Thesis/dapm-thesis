@@ -18,8 +18,6 @@ public class PipelineTest {
         // Sink
         MySink sink = new MySink();
 
-        StringBuilder sb = new StringBuilder();
-
         // Create pipeline using pipeline builder
         PipelineBuilder builder = new PipelineBuilder();
         ChannelFactory channelFactory = new SimpleChannelFactory();
