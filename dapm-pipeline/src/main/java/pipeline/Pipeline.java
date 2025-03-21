@@ -1,6 +1,7 @@
 package pipeline;
 
-import communication.Channel;
+import communication.channel.Channel;
+import communication.channel.ChannelFactory;
 import communication.Publisher;
 import communication.Subscriber;
 import pipeline.processingelement.ProcessingElement;
@@ -15,6 +16,7 @@ public class Pipeline {
     private Set<ProcessingElement> processingElements;
     private Set<Channel<?>> channels;
     private Map<ProcessingElement, Channel<?>> receivingChannels;
+    private ChannelFactory channelFactory;
 
     public Pipeline() {
         processingElements = new HashSet<>();
@@ -22,14 +24,17 @@ public class Pipeline {
         receivingChannels = new HashMap<>();
     }
 
-    public Pipeline(Set<ProcessingElement> processingElements, Set<Channel<?>> channels, Map<ProcessingElement, Channel<?>> receivingChannels) {
-        this.processingElements = processingElements;
-        this.channels = channels;
-        this.receivingChannels = receivingChannels;
-
+    public Pipeline(Set<ProcessingElement> processingElements,
+                    Set<Channel<?>> channels,
+                    Map<ProcessingElement, Channel<?>> receivingChannels,
+                    ChannelFactory channelFactory) {
         if (!areConsistentConstructorArguments(processingElements, channels, receivingChannels)) {
             throw new IllegalArgumentException("The given arguments are inconsistent");
         }
+
+        this.processingElements = processingElements;
+        this.channels = channels;
+        this.receivingChannels = receivingChannels;
     }
 
     private boolean areConsistentConstructorArguments(Set<ProcessingElement> processingElements, Set<Channel<?>> channels, Map<ProcessingElement, Channel<?>> receivingChannels) {
@@ -54,10 +59,10 @@ public class Pipeline {
         if (!processingElements.contains(from) || !processingElements.contains(to))
             { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
 
-
+        // fetch from's output channel if it exists, and create a new one otherwise
         Channel<C> channel = (Channel<C>) receivingChannels.get(from);
         if (channel == null) {
-            channel = new Channel<>();
+            channel = channelFactory.createChannel();
             from.subscribe(channel);
             receivingChannels.put((ProcessingElement) from, channel);
             channels.add(channel);
