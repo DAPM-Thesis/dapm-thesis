@@ -26,36 +26,6 @@ public class Pipeline {
         this.channelFactory = channelFactory;
     }
 
-    public Pipeline(Set<ProcessingElement> processingElements,
-                    Set<Channel<?>> channels,
-                    Map<ProcessingElement, Channel<?>> receivingChannels,
-                    ChannelFactory channelFactory) {
-
-        this(channelFactory);
-
-        if (!areConsistent(processingElements, channels, receivingChannels)) {
-            throw new IllegalArgumentException("The given arguments are inconsistent");
-        }
-
-        this.processingElements = processingElements;
-        this.channels = channels;
-        this.receivingChannels = receivingChannels;
-    }
-
-    private boolean areConsistent(Set<ProcessingElement> processingElements,
-                                  Set<Channel<?>> channels,
-                                  Map<ProcessingElement, Channel<?>> receivingChannels) {
-        // Any processing element must either have an output channel or be a sink (but not both).
-        for (ProcessingElement pe : processingElements) {
-            if (pe instanceof Sink && receivingChannels.containsKey(pe)
-                    || !(pe instanceof Sink) && !receivingChannels.containsKey(pe)) {
-                return false;
-            }
-        }
-        // the pipeline must only receive data from within the pipeline
-        return channels.equals(receivingChannels.values());
-    }
-
     public Pipeline addProcessingElement(ProcessingElement pe) {
         if (pe == null) { throw new IllegalArgumentException("processingElement cannot be null"); }
         processingElements.add(pe);

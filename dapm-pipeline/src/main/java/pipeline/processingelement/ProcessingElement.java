@@ -1,8 +1,12 @@
 package pipeline.processingelement;
 
-public abstract class ProcessingElement {
+import utils.IDGenerator;
 
+public abstract class ProcessingElement {
+    private int ID;
     private boolean isAvailable = true;
+
+    protected ProcessingElement() { ID = IDGenerator.generate(); }
 
     public boolean isAvailable() {
         return isAvailable;
@@ -11,4 +15,7 @@ public abstract class ProcessingElement {
     public void setAvailable(boolean available) {
         isAvailable = available;
     }
+
+    @Override
+    public String toString() { return getClass().getSimpleName() + ' ' + ID; }
 }
