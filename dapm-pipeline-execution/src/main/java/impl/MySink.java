@@ -7,6 +7,6 @@ public class MySink extends Sink<Event> {
 
     @Override
     public void observe(Event event) {
-        System.out.println("Sink received: " + event);
+        System.out.println(this + " received: " + event);
     }
 }
