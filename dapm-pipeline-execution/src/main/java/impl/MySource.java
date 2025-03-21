@@ -1,0 +1,23 @@
+package impl;
+
+import datatype.impl.event.Event;
+import pipeline.processingelement.Source;
+
+import java.util.HashSet;
+import java.util.Random;
+
+public class MySource extends Source<Event> {
+
+    private final String[] activities = {"activity1", "activity2", "activity3"};
+    private final Random rand = new Random();
+
+    @Override
+    public Event process() {
+        return new Event(
+                "CaseID" + rand.nextInt(0, 5),
+                activities[rand.nextInt(activities.length)],
+                "RandomTimeStamp",
+                new HashSet<>()
+        );
+    }
+}

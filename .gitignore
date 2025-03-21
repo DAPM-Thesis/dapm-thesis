@@ -3,6 +3,7 @@
 *.iml
 target/
 out/
+*.xml
 
 # Maven #
 .mvn/
