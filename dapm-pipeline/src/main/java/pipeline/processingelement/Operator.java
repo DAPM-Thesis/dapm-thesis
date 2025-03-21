@@ -16,7 +16,7 @@ public abstract class Operator<I,O,AI,AO> extends ProcessingElement implements S
         AO algorithmOutput = algorithm.run(algorithmInput);
         if (publishCondition(algorithmOutput)) {
             O operatorOutput = convertOutput(algorithmOutput);
-            publish(operatorOutput);
+            publish(operatorOutput);   
         }
     }
 
