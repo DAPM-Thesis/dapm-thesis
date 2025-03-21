@@ -1,6 +1,7 @@
 package impl;
 
 import communication.channel.ChannelFactory;
+import communication.channel.SimpleChannelFactory;
 import pipeline.Pipeline;
 
 public class PipelineTest {
