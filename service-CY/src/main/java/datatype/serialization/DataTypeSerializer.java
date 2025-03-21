@@ -109,7 +109,6 @@ public class DataTypeSerializer implements DataTypeVisitor<String> {
         sb.append("</page></net></pnml>");
 
         String pnmlString = sb.toString();
-        System.out.println(pnmlString);
         // credit to https://www.baeldung.com/java-count-chars for this syntax
         assert pnmlString.chars().filter(ch -> ch == '<').count() == pnmlString.chars().filter(ch -> ch == '>').count()
                 : "Not every '<' has a '>' or vice versa.";

@@ -1,6 +1,8 @@
 package start;
 
+import algorithms.AlgorithmConfiguration;
 import algorithms.BehavioralPatternsMiner;
+import algorithms.HeuristicsMiner;
 import datatype.DataMap;
 import datatype.petrinet.PetriNet;
 import model.Organization;
@@ -20,11 +22,15 @@ public class Main {
     public static void main(String[] args) {
         // an input topic should actually be coming from a Node. So this is a mock topic
 
-        BehavioralPatternsMiner discoveryMiner = new BehavioralPatternsMiner();
-        MiningNode<DataMap> discoveryNode = new MiningNode<>(
+        AlgorithmConfiguration algorithmConfiguration = new AlgorithmConfiguration(
+                "java",
+                "-jar",
+                "path-to-jar");
+        HeuristicsMiner heuristicsMiner = new HeuristicsMiner(algorithmConfiguration);
+        MiningNode<PetriNet> discoveryNode = new MiningNode<>(
                 "DUMMY Discovery algorithm",
                 "DUMMY discovery algorithm taking in events and outputting petri nets",
-                discoveryMiner
+                heuristicsMiner
         );
         // TODO: change nodes to the newly added nodes? So instead of only using BehavioralPatternsMiner, use ISSEAlignmentMiner and HeuristicsMiner
         BehavioralPatternsMiner discoveryMiner2 = new BehavioralPatternsMiner();
@@ -54,7 +60,7 @@ public class Main {
         nodeRegistry.addNode(organization2.getId(), conformanceNode);
 
         // Retrieve nodes from registry to build pipeline
-        discoveryNode = (MiningNode<DataMap>) nodeRegistry.getNodeByID(organization1.getId(), discoveryNode.getID());
+        discoveryNode = (MiningNode<PetriNet>) nodeRegistry.getNodeByID(organization1.getId(), discoveryNode.getID());
 
         discoveryNode.setInputTopic(new Topic("ingest"));
         discoveryNode.setOutputTopic(new Topic("sink"));
@@ -64,9 +70,5 @@ public class Main {
   //      PipelineBuilder pipelineBuilder = PipelineBuilder.getInstance();
   //      pipelineBuilder.createPipeline(1);
  //       pipelineBuilder.connectNodes(1, discoveryNode, discoveryNode2);
-
-        for(Topic topic : conformanceNode.getInputTopics()) {
-            System.out.println(topic.getName());
-        }
     }
 }

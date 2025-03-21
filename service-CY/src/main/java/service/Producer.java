@@ -31,7 +31,7 @@ public class Producer {
                 exception.printStackTrace();
             }
             else {
-                System.out.println("Message is published to: " + metadata.topic());
+                System.out.println( message.data() + "\n");
             }
         });
     }

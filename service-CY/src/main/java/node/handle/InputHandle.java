@@ -29,7 +29,7 @@ public class InputHandle<T extends DataType> extends Handle<T> implements Subscr
         try {
             T data = (T) DataTypeFactory.deserialize(message.data());
             Message<T> dataTypeMessage = new Message<>(data);
-            System.out.println("Received in input handle: " + dataTypeMessage);
+         //   System.out.println("Received in input handle: " + dataTypeMessage.data());
             publish(dataTypeMessage);
         } catch (Exception e) {
             System.out.println("Error in observe: " + message.data());
