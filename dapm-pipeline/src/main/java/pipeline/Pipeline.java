@@ -18,16 +18,20 @@ public class Pipeline {
     private Map<ProcessingElement, Channel<?>> receivingChannels;
     private ChannelFactory channelFactory;
 
-    public Pipeline() {
+    public Pipeline(ChannelFactory channelFactory) {
         processingElements = new HashSet<>();
         channels = new HashSet<>();
         receivingChannels = new HashMap<>();
+        this.channelFactory = channelFactory;
     }
 
     public Pipeline(Set<ProcessingElement> processingElements,
                     Set<Channel<?>> channels,
                     Map<ProcessingElement, Channel<?>> receivingChannels,
                     ChannelFactory channelFactory) {
+
+        this(channelFactory);
+
         if (!areConsistentConstructorArguments(processingElements, channels, receivingChannels)) {
             throw new IllegalArgumentException("The given arguments are inconsistent");
         }
