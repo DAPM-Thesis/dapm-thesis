@@ -27,6 +27,6 @@ public class Channel<T> implements Subscriber<T>, Publisher<T> {
 
     @Override
     public void observe(T t) {
-
+        publish(t);
     }
 }

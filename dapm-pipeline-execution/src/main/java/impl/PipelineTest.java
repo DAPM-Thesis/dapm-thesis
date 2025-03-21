@@ -1,5 +1,6 @@
 package impl;
 
+import communication.channel.ChannelFactory;
 import pipeline.Pipeline;
 
 public class PipelineTest {
@@ -16,7 +17,8 @@ public class PipelineTest {
         MySink sink = new MySink();
 
         // Create pipeline
-        Pipeline pipeline = new Pipeline();
+        ChannelFactory channelFactory = new SimpleChannelFactory();
+        Pipeline pipeline = new Pipeline(channelFactory);
         pipeline.addProcessingElement(mySource);
         pipeline.addProcessingElement(operator);
         pipeline.addProcessingElement(sink);
