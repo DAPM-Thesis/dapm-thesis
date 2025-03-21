@@ -3,6 +3,7 @@ package impl;
 import communication.channel.ChannelFactory;
 import communication.channel.SimpleChannelFactory;
 import pipeline.Pipeline;
+import pipeline.PipelineBuilder;
 
 public class PipelineTest {
 
@@ -17,16 +18,19 @@ public class PipelineTest {
         // Sink
         MySink sink = new MySink();
 
-        // Create pipeline
+        StringBuilder sb = new StringBuilder();
+
+        // Create pipeline using pipeline builder
+        PipelineBuilder builder = new PipelineBuilder();
         ChannelFactory channelFactory = new SimpleChannelFactory();
-        Pipeline pipeline = new Pipeline(channelFactory);
-        pipeline.addProcessingElement(mySource);
-        pipeline.addProcessingElement(operator);
-        pipeline.addProcessingElement(sink);
 
-        pipeline.connect(mySource, operator);
-        pipeline.connect(operator, sink);
-
-        pipeline.start();
+        builder.createPipeline(channelFactory)
+                .addProcessingElement(mySource)
+                .addProcessingElement(operator)
+                .addProcessingElement(sink)
+                .connect(mySource, operator)
+                .connect(operator, sink)
+                .getCurrentPipeline()
+                .start();
     }
 }

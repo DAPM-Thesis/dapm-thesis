@@ -32,21 +32,16 @@ public class Pipeline {
         return this;
     }
 
-    public <C> Pipeline connect(Publisher<C> from, Subscriber<C> to) {
-        if (!processingElements.contains(from) || !processingElements.contains(to))
-            { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
+    public Map<ProcessingElement, Channel<?>> getReceivingChannels() {
+        return receivingChannels;
+    }
 
-        // fetch from's output channel if it exists, and create a new one otherwise
-        Channel<C> channel = (Channel<C>) receivingChannels.get(from);
-        if (channel == null) {
-            channel = channelFactory.createChannel();
-            from.subscribe(channel);
-            receivingChannels.put((ProcessingElement) from, channel);
-            channels.add(channel);
-        }
+    public ChannelFactory getChannelFactory() {
+        return channelFactory;
+    }
 
-        channel.subscribe(to);
-        return this;
+    public Set<Channel<?>> getChannels() {
+        return channels;
     }
 
     public void start() {
