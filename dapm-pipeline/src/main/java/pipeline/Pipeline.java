@@ -6,7 +6,6 @@ import communication.Publisher;
 import communication.Subscriber;
 import pipeline.processingelement.ProcessingElement;
 import pipeline.processingelement.Sink;
-import pipeline.processingelement.Source;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,7 +32,7 @@ public class Pipeline {
 
         this(channelFactory);
 
-        if (!areConsistentConstructorArguments(processingElements, channels, receivingChannels)) {
+        if (!areConsistent(processingElements, channels, receivingChannels)) {
             throw new IllegalArgumentException("The given arguments are inconsistent");
         }
 
@@ -42,7 +41,9 @@ public class Pipeline {
         this.receivingChannels = receivingChannels;
     }
 
-    private boolean areConsistentConstructorArguments(Set<ProcessingElement> processingElements, Set<Channel<?>> channels, Map<ProcessingElement, Channel<?>> receivingChannels) {
+    private boolean areConsistent(Set<ProcessingElement> processingElements,
+                                  Set<Channel<?>> channels,
+                                  Map<ProcessingElement, Channel<?>> receivingChannels) {
         // Any processing element must either have an output channel or be a sink (but not both).
         for (ProcessingElement pe : processingElements) {
             if (pe instanceof Sink && receivingChannels.containsKey(pe)
@@ -77,11 +78,4 @@ public class Pipeline {
         return this;
     }
 
-    public void start() {
-        for(ProcessingElement pe : processingElements) {
-            if(pe instanceof Source<?> source) {
-                source.start();
-            }
-        }
-    }
 }

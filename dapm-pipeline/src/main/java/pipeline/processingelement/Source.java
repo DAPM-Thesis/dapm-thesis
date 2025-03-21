@@ -7,15 +7,6 @@ import datatype.DataType;
 public abstract class Source<O extends DataType> extends ProcessingElement implements Publisher<O> {
     private Subscriber<O> outgoing; // Channel
 
-    public void start() {
-        while(isAvailable()) {
-            O output = process();
-            publish(output);
-        }
-    }
-
-    public abstract O process();
-
     @Override
     public void publish(O data) { outgoing.observe(data); }
 
