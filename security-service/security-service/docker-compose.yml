@@ -6,7 +6,7 @@ services:
     container_name: dapm_postgres_orga
     environment:
       - POSTGRES_USER=orga_user
-      - POSTGRES_PASSWORD=orga_user
+      - POSTGRES_PASSWORD=orga_pass
       - POSTGRES_DB=orga_db
     ports:
       - "5433:5432"
@@ -20,7 +20,7 @@ services:
     container_name: dapm_postgres_orgb
     environment:
       - POSTGRES_USER=orgb_user
-      - POSTGRES_PASSWORD=orgb_user
+      - POSTGRES_PASSWORD=orgb_pass
       - POSTGRES_DB=orgb_db
     ports:
       - "5434:5432"

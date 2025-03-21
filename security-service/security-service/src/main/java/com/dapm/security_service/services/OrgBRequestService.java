@@ -16,7 +16,7 @@ public class OrgBRequestService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     // In a real app, load this from a config property, e.g., "orgB.peerApi.baseUrl"
-    private final String ORG_B_BASE_URL = "http://localhost:8080/api/peer/pipeline-node-requests";
+    private final String ORG_B_BASE_URL = "http://localhost:8082/api/peer/pipeline-node-requests";
 
     /**
      * Send a new request to OrgB's PeerApi.
