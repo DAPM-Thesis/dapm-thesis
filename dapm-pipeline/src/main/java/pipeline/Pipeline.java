@@ -6,6 +6,7 @@ import communication.Publisher;
 import communication.Subscriber;
 import pipeline.processingelement.ProcessingElement;
 import pipeline.processingelement.Sink;
+import pipeline.processingelement.Source;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,4 +77,11 @@ public class Pipeline {
         return this;
     }
 
+    public void start() {
+        for(ProcessingElement pe : processingElements) {
+            if(pe instanceof Source<?> source) {
+                source.start();
+            }
+        }
+    }
 }
