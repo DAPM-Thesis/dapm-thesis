@@ -13,6 +13,11 @@ public class MySource extends Source<Event> {
 
     @Override
     public Event process() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return new Event(
                 "CaseID" + rand.nextInt(0, 5),
                 activities[rand.nextInt(activities.length)],
