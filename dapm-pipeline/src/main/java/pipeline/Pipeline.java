@@ -2,10 +2,7 @@ package pipeline;
 
 import communication.channel.Channel;
 import communication.channel.ChannelFactory;
-import communication.Publisher;
-import communication.Subscriber;
 import pipeline.processingelement.ProcessingElement;
-import pipeline.processingelement.Sink;
 import pipeline.processingelement.Source;
 
 import java.util.HashMap;
@@ -26,23 +23,10 @@ public class Pipeline {
         this.channelFactory = channelFactory;
     }
 
-    public Pipeline addProcessingElement(ProcessingElement pe) {
-        if (pe == null) { throw new IllegalArgumentException("processingElement cannot be null"); }
-        processingElements.add(pe);
-        return this;
-    }
-
-    public Map<ProcessingElement, Channel<?>> getReceivingChannels() {
-        return receivingChannels;
-    }
-
-    public ChannelFactory getChannelFactory() {
-        return channelFactory;
-    }
-
-    public Set<Channel<?>> getChannels() {
-        return channels;
-    }
+    public Set<ProcessingElement> getProcessingElements() { return processingElements; }
+    public Map<ProcessingElement, Channel<?>> getReceivingChannels() { return receivingChannels; }
+    public ChannelFactory getChannelFactory() { return channelFactory; }
+    public Set<Channel<?>> getChannels() { return channels; }
 
     public void start() {
         for(ProcessingElement pe : processingElements) {
