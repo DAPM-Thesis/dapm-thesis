@@ -6,11 +6,11 @@ import datatype.serialization.DataTypeSerializer;
 import datatype.serialization.deserialization.DataTypeFactory;
 import pipeline.processingelement.Operator;
 
-public class MyOperator extends Operator<Event, Event, String, String> {
+public class MyEventOperator extends Operator<Event, Event, String, String> {
 
     private final DataTypeSerializer dataTypeSerializer;
 
-    public MyOperator(Algorithm<String, String> algorithm) {
+    public MyEventOperator(Algorithm<String, String> algorithm) {
         super(algorithm);
         dataTypeSerializer = new DataTypeSerializer();
     }

@@ -2,11 +2,11 @@ package impl;
 
 import algorithm.Algorithm;
 
-public class MyAlgorithm implements Algorithm<String, String> {
+public class MyStringAlgorithm implements Algorithm<String, String> {
 
     @Override
     public String run(String s) {
-        // Just passing on the String
+        System.out.println("Applied: " + this);
         return s;
     }
 }

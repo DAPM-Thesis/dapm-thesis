@@ -1,36 +1,43 @@
 package impl;
 
+import algorithm.Algorithm;
 import communication.channel.ChannelFactory;
 import communication.channel.SimpleChannelFactory;
+import datatype.impl.event.Event;
 import pipeline.Pipeline;
 import pipeline.PipelineBuilder;
+import pipeline.processingelement.Operator;
+import pipeline.processingelement.Sink;
+import pipeline.processingelement.Source;
 
 public class PipelineTest {
 
     public static void main(String[] args) {
-        // Source
-        MySource mySource = new MySource();
 
-        // Operator
-        MyAlgorithm algorithm = new MyAlgorithm();
-        MyOperator operator = new MyOperator(algorithm);
+        // Pipeline: Source<Event> -> Operator<Event, Event, String, String> -> Sink<Event>
+
+        // Source
+        Source<Event> source = new MyEventSource();
+
+        // Event Operator
+        Algorithm<String, String> algorithm = new MyStringAlgorithm();
+        Operator<Event, Event, String, String> operator = new MyEventOperator(algorithm);
 
         // Sink
-        MySink sink = new MySink();
-
-        StringBuilder sb = new StringBuilder();
+        Sink<Event> sink = new MySink();
 
         // Create pipeline using pipeline builder
         PipelineBuilder builder = new PipelineBuilder();
         ChannelFactory channelFactory = new SimpleChannelFactory();
 
-        builder.createPipeline(channelFactory)
-                .addProcessingElement(mySource)
+        Pipeline pipeline = builder.createPipeline(channelFactory)
+                .addProcessingElement(source)
                 .addProcessingElement(operator)
                 .addProcessingElement(sink)
-                .connect(mySource, operator)
+                .connect(source, operator)
                 .connect(operator, sink)
-                .getCurrentPipeline()
-                .start();
+                .getCurrentPipeline();
+
+        pipeline.start();
     }
 }
