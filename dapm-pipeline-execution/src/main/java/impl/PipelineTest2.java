@@ -34,6 +34,7 @@ public class PipelineTest2 {
 
 
         // Sink
+        /*
         Sink<EventPetriNetCompound> sink = new MySink();
 
         // Create pipeline using pipeline builder
@@ -54,6 +55,8 @@ public class PipelineTest2 {
                 .getCurrentPipeline();
 
         pipeline.start();
+
+         */
     }
 
 }
