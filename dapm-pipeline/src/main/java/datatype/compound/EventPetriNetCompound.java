@@ -1,2 +1,5 @@
-package datatype.compound;public interface EventPetriNetCompound {
+package datatype.compound;
+
+public interface EventPetriNetCompound {
+
 }
