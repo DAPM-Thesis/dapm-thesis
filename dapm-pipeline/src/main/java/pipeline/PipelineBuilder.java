@@ -7,11 +7,12 @@ import communication.channel.ChannelFactory;
 import pipeline.processingelement.ProcessingElement;
 
 public class PipelineBuilder {
-
+    private ChannelFactory channelFactory;
     private Pipeline currentPipeline;
 
     public PipelineBuilder createPipeline(ChannelFactory channelFactory) {
         currentPipeline = new Pipeline(channelFactory);
+        this.channelFactory = channelFactory;
         return this;
     }
 
@@ -28,7 +29,7 @@ public class PipelineBuilder {
         // fetch from's output channel if it exists, and create a new one otherwise
         Channel<C> channel = (Channel<C>) currentPipeline.getReceivingChannels().get(from);
         if (channel == null) {
-            channel = currentPipeline.getChannelFactory().createChannel();
+            channel = channelFactory.createChannel();
             from.subscribe(channel);
             currentPipeline.getReceivingChannels().put((ProcessingElement) from, channel);
             currentPipeline.getChannels().add(channel);
