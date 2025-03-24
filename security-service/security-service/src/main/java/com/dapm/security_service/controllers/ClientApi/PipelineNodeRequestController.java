@@ -46,24 +46,6 @@ public class PipelineNodeRequestController {
     }
 
     // Approve a request. This endpoint generates a JWT token with constraints for the approved request.
-    @PutMapping("/{id}/approve")
-    public PipelineNodeRequest approveRequest(@PathVariable UUID id) {
-        PipelineNodeRequest request = requestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
-        if (request.getStatus() != AccessRequestStatus.PENDING) {
-            throw new RuntimeException("Request already processed");
-        }
-        // Generate a token using the requester info and the requested duration.
-        // Here, we assume the token's expiration reflects the allowed duration (in milliseconds).
-        long expirationMillis = request.getRequestedDurationHours() * 3600000L;
-        //String token = tokenService.generateTokenForUser(request.getRequesterInfo(), expirationMillis);
-        //request.setApprovalToken(token);
-        request.setStatus(AccessRequestStatus.APPROVED);
-        request.setDecisionTime(Instant.now());
-        return requestRepository.save(request);
-    }
-
-
     @PostMapping("/approve")
     public String approveNodeRequest(@RequestBody ApproveNodeRequestDto approveNodeRequestDto){
         PipelineNodeRequest request = requestRepository.findById(approveNodeRequestDto.getRequestId())
