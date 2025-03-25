@@ -13,7 +13,7 @@ Every folder is a separate project with its own pom.xml file!
 ## Jitpack
 The [dapm-pipeline](#projects) project is a shared project between the groups. This project is available on [jitpack.io](https://jitpack.io/) and can be used as a dependency in other projects.
 
-The `jitpack.yml` in the root of the project ensures only the **dapm-pipeline** project folder will be build and available.
+The `jitpack.yml` in the root of the project ensures only the **dapm-pipeline** project folder will be included in the build.
 ```
 jdk:
   - openjdk21
@@ -46,7 +46,8 @@ If you want to be able to push new builds to jitpack, follow the following steps
 </settings>
 
 ```
-Make sure to replace with your username and token.
+Make sure to replace with your token.
+
 10. To push a new build to jitpack, you have to use a tag. Run the following:
 ```
 git tag v1.0.0
@@ -54,7 +55,8 @@ git push origin v1.0.0
 ```
 Make sure to update the tag version with a newer version than the previous one. If there is no new tag set, there will be no new build pushed to jitpack.
 
-The new version is now available on jitpack [View here](https://jitpack.io/#DAPM-Thesis/dapm-thesis)
+The new version is now available on jitpack <a href="https://jitpack.io/#DAPM-Thesis/dapm-thesis" target="_blank">View here</a>
+
 
 ### Get started with Jitpack (dependency)
 If you want to use the jitpack build in another project, follow the following steps:
