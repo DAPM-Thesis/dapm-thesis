@@ -35,13 +35,16 @@ If you want to be able to push new builds to jitpack, follow the following steps
 8. Check if there is a file called `settings.xml` if it is not there, create it.
 9. Add this to your `settings.xml` file:
 ```
-<servers>
-    <server>
-        <id>jitpack.io</id>
-        <username>YOUR_GIT_USERNAME</username>
-        <password>YOUR_AUTH_TOKEN</password>
-    </server>
-</servers>
+<settings>
+  <servers>
+        <server>
+          <id>jitpack.io</id>
+          <username>YOUR_GITHUB_AUTH_TOKEN</username>
+          <password>.</password>
+        </server>
+  </servers>
+</settings>
+
 ```
 Make sure to replace with your username and token.
 10. To push a new build to jitpack, you have to use a tag. Run the following:
@@ -50,6 +53,8 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 Make sure to update the tag version with a newer version than the previous one. If there is no new tag set, there will be no new build pushed to jitpack.
+
+The new version is now available on jitpack [View here](https://jitpack.io/#DAPM-Thesis/dapm-thesis)
 
 ### Get started with Jitpack (dependency)
 If you want to use the jitpack build in another project, follow the following steps:
@@ -62,10 +67,12 @@ If you want to use the jitpack build in another project, follow the following st
     </repository>
 </repositories>
 
-<dependency>
-    <groupId>com.github.dapm-thesis</groupId>
-    <artifactId>dapm-pipeline</artifactId>
-    <version>LATEST</version>
-</dependency>
+<dependencies>
+    <dependency>
+        <groupId>com.github.DAPM-Thesis</groupId>
+        <artifactId>dapm-thesis</artifactId>
+        <version>LATEST</version>
+    </dependency>
+</dependencies>
 ```
 Do a `mvn clean install` after.
