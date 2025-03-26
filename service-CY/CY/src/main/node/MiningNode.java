@@ -19,6 +19,8 @@ public class MiningNode<T extends DataType> extends OperatorNode<T>{
 
     public MiningNode(String name, String description, Collection<Topic<?>> inputTopics, Algorithm<Pair<T, Boolean>> algorithm) {
         super(name, description);
+
+        assert !inputTopics.isEmpty() : "OperatorNode inheritors must have at least 1 inputHandle";
         this.algorithm = algorithm;
 
         // create input handles

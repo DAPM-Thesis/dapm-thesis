@@ -1,6 +1,6 @@
 package main.datatype;
 
-import main.Attribute;
+import main.datatype.visitorpattern.Visitor;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,9 +20,8 @@ public class Event extends DataType {
 
     public String getCaseID() {return caseID;}
 
-
     @Override
-    protected String getPayloadString() {
-        return "caseID=" + caseID + ", activity=" + activity + ", timestamp=" + timestamp + ", attributes=" + attributes;
+    public void acceptVisitor(Visitor<?> v) {
+        v.visitEvent(this);
     }
 }

@@ -2,9 +2,8 @@ package main;
 
 import main.algorithms.BehavioralPatternsMiner;
 import main.datatype.Event;
-import main.datatype.PetriNet;
+import main.datatype.petrinet.PetriNet;
 import main.node.MiningNode;
-import main.node.OperatorNode;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Collection;
