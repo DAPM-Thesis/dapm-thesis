@@ -48,8 +48,9 @@ If you want to use the jitpack build in another project, follow the following st
     <dependency>
         <groupId>com.github.DAPM-Thesis</groupId>
         <artifactId>dapm-thesis</artifactId>
-        <version>LATEST</version>
+        <version>v1.0.0</version>
     </dependency>
 </dependencies>
 ```
+Remember to update the version with the latest.
 Do a `mvn clean install` after.

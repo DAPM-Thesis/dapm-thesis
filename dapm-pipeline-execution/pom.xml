@@ -25,7 +25,7 @@
                 <dependency>
                     <groupId>com.github.DAPM-Thesis</groupId>
                     <artifactId>dapm-thesis</artifactId>
-                    <version>LATEST</version>
+                    <version>v1.0.2</version>
                 </dependency>
             </dependencies>
         </profile>
