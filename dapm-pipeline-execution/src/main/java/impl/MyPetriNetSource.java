@@ -1,6 +1,6 @@
 package impl;
 
-import datatype.impl.petrinet.PetriNet;
+import message.impl.petrinet.PetriNet;
 import pipeline.processingelement.Source;
 
 public class MyPetriNetSource extends Source<PetriNet> {

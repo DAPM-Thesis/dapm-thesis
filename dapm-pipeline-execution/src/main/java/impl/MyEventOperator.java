@@ -1,18 +1,18 @@
 package impl;
 
 import algorithm.Algorithm;
-import datatype.impl.event.Event;
-import datatype.serialization.DataTypeSerializer;
-import datatype.serialization.deserialization.DataTypeFactory;
+import message.impl.event.Event;
+import message.serialization.MessageSerializer;
+import message.serialization.deserialization.MessageFactory;
 import pipeline.processingelement.Operator;
 
 public class MyEventOperator extends Operator<Event, Event, String, String> {
 
-    private final DataTypeSerializer dataTypeSerializer;
+    private final MessageSerializer messageSerializer;
 
     public MyEventOperator(Algorithm<String, String> algorithm) {
         super(algorithm);
-        dataTypeSerializer = new DataTypeSerializer();
+        messageSerializer = new MessageSerializer();
     }
 
     @Override
@@ -22,11 +22,11 @@ public class MyEventOperator extends Operator<Event, Event, String, String> {
 
     @Override
     protected String convertInput(Event event) {
-        return dataTypeSerializer.visit(event);
+        return messageSerializer.visit(event);
     }
 
     @Override
     protected Event convertOutput(String s) {
-        return (Event) DataTypeFactory.deserialize(s);
+        return (Event) MessageFactory.deserialize(s);
     }
 }

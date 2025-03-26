@@ -1,7 +1,7 @@
 package impl;
 
 import algorithm.Algorithm;
-import datatype.impl.petrinet.PetriNet;
+import message.impl.petrinet.PetriNet;
 import pipeline.processingelement.Operator;
 
 public class MyPetriNetOperator extends Operator<PetriNet, PetriNet, PetriNet, PetriNet> {

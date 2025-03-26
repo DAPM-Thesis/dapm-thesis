@@ -3,7 +3,7 @@ package impl;
 import algorithm.Algorithm;
 import communication.channel.ChannelFactory;
 import communication.channel.SimpleChannelFactory;
-import datatype.impl.event.Event;
+import message.impl.event.Event;
 import pipeline.Pipeline;
 import pipeline.PipelineBuilder;
 import pipeline.processingelement.Operator;

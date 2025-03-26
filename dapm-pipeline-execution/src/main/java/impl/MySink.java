@@ -1,7 +1,7 @@
 package impl;
 
 import pipeline.processingelement.Sink;
-import datatype.impl.event.Event;
+import message.impl.event.Event;
 
 public class MySink extends Sink<Event> {
 

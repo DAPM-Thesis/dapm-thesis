@@ -1,6 +1,6 @@
 package impl;
 
-import datatype.impl.event.Event;
+import message.impl.event.Event;
 import pipeline.processingelement.Source;
 
 import java.util.HashSet;
