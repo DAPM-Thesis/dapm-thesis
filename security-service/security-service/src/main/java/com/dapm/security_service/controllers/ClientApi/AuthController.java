@@ -4,12 +4,14 @@ import com.dapm.security_service.models.dtos.AuthRequest;
 import com.dapm.security_service.models.dtos.AuthResponse;
 import com.dapm.security_service.services.AuthenticationService;
 import com.dapm.security_service.services.TokenVerificationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     @Autowired

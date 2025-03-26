@@ -52,23 +52,6 @@ public class TokenService {
     }
 
 
-    /*
-    @PostConstruct
-    public void init() throws Exception {
-        // Remove PEM header/footer and whitespace.
-        String privateKeyPEM = privateKeyString
-                .replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s+", "");
-
-        byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        this.privateKey = keyFactory.generatePrivate(keySpec);
-    }
-
-     */
-
     /**
      * Generates a JWT for the given user including claims for username,
      * organization, faculty, department, and roles.
