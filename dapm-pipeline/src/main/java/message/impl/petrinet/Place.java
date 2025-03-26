@@ -1,4 +1,4 @@
-package datatype.impl.petrinet;
+package message.impl.petrinet;
 
 public class Place {
     private final String ID;

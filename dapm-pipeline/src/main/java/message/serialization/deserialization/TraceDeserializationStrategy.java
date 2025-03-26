@@ -1,9 +1,9 @@
-package datatype.serialization.deserialization;
+package message.serialization.deserialization;
 
-import datatype.DataType;
-import datatype.impl.Trace;
-import datatype.impl.event.Event;
-import datatype.serialization.JXESParsing;
+import message.Message;
+import message.impl.Trace;
+import message.impl.event.Event;
+import message.serialization.JXESParsing;
 import utils.Pair;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class TraceDeserializationStrategy implements DeserializationStrategy {
     @Override
-    public DataType deserialize(String payload) {
+    public Message deserialize(String payload) {
         Map<String, Object> jsonMap = JXESParsing.toJSONMap(payload);
 
         Pair<Map<String, Object>, Map<String, Object>> traceAndEventGlobalAttributes = JXESParsing.getTraceAndEventGlobalAttributes(jsonMap);

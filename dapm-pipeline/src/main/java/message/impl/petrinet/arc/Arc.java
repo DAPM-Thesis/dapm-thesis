@@ -1,4 +1,4 @@
-package datatype.impl.petrinet.arc;
+package message.impl.petrinet.arc;
 
 public abstract class Arc {
     protected final String ID;

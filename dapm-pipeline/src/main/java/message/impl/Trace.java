@@ -1,16 +1,16 @@
-package datatype.impl;
+package message.impl;
 
-import datatype.DataType;
-import datatype.impl.event.Event;
-import datatype.serialization.DataTypeVisitor;
-import datatype.serialization.deserialization.DeserializationStrategy;
-import datatype.serialization.deserialization.TraceDeserializationStrategy;
+import message.Message;
+import message.impl.event.Event;
+import message.serialization.MessageVisitor;
+import message.serialization.deserialization.DeserializationStrategy;
+import message.serialization.deserialization.TraceDeserializationStrategy;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class Trace extends DataType implements Iterable<Event> {
+public class Trace extends Message implements Iterable<Event> {
 
     private final List<Event> trace;
     private String caseID;
@@ -26,7 +26,7 @@ public class Trace extends DataType implements Iterable<Event> {
     public String getCaseID() { return caseID; }
 
     @Override
-    public void acceptVisitor(DataTypeVisitor<?> v) {
+    public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);
     }
 

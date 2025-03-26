@@ -1,17 +1,17 @@
-package datatype.serialization.deserialization;
+package message.serialization.deserialization;
 
-import datatype.impl.Alignment;
-import datatype.DataType;
-import datatype.impl.Trace;
-import datatype.impl.event.Event;
-import datatype.impl.petrinet.PetriNet;
+import message.impl.Alignment;
+import message.Message;
+import message.impl.Trace;
+import message.impl.event.Event;
+import message.impl.petrinet.PetriNet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class DataTypeFactory {
+public class MessageFactory {
     private static final HashMap<String, DeserializationStrategy> strategyMap = new HashMap<>();
 
     static {
@@ -22,19 +22,19 @@ public class DataTypeFactory {
         register(new Trace(new ArrayList<>()));
     }
 
-    private static void register(DataType instance) {
+    private static void register(Message instance) {
         strategyMap.put(instance.getName(), instance.getDeserializationStrategy());
     }
 
-    public static DataType deserialize(String serialization) {
+    public static Message deserialize(String serialization) {
         assert serialization != null && !serialization.isEmpty();
 
         String[] typeAndPayload = serialization.split(":", 2);
-        assert typeAndPayload.length == 2 : "serialization pattern has changed from 'DataType_subtype:payload'";
+        assert typeAndPayload.length == 2 : "serialization pattern has changed from 'Message_subtype:payload'";
 
         String className = typeAndPayload[0];
         DeserializationStrategy strategy = strategyMap.get(className);
-        assert strategy != null : "deserialization for " + className + " has not been added to the DataTypeFactory";
+        assert strategy != null : "deserialization for " + className + " has not been added to the MessageFactory";
 
         return strategy.deserialize(typeAndPayload[1]);
     }

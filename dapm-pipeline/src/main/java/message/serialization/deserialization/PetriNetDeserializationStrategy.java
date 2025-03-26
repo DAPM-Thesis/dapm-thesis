@@ -1,12 +1,12 @@
-package datatype.serialization.deserialization;
+package message.serialization.deserialization;
 
-import datatype.DataType;
-import datatype.impl.petrinet.PetriNet;
-import datatype.impl.petrinet.Place;
-import datatype.impl.petrinet.Transition;
-import datatype.impl.petrinet.arc.Arc;
-import datatype.impl.petrinet.arc.PlaceToTransitionArc;
-import datatype.impl.petrinet.arc.TransitionToPlaceArc;
+import message.Message;
+import message.impl.petrinet.PetriNet;
+import message.impl.petrinet.Place;
+import message.impl.petrinet.Transition;
+import message.impl.petrinet.arc.Arc;
+import message.impl.petrinet.arc.PlaceToTransitionArc;
+import message.impl.petrinet.arc.TransitionToPlaceArc;
 import utils.Pair;
 
 import java.util.HashMap;
@@ -17,7 +17,7 @@ import java.util.Set;
 public class PetriNetDeserializationStrategy implements DeserializationStrategy {
 
     @Override
-    public DataType deserialize(String payload) {
+    public Message deserialize(String payload) {
         Set<Place> places = extractPlaces(payload);
         Set<Transition> transitions = extractTransitions(payload);
         Set<Arc> flowRelation = extractFlowRelation(payload, places, transitions);

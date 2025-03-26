@@ -1,11 +1,11 @@
-package datatype.impl;
+package message.impl;
 
-import datatype.DataType;
-import datatype.serialization.DataTypeVisitor;
-import datatype.serialization.deserialization.AlignmentDeserializationStrategy;
-import datatype.serialization.deserialization.DeserializationStrategy;
+import message.Message;
+import message.serialization.MessageVisitor;
+import message.serialization.deserialization.AlignmentDeserializationStrategy;
+import message.serialization.deserialization.DeserializationStrategy;
 
-public class Alignment extends DataType {
+public class Alignment extends Message {
     private final Trace logTrace;
     private final Trace modelTrace;
 
@@ -23,7 +23,7 @@ public class Alignment extends DataType {
     public Trace getModelTrace() { return modelTrace; }
 
     @Override
-    public void acceptVisitor(DataTypeVisitor<?> v) {
+    public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);
     }
 

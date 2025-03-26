@@ -1,7 +1,7 @@
-package datatype.serialization;
+package message.serialization;
 
-import datatype.impl.event.Attribute;
-import datatype.impl.event.Event;
+import message.impl.event.Attribute;
+import message.impl.event.Event;
 import utils.Pair;
 
 import java.util.*;

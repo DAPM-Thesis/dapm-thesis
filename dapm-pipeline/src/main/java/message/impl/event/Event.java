@@ -1,14 +1,14 @@
-package datatype.impl.event;
+package message.impl.event;
 
-import datatype.DataType;
-import datatype.serialization.DataTypeVisitor;
-import datatype.serialization.deserialization.DeserializationStrategy;
-import datatype.serialization.deserialization.EventDeserializationStrategy;
+import message.Message;
+import message.serialization.MessageVisitor;
+import message.serialization.deserialization.DeserializationStrategy;
+import message.serialization.deserialization.EventDeserializationStrategy;
 
 import java.util.Collection;
 import java.util.Set;
 
-public class Event extends DataType {
+public class Event extends Message {
     private final String caseID;
     private final String activity;
     private final String timestamp; // TODO: make timestamp a different type than String? If it is a DateTime-like type, the Trace class can assert that each event in the trace happened in temporal order.
@@ -36,7 +36,7 @@ public class Event extends DataType {
     }
 
     @Override
-    public void acceptVisitor(DataTypeVisitor<?> v) {
+    public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);
     }
 

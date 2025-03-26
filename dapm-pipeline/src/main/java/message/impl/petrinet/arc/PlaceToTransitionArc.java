@@ -1,7 +1,7 @@
-package datatype.impl.petrinet.arc;
+package message.impl.petrinet.arc;
 
-import datatype.impl.petrinet.Place;
-import datatype.impl.petrinet.Transition;
+import message.impl.petrinet.Place;
+import message.impl.petrinet.Transition;
 
 public class PlaceToTransitionArc extends Arc {
     private final Place source;

@@ -1,7 +1,7 @@
-package datatype.serialization.deserialization;
+package message.serialization.deserialization;
 
-import datatype.DataType;
-import datatype.serialization.JXESParsing;
+import message.Message;
+import message.serialization.JXESParsing;
 import utils.Pair;
 
 import java.util.HashMap;
@@ -16,7 +16,7 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
      *  the value of the "concept:name" key in an event. Note also that a trace's "attrs" keys will also be added to the
      *  returned event's attributes. */
     @Override
-    public DataType deserialize(String payload) {
+    public Message deserialize(String payload) {
         Map<String, Object> jsonMap = JXESParsing.toJSONMap(payload);
 
         // since we assume only a single event can be deserialized at a time, all global attributes can be combined

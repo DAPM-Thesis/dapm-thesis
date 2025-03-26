@@ -1,4 +1,4 @@
-package datatype.impl.petrinet;
+package message.impl.petrinet;
 
 public class Transition {
     private final String ID;

@@ -1,10 +1,10 @@
-package datatype.serialization.deserialization;
+package message.serialization.deserialization;
 
-import datatype.impl.Alignment;
-import datatype.DataType;
-import datatype.impl.Trace;
-import datatype.impl.event.Event;
-import datatype.serialization.JXESParsing;
+import message.impl.Alignment;
+import message.Message;
+import message.impl.Trace;
+import message.impl.event.Event;
+import message.serialization.JXESParsing;
 import utils.Pair;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class AlignmentDeserializationStrategy implements DeserializationStrategy
     /** Deserializes A JXES-formatted string into an alignment. Assumes the given string contains exactly 2 traces:
      *  The first trace is set to the log trace, and the second trace is set to the model trace. */
     @Override
-    public DataType deserialize(String payload) {
+    public Message deserialize(String payload) {
         Map<String, Object> jsonMap = JXESParsing.toJSONMap(payload);
 
         Pair<Map<String, Object>, Map<String, Object>> traceAndEventGlobalAttributes = JXESParsing.getTraceAndEventGlobalAttributes(jsonMap);

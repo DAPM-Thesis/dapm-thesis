@@ -1,4 +1,4 @@
-package datatype.impl.event;
+package message.impl.event;
 
 import java.util.Collections;
 import java.util.Map;

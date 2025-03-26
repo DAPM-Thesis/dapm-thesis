@@ -1,20 +1,20 @@
-package datatype.serialization;
-import datatype.impl.Alignment;
-import datatype.impl.Trace;
-import datatype.impl.event.Attribute;
-import datatype.impl.event.Event;
-import datatype.impl.petrinet.PetriNet;
-import datatype.impl.petrinet.Place;
-import datatype.impl.petrinet.Transition;
-import datatype.impl.petrinet.arc.Arc;
-import datatype.impl.petrinet.arc.PlaceToTransitionArc;
-import datatype.impl.petrinet.arc.TransitionToPlaceArc;
+package message.serialization;
+import message.impl.Alignment;
+import message.impl.Trace;
+import message.impl.event.Attribute;
+import message.impl.event.Event;
+import message.impl.petrinet.PetriNet;
+import message.impl.petrinet.Place;
+import message.impl.petrinet.Transition;
+import message.impl.petrinet.arc.Arc;
+import message.impl.petrinet.arc.PlaceToTransitionArc;
+import message.impl.petrinet.arc.TransitionToPlaceArc;
 
 import java.util.Collection;
 
 // TODO: make serialization its own class? Sure it adds an extra step but it will make maintainability easier, and enforce the correct formatting. Should be considered if serialization format changes frequently.
-/** Class for serializing DataType's. Note that any given instance of this class only is safe to use in a synchronous context. */
-public class DataTypeSerializer implements DataTypeVisitor<String> {
+/** Class for serializing Message's. Note that any given instance of this class only is safe to use in a synchronous context. */
+public class MessageSerializer implements MessageVisitor<String> {
     private String serialization;
 
     public String getSerialization() { return serialization; }

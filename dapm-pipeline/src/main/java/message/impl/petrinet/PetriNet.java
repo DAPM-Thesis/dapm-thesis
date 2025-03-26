@@ -1,17 +1,17 @@
-package datatype.impl.petrinet;
+package message.impl.petrinet;
 
-import datatype.DataType;
-import datatype.impl.petrinet.arc.Arc;
-import datatype.impl.petrinet.arc.PlaceToTransitionArc;
-import datatype.impl.petrinet.arc.TransitionToPlaceArc;
-import datatype.serialization.DataTypeVisitor;
-import datatype.serialization.deserialization.DeserializationStrategy;
-import datatype.serialization.deserialization.PetriNetDeserializationStrategy;
+import message.Message;
+import message.impl.petrinet.arc.Arc;
+import message.impl.petrinet.arc.PlaceToTransitionArc;
+import message.impl.petrinet.arc.TransitionToPlaceArc;
+import message.serialization.MessageVisitor;
+import message.serialization.deserialization.DeserializationStrategy;
+import message.serialization.deserialization.PetriNetDeserializationStrategy;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class PetriNet extends DataType {
+public class PetriNet extends Message {
     private Set<Place> places;
     private Set<Transition> transitions;
     private Set<Arc> flowRelation;
@@ -60,7 +60,7 @@ public class PetriNet extends DataType {
     }
 
     @Override
-    public void acceptVisitor(DataTypeVisitor<?> v) {
+    public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);
     }
 
