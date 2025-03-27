@@ -1,5 +1,6 @@
 package communication.channel;
 
+import communication.Producer;
 import communication.Publisher;
 import communication.Subscriber;
 import communication.message.Message;
@@ -12,22 +13,26 @@ public class Channel implements Subscriber<Message>, Publisher<Message> {
 
     @Override
     public void publish(Message message) {
-        for (Subscriber<Message> subscriber : outgoing) { subscriber.observe(message); }
+
     }
 
     @Override
-    public boolean subscribe(Subscriber<Message> subscriber) {
-        if (outgoing.contains(subscriber)) { return true; }
-        return outgoing.add(subscriber);
+    public void registerProducer(Producer producer) {
+
     }
 
     @Override
     public boolean unsubscribe(Subscriber<Message> subscriber) {
-        return outgoing.remove(subscriber);
+        return false;
     }
 
     @Override
-    public void observe(Message t) {
-        publish(t);
+    public void observe(Message message) {
+
+    }
+
+    @Override
+    public void registerConsumer(String topic) {
+
     }
 }

@@ -1,11 +1,12 @@
 package pipeline.processingelement;
 
+import communication.Producer;
 import communication.Publisher;
 import communication.Subscriber;
 import communication.message.Message;
 
 public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O> {
-    private Publisher<O> producer; // Channel
+    private Producer producer; // Channel
 
     public void start() {
         while(isAvailable()) {
@@ -20,7 +21,7 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public void publish(O data) { producer.publish(data); }
 
     @Override
-    public void registerProducer(Publisher<O> producer) {
+    public void registerProducer(Producer producer) {
         this.producer = producer;
     }
 

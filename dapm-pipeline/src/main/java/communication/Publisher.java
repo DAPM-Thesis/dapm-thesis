@@ -2,7 +2,7 @@ package communication;
 
 public interface Publisher<T> {
     void publish(T message);
-    void registerProducer(Publisher<T> producer);
+    void registerProducer(Producer producer);
     boolean unsubscribe(Subscriber<T> subscriber);
 }
 

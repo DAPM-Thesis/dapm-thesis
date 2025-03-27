@@ -9,13 +9,12 @@ import java.util.HashSet;
 
 public abstract class Sink extends ConsumingProcessingElement implements Subscriber<Message> {
 
-    private final Collection<Consumer<?>> consumers = new HashSet<>();
+    private final Collection<Consumer> consumers = new HashSet<>();
 
     @Override
-    public abstract void observe(I input);
+    public abstract void observe(Message input);
 
-    @Override
-    public void registerConsumer(Subscriber<I> subscriber) {
-        consumers.add((Consumer<I>)subscriber);
+    public void registerConsumer(String topic) {
+        consumers.add(new Consumer(this, topic));
     }
 }

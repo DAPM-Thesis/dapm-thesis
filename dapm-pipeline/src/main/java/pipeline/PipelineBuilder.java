@@ -8,6 +8,8 @@ import communication.channel.ChannelFactory;
 import communication.message.Message;
 import pipeline.processingelement.ProcessingElement;
 
+import java.util.UUID;
+
 public class PipelineBuilder {
     private ChannelFactory channelFactory;
     private Pipeline currentPipeline;
@@ -28,16 +30,12 @@ public class PipelineBuilder {
         { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
 
         // fetch from's output channel if it exists, and create a new one otherwise
-        Producer<C> producer = (Producer<C>) currentPipeline.getReceivingChannels().get(from);
+        Producer producer = currentPipeline.getReceivingChannels().get(from);
         if (producer == null) {
-            String topic = String.valueOf(currentPipeline.getChannels().size());
-            producer = new Producer<>(topic);
-            producer.registerProducer(from);
+            String topic = "Topic"+ UUID.randomUUID();
+            producer = new Producer(topic);
             from.registerProducer(producer);
-
-            Consumer<C> consumer = new Consumer<C>(topic);
-            consumer.registerConsumer(to);
-            to.registerConsumer(consumer);
+            to.registerConsumer(topic);
 
             currentPipeline.getReceivingChannels().put((ProcessingElement) from, producer);
             currentPipeline.getChannels().add(producer);

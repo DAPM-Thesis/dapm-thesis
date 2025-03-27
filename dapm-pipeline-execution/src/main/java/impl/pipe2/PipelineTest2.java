@@ -44,7 +44,7 @@ public class PipelineTest2 {
 
 
         // petri net put in first
-        Pipeline pipeline = builder.createPipeline(channelFactory)
+        Pipeline pipeline = builder.createPipeline()
             .addProcessingElement(petriNetSource)
             .addProcessingElement(petriNetOperator)
             .addProcessingElement(sink)

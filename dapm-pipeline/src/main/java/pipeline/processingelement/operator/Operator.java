@@ -1,5 +1,6 @@
 package pipeline.processingelement.operator;
 
+import communication.Producer;
 import communication.message.Message;
 import pipeline.processingelement.ConsumingProcessingElement;
 import algorithm.Algorithm;
@@ -13,8 +14,8 @@ import java.util.HashSet;
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
                                                       implements Subscriber<Message>, Publisher<O> {
     private final Algorithm<Message, AO> algorithm;
-    private final Collection<Consumer<?>> consumers = new HashSet<>();
-    private Publisher<O> producer;
+    private final Collection<Consumer> consumers = new HashSet<>();
+    private Producer producer;
 
     public Operator(Algorithm<Message, AO> algorithm) { this.algorithm = algorithm; }
 
@@ -35,13 +36,12 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public void publish(O output) { producer.publish(output); }
 
     @Override
-    public void registerProducer(Publisher<O> producer) {
+    public void registerProducer(Producer producer) {
         this.producer = producer;
     }
 
-    @Override
-    public void registerConsumer(Subscriber<I> subscriber) {
-        consumers.add((Consumer<I>)subscriber);
+    public void registerConsumer(String topic) {
+        consumers.add(new Consumer(this, topic));
     }
 
     @Override
