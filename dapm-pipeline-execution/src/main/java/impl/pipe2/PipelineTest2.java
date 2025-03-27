@@ -56,6 +56,7 @@ public class PipelineTest2 {
         pipeline.start();
 
         /*
+        // Event first
         Pipeline pipeline = builder.createPipeline(channelFactory)
                 .addProcessingElement(eventSource)
                 .addProcessingElement(eventOperator)
