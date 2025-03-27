@@ -32,10 +32,12 @@ public class PipelineBuilder {
         // fetch from's output channel if it exists, and create a new one otherwise
         Producer producer = currentPipeline.getReceivingChannels().get(from);
         if (producer == null) {
-            String topic = "Topic"+ UUID.randomUUID();
+            String topic = "Topic" + UUID.randomUUID();
             producer = new Producer(topic);
             from.registerProducer(producer);
-            to.registerConsumer(topic);
+
+            Consumer consumer = new Consumer(to, topic);
+            to.registerConsumer(consumer);
 
             currentPipeline.getReceivingChannels().put((ProcessingElement) from, producer);
             currentPipeline.getChannels().add(producer);

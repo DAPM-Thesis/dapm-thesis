@@ -1,5 +1,6 @@
 package communication.channel;
 
+import communication.Consumer;
 import communication.Producer;
 import communication.Publisher;
 import communication.Subscriber;
@@ -32,7 +33,7 @@ public class Channel implements Subscriber<Message>, Publisher<Message> {
     }
 
     @Override
-    public void registerConsumer(String topic) {
+    public void registerConsumer(Consumer consumer) {
 
     }
 }

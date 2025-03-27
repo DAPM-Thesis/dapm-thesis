@@ -40,8 +40,8 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
         this.producer = producer;
     }
 
-    public void registerConsumer(String topic) {
-        consumers.add(new Consumer(this, topic));
+    public void registerConsumer(Consumer consumer) {
+        consumers.add(consumer);
     }
 
     @Override

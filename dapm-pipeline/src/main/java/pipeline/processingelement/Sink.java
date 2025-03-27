@@ -14,7 +14,7 @@ public abstract class Sink extends ConsumingProcessingElement implements Subscri
     @Override
     public abstract void observe(Message input);
 
-    public void registerConsumer(String topic) {
-        consumers.add(new Consumer(this, topic));
+    public void registerConsumer(Consumer consumer) {
+        consumers.add(consumer);
     }
 }
