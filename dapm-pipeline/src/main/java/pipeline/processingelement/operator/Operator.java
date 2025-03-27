@@ -44,9 +44,4 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public void registerConsumer(Consumer consumer) {
         consumers.add(consumer);
     }
-
-    @Override
-    public boolean unsubscribe(Subscriber<O> subscriber) {
-        return true;
-    }
 }

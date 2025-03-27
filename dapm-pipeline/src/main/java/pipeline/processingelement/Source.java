@@ -24,10 +24,4 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public void registerProducer(Producer producer) {
         this.producer = producer;
     }
-
-    @Override
-    public boolean unsubscribe(Subscriber<O> subscriber) {
-        return true;
-    }
-
 }
