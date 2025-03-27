@@ -1,8 +1,6 @@
 package impl;
 
 import algorithm.Algorithm;
-import communication.channel.ChannelFactory;
-import communication.channel.SimpleChannelFactory;
 import message.impl.event.Event;
 import pipeline.Pipeline;
 import pipeline.PipelineBuilder;
@@ -28,9 +26,7 @@ public class PipelineTest {
 
         // Create pipeline using pipeline builder
         PipelineBuilder builder = new PipelineBuilder();
-        ChannelFactory channelFactory = new SimpleChannelFactory();
-
-        Pipeline pipeline = builder.createPipeline(channelFactory)
+        Pipeline pipeline = builder.createPipeline()
                 .addProcessingElement(source)
                 .addProcessingElement(operator)
                 .addProcessingElement(sink)

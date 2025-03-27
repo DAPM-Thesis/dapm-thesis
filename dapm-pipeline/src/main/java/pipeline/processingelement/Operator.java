@@ -1,12 +1,17 @@
 package pipeline.processingelement;
 
 import algorithm.Algorithm;
+import communication.Consumer;
 import communication.Publisher;
 import communication.Subscriber;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 public abstract class Operator<I,O,AI,AO> extends ProcessingElement implements Subscriber<I>, Publisher<O> {
     private final Algorithm<AI,AO> algorithm;
-    private Subscriber<O> outgoing; // channel
+    private final Collection<Consumer<?>> consumers = new HashSet<>();
+    private Publisher<O> producer;
 
     public Operator(Algorithm<AI,AO> algorithm) { this.algorithm = algorithm; }
 
@@ -27,19 +32,20 @@ public abstract class Operator<I,O,AI,AO> extends ProcessingElement implements S
     protected abstract O convertOutput(AO o);
 
     @Override
-    public void publish(O output) { outgoing.observe(output); }
+    public void publish(O output) { producer.publish(output); }
 
     @Override
-    public boolean subscribe(Subscriber<O> subscriber) {
-        if (outgoing != null && subscriber != outgoing) { return false; }
-        outgoing = subscriber;
-        return true;
+    public void registerProducer(Publisher<O> producer) {
+        this.producer = producer;
+    }
+
+    @Override
+    public void registerConsumer(Subscriber<I> subscriber) {
+        consumers.add((Consumer<I>)subscriber);
     }
 
     @Override
     public boolean unsubscribe(Subscriber<O> subscriber) {
-        if (subscriber != outgoing || outgoing == null) { return false; }
-        this.outgoing = null;
         return true;
     }
 }

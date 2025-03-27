@@ -1,8 +1,6 @@
 package impl;
 
 import algorithm.Algorithm;
-import communication.channel.ChannelFactory;
-import communication.channel.SimpleChannelFactory;
 import message.impl.event.Event;
 import message.impl.petrinet.PetriNet;
 import pipeline.Pipeline;
