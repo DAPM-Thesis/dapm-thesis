@@ -4,14 +4,12 @@ import communication.Consumer;
 import communication.Producer;
 import communication.Publisher;
 import communication.Subscriber;
-import communication.channel.ChannelFactory;
 import communication.message.Message;
 import pipeline.processingelement.ProcessingElement;
 
 import java.util.UUID;
 
 public class PipelineBuilder {
-    private ChannelFactory channelFactory;
     private Pipeline currentPipeline;
 
     public PipelineBuilder createPipeline() {

@@ -40,6 +40,7 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
         this.producer = producer;
     }
 
+    @Override
     public void registerConsumer(Consumer consumer) {
         consumers.add(consumer);
     }

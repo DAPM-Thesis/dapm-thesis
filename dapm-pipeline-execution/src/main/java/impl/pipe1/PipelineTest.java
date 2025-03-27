@@ -1,8 +1,6 @@
 package impl.pipe1;
 
 import algorithm.Algorithm;
-import communication.channel.ChannelFactory;
-import communication.channel.SimpleChannelFactory;
 import communication.message.impl.event.Event;
 import communication.message.Message;
 import pipeline.Pipeline;

@@ -1,8 +1,6 @@
 package impl.pipe2;
 
 import algorithm.Algorithm;
-import communication.channel.ChannelFactory;
-import communication.channel.SimpleChannelFactory;
 import communication.message.Message;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
@@ -40,8 +38,6 @@ public class PipelineTest2 {
 
         // Create pipeline using pipeline builder
         PipelineBuilder builder = new PipelineBuilder();
-        ChannelFactory channelFactory = new SimpleChannelFactory();
-
 
         // petri net put in first
         Pipeline pipeline = builder.createPipeline()
