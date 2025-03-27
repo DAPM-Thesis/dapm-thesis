@@ -1,7 +1,8 @@
 package pipeline.processingelement;
 
 import communication.Subscriber;
+import communication.message.Message;
 
-public abstract class Sink<I> extends ProcessingElement implements Subscriber<I> {
+public abstract class Sink extends ConsumingProcessingElement implements Subscriber<Message> {
 
 }

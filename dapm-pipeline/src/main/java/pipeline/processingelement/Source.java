@@ -2,8 +2,9 @@ package pipeline.processingelement;
 
 import communication.Publisher;
 import communication.Subscriber;
+import communication.message.Message;
 
-public abstract class Source<O> extends ProcessingElement implements Publisher<O> {
+public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O> {
     private Subscriber<O> outgoing; // Channel
 
     public void start() {
