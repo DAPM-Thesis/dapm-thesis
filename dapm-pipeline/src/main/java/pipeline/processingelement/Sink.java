@@ -2,11 +2,12 @@ package pipeline.processingelement;
 
 import communication.Consumer;
 import communication.Subscriber;
+import communication.message.Message;
 
 import java.util.Collection;
 import java.util.HashSet;
 
-public abstract class Sink<I> extends ProcessingElement implements Subscriber<I> {
+public abstract class Sink extends ConsumingProcessingElement implements Subscriber<Message> {
 
     private final Collection<Consumer<?>> consumers = new HashSet<>();
 

@@ -5,6 +5,7 @@ import communication.Producer;
 import communication.Publisher;
 import communication.Subscriber;
 import communication.channel.ChannelFactory;
+import communication.message.Message;
 import pipeline.processingelement.ProcessingElement;
 
 public class PipelineBuilder {
@@ -22,7 +23,7 @@ public class PipelineBuilder {
         return this;
     }
 
-    public <C> PipelineBuilder connect(Publisher<C> from, Subscriber<C> to) {
+    public <O extends Message> PipelineBuilder connect(Publisher<O> from, Subscriber<Message> to) {
         if (!currentPipeline.getProcessingElements().contains(from) || !currentPipeline.getProcessingElements().contains(to))
         { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
 
