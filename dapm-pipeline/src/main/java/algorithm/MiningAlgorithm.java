@@ -1,4 +1,4 @@
-package pipeline.processingelement.algorithm;
+package algorithm;
 
 import utils.Pair;
 

@@ -4,6 +4,7 @@ import communication.Publisher;
 import communication.Subscriber;
 import communication.channel.Channel;
 import communication.channel.ChannelFactory;
+import communication.message.Message;
 import pipeline.processingelement.ProcessingElement;
 
 public class PipelineBuilder {
@@ -22,15 +23,15 @@ public class PipelineBuilder {
         return this;
     }
 
-    public <C> PipelineBuilder connect(Publisher<C> from, Subscriber<C> to) {
+    public <O extends Message> PipelineBuilder connect(Publisher<O> from, Subscriber<Message> to) {
         if (!currentPipeline.getProcessingElements().contains(from) || !currentPipeline.getProcessingElements().contains(to))
         { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
 
         // fetch from's output channel if it exists, and create a new one otherwise
-        Channel<C> channel = (Channel<C>) currentPipeline.getReceivingChannels().get(from);
+        Channel channel = currentPipeline.getReceivingChannels().get(from);
         if (channel == null) {
             channel = channelFactory.createChannel();
-            from.subscribe(channel);
+            from.subscribe((Subscriber<O>) channel);
             currentPipeline.getReceivingChannels().put((ProcessingElement) from, channel);
             currentPipeline.getChannels().add(channel);
         }

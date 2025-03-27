@@ -1,14 +1,15 @@
-package impl;
+package impl.pipe1;
 
 import algorithm.Algorithm;
 import communication.channel.ChannelFactory;
 import communication.channel.SimpleChannelFactory;
-import message.impl.event.Event;
+import communication.message.impl.event.Event;
+import communication.message.Message;
 import pipeline.Pipeline;
 import pipeline.PipelineBuilder;
-import pipeline.processingelement.Operator;
 import pipeline.processingelement.Sink;
 import pipeline.processingelement.Source;
+import pipeline.processingelement.operator.SimpleOperator;
 
 public class PipelineTest {
 
@@ -20,11 +21,11 @@ public class PipelineTest {
         Source<Event> source = new MyEventSource();
 
         // Event Operator
-        Algorithm<String, String> algorithm = new MyStringAlgorithm();
-        Operator<Event, Event, String, String> operator = new MyEventOperator(algorithm);
+        Algorithm<Message, Event> algorithm = new MyEventAlgorithm();
+        SimpleOperator<Event> operator = new MyEventOperator(algorithm);
 
         // Sink
-        Sink<Event> sink = new MySink();
+        Sink sink = new MySink();
 
         // Create pipeline using pipeline builder
         PipelineBuilder builder = new PipelineBuilder();

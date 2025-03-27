@@ -1,7 +1,7 @@
 package pipeline.processingelement.operator;
 
 import communication.message.Message;
-import pipeline.processingelement.algorithm.MiningAlgorithm;
+import algorithm.MiningAlgorithm;
 import utils.Pair;
 
 public abstract class MiningOperator<O extends Message> extends Operator<Pair<O, Boolean>, O> {

@@ -12,8 +12,8 @@ import java.util.Set;
 
 public class Pipeline {
     private Set<ProcessingElement> processingElements;
-    private Set<Channel<?>> channels;
-    private Map<ProcessingElement, Channel<?>> receivingChannels;
+    private Set<Channel> channels;
+    private Map<ProcessingElement, Channel> receivingChannels;
 
     public Pipeline(ChannelFactory channelFactory) {
         processingElements = new HashSet<>();
@@ -22,8 +22,8 @@ public class Pipeline {
     }
 
     public Set<ProcessingElement> getProcessingElements() { return processingElements; }
-    public Map<ProcessingElement, Channel<?>> getReceivingChannels() { return receivingChannels; }
-    public Set<Channel<?>> getChannels() { return channels; }
+    public Map<ProcessingElement, Channel> getReceivingChannels() { return receivingChannels; }
+    public Set<Channel> getChannels() { return channels; }
 
     public void start() {
         for(ProcessingElement pe : processingElements) {

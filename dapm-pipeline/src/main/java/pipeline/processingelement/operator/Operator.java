@@ -2,8 +2,7 @@ package pipeline.processingelement.operator;
 
 import communication.message.Message;
 import pipeline.processingelement.ConsumingProcessingElement;
-import pipeline.processingelement.ProcessingElement;
-import pipeline.processingelement.algorithm.Algorithm;
+import algorithm.Algorithm;
 import communication.Publisher;
 import communication.Subscriber;
 

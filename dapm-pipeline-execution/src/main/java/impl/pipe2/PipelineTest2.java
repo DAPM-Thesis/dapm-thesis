@@ -1,15 +1,17 @@
-package impl;
+package impl.pipe2;
 
 import algorithm.Algorithm;
 import communication.channel.ChannelFactory;
 import communication.channel.SimpleChannelFactory;
-import message.impl.event.Event;
-import message.impl.petrinet.PetriNet;
+import communication.message.Message;
+import communication.message.impl.event.Event;
+import communication.message.impl.petrinet.PetriNet;
+import impl.pipe1.*;
 import pipeline.Pipeline;
 import pipeline.PipelineBuilder;
-import pipeline.processingelement.Operator;
 import pipeline.processingelement.Sink;
 import pipeline.processingelement.Source;
+import pipeline.processingelement.operator.SimpleOperator;
 
 public class PipelineTest2 {
     public static void main(String[] args) {
@@ -26,21 +28,38 @@ public class PipelineTest2 {
         Source<PetriNet> petriNetSource = new MyPetriNetSource();
 
         // Event Operator; algorithm takes in string and returns same string
-        Algorithm<String, String> eventAlgorithm = new MyStringAlgorithm();
-        Operator<Event, Event, String, String> eventOperator = new MyEventOperator(eventAlgorithm);
+        Algorithm<Message, Event> eventAlgorithm = new MyEventAlgorithm();
+        SimpleOperator<Event> eventOperator = new MyEventOperator(eventAlgorithm);
         // PetriNet Operator; algorithm takes in PetriNet and returns PetriNet
-        Algorithm<PetriNet, PetriNet> petriNetAlgorithm = new MyPetriNetAlgorithm();
-        Operator<PetriNet, PetriNet, PetriNet, PetriNet> petriNetOperator = new MyPetriNetOperator(petriNetAlgorithm);
+        Algorithm<Message, PetriNet> petriNetAlgorithm = new MyPetriNetAlgorithm();
+        SimpleOperator<PetriNet> petriNetOperator = new MyPetriNetOperator(petriNetAlgorithm);
 
 
         // Sink
-        /*
-        Sink<EventPetriNetCompound> sink = new MySink();
+        Sink sink = new DualInputSink();
 
         // Create pipeline using pipeline builder
         PipelineBuilder builder = new PipelineBuilder();
         ChannelFactory channelFactory = new SimpleChannelFactory();
 
+
+        // petri net put in first
+        Pipeline pipeline = builder.createPipeline(channelFactory)
+            .addProcessingElement(petriNetSource)
+            .addProcessingElement(petriNetOperator)
+            .addProcessingElement(sink)
+            .connect(petriNetSource, petriNetOperator)
+            .connect(petriNetOperator, sink)
+
+            .addProcessingElement(eventSource)
+            .addProcessingElement(eventOperator)
+            .connect(eventSource, eventOperator)
+            .connect(eventOperator, sink)
+            .getCurrentPipeline();
+
+        pipeline.start();
+
+        /*
         Pipeline pipeline = builder.createPipeline(channelFactory)
                 .addProcessingElement(eventSource)
                 .addProcessingElement(eventOperator)
@@ -48,6 +67,7 @@ public class PipelineTest2 {
                 .connect(eventSource, eventOperator)
                 .connect(eventOperator, sink)
 
+                .addProcessingElement(petriNetSource)
                 .addProcessingElement(petriNetOperator)
                 .connect(petriNetSource, petriNetOperator)
                 .connect(petriNetOperator, sink)
@@ -57,6 +77,7 @@ public class PipelineTest2 {
         pipeline.start();
 
          */
+
     }
 
 }

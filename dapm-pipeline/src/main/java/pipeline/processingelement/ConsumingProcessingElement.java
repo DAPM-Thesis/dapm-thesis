@@ -12,6 +12,9 @@ public abstract class ConsumingProcessingElement extends ProcessingElement {
 
     protected ConsumingProcessingElement() {
         this.inputs = setConsumedInputs();
+        for (int typeCount : inputs.values()) {
+            assert typeCount > 0 : "every provided input type must occur a positive number of times.";
+        }
     }
 
     protected abstract Map<Class<? extends Message>, Integer> setConsumedInputs();

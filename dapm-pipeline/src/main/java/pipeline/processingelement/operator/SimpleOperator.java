@@ -1,6 +1,6 @@
 package pipeline.processingelement.operator;
 
-import pipeline.processingelement.algorithm.Algorithm;
+import algorithm.Algorithm;
 import communication.message.Message;
 
 public abstract class SimpleOperator<O extends Message> extends Operator<O, O> {
