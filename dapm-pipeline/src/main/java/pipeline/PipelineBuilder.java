@@ -1,18 +1,19 @@
 package pipeline;
 
+import communication.Consumer;
+import communication.Producer;
 import communication.Publisher;
 import communication.Subscriber;
-import communication.channel.Channel;
-import communication.channel.ChannelFactory;
+import communication.message.Message;
 import pipeline.processingelement.ProcessingElement;
 
+import java.util.UUID;
+
 public class PipelineBuilder {
-    private ChannelFactory channelFactory;
     private Pipeline currentPipeline;
 
-    public PipelineBuilder createPipeline(ChannelFactory channelFactory) {
-        currentPipeline = new Pipeline(channelFactory);
-        this.channelFactory = channelFactory;
+    public PipelineBuilder createPipeline() {
+        currentPipeline = new Pipeline();
         return this;
     }
 
@@ -22,20 +23,23 @@ public class PipelineBuilder {
         return this;
     }
 
-    public <C> PipelineBuilder connect(Publisher<C> from, Subscriber<C> to) {
+    public <O extends Message> PipelineBuilder connect(Publisher<O> from, Subscriber<Message> to) {
         if (!currentPipeline.getProcessingElements().contains(from) || !currentPipeline.getProcessingElements().contains(to))
         { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
 
         // fetch from's output channel if it exists, and create a new one otherwise
-        Channel<C> channel = (Channel<C>) currentPipeline.getReceivingChannels().get(from);
-        if (channel == null) {
-            channel = channelFactory.createChannel();
-            from.subscribe(channel);
-            currentPipeline.getReceivingChannels().put((ProcessingElement) from, channel);
-            currentPipeline.getChannels().add(channel);
-        }
+        Producer producer = currentPipeline.getReceivingChannels().get(from);
+        if (producer == null) {
+            String topic = "Topic" + UUID.randomUUID();
+            producer = new Producer(topic);
+            from.registerProducer(producer);
 
-        channel.subscribe(to);
+            Consumer consumer = new Consumer(to, topic);
+            to.registerConsumer(consumer);
+
+            currentPipeline.getReceivingChannels().put((ProcessingElement) from, producer);
+            currentPipeline.getChannels().add(producer);
+        }
         return this;
     }
 

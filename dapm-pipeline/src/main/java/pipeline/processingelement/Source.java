@@ -1,10 +1,12 @@
 package pipeline.processingelement;
 
+import communication.Producer;
 import communication.Publisher;
 import communication.Subscriber;
+import communication.message.Message;
 
-public abstract class Source<O> extends ProcessingElement implements Publisher<O> {
-    private Subscriber<O> outgoing; // Channel
+public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O> {
+    private Producer producer; // Channel
 
     public void start() {
         while(isAvailable()) {
@@ -16,21 +18,10 @@ public abstract class Source<O> extends ProcessingElement implements Publisher<O
     public abstract O process();
 
     @Override
-    public void publish(O data) { outgoing.observe(data); }
+    public void publish(O data) { producer.publish(data); }
 
     @Override
-    public boolean subscribe(Subscriber<O> subscriber) {
-        if (outgoing != null && subscriber != outgoing) // only succeed when the value has not already been set
-            { return false; }
-        outgoing = subscriber;
-        return true;
+    public void registerProducer(Producer producer) {
+        this.producer = producer;
     }
-
-    @Override
-    public boolean unsubscribe(Subscriber<O> subscriber) {
-        if (outgoing != subscriber || subscriber == null) { return false; }
-        outgoing = null;
-        return true;
-    }
-
 }

@@ -12,9 +12,6 @@
     <profiles>
         <profile>
             <id>jitpack-dependency</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <repositories>
                 <repository>
                     <id>jitpack.io</id>
@@ -33,6 +30,9 @@
         <!-- mvn clean install -P local-version -> to use local snapshot -->
         <profile>
             <id>local-version</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <dependencies>
                 <dependency>
                     <groupId>com.github.dapm-thesis</groupId>
