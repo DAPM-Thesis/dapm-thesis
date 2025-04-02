@@ -40,20 +40,20 @@ public class PipelineTest2 {
         PipelineBuilder builder = new PipelineBuilder();
 
         // petri net put in first
-        Pipeline pipeline = builder.createPipeline()
-            .addProcessingElement(petriNetSource)
-            .addProcessingElement(petriNetOperator)
-            .addProcessingElement(sink)
-            .connect(petriNetSource, petriNetOperator)
-            .connect(petriNetOperator, sink)
-
-            .addProcessingElement(eventSource)
-            .addProcessingElement(eventOperator)
-            .connect(eventSource, eventOperator)
-            .connect(eventOperator, sink)
-            .getCurrentPipeline();
-
-        pipeline.start();
+//        Pipeline pipeline = builder.createPipeline()
+//            .addProcessingElement(petriNetSource)
+//            .addProcessingElement(petriNetOperator)
+//            .addProcessingElement(sink)
+//            .connect(petriNetSource, petriNetOperator)
+//            .connect(petriNetOperator, sink)
+//
+//            .addProcessingElement(eventSource)
+//            .addProcessingElement(eventOperator)
+//            .connect(eventSource, eventOperator)
+//            .connect(eventOperator, sink)
+//            .getCurrentPipeline();
+//
+//        pipeline.start();
 
         /*
         // Event first

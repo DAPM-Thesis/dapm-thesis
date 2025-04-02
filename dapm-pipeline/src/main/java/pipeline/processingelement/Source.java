@@ -4,15 +4,24 @@ import communication.Producer;
 import communication.Publisher;
 import communication.Subscriber;
 import communication.message.Message;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O> {
     private Producer producer; // Channel
+    ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
     public void start() {
+        executor.submit(() -> {
         while(isAvailable()) {
             O output = process();
             publish(output);
         }
+        });
     }
 
     public abstract O process();
@@ -21,7 +30,9 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public void publish(O data) { producer.publish(data); }
 
     @Override
-    public void registerProducer(Producer producer) {
-        this.producer = producer;
+    public void registerProducer(String connectionTopic, String brokerURL) {
+        if(this.producer == null) {
+            this.producer = new Producer(connectionTopic, brokerURL);
+        }
     }
 }

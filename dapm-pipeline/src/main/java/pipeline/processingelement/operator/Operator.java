@@ -36,12 +36,12 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public void publish(O output) { producer.publish(output); }
 
     @Override
-    public void registerProducer(Producer producer) {
-        this.producer = producer;
+    public void registerProducer(String connectionTopic, String brokerURL) {
+        this.producer = new Producer(connectionTopic, brokerURL);
     }
 
     @Override
-    public void registerConsumer(Consumer consumer) {
-        consumers.add(consumer);
+    public void registerConsumer(String connectionTopic, String brokerURL) {
+        consumers.add(new Consumer(this, connectionTopic, brokerURL));
     }
 }

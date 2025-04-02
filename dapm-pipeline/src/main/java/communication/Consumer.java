@@ -13,8 +13,8 @@ public class Consumer {
     private final KafkaConsumer<String, String> kafkaConsumer;
     private final Subscriber<Message> subscriber;
 
-    public Consumer(Subscriber<Message> subscriber, String topic) {
-        Properties props = KafkaConfiguration.getConsumerProperties();
+    public Consumer(Subscriber<Message> subscriber, String topic, String brokerURL) {
+        Properties props = KafkaConfiguration.getConsumerProperties(brokerURL);
         this.kafkaConsumer = new KafkaConsumer<>(props);
         kafkaConsumer.subscribe(List.of(topic));
         this.subscriber = subscriber;
