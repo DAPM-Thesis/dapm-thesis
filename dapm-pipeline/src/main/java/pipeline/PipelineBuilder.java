@@ -41,8 +41,8 @@ public class PipelineBuilder {
         boolean pipelineOwnerOwnsPublisher = from.organizationID().equals(currentPipeline.getOrganizationOwnerID());
         String broker = pipelineOwnerOwnsPublisher ? brokerFromPipelineOwner : externalBroker;
 
-        postToOrganization(from, connectionTopic, broker);
-        postToOrganization(to, connectionTopic, broker);
+        postToOrganization(from, connectionTopic, broker, true);
+        postToOrganization(to, connectionTopic, broker, false);
         return this;
     }
 
@@ -50,18 +50,24 @@ public class PipelineBuilder {
         return currentPipeline;
     }
 
-    private void postToOrganization(ProcessingElementReference ref, String topic, String broker) {
+    private void postToOrganization(ProcessingElementReference ref, String topic, String broker, boolean isPublisher) {
         try {
             String organizationID = URLEncoder.encode(ref.organizationID(), StandardCharsets.UTF_8);
             String processElementID = URLEncoder.encode(String.valueOf(ref.processElementID()), StandardCharsets.UTF_8);
             String encodedTopic = URLEncoder.encode(topic, StandardCharsets.UTF_8);
-            String url = "/" + organizationID + "/" + processElementID + "/broker/" + broker + "/topic/" + encodedTopic;
+            String encodedBroker = URLEncoder.encode(broker, StandardCharsets.UTF_8);
+
+            String publisherOrSubscriber = isPublisher ? "publisher" : "subscriber";
+            String url = "/" + organizationID + "/" + processElementID + "/"
+                            + publisherOrSubscriber + "/broker/"
+                            + encodedBroker + "/topic/" + encodedTopic;
 
             webClient.post().uri(url);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
     public void start() {
         for(ProcessingElementReference pe : currentPipeline.getSources()) {
             String organizationID = URLEncoder.encode(pe.organizationID(), StandardCharsets.UTF_8);
@@ -69,7 +75,10 @@ public class PipelineBuilder {
             String url = "/" + organizationID + "/"
                     + processElementID + "/start";
             
-            webClient.post().uri(url);
+            webClient.post().uri(url)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
         }
     }
 
