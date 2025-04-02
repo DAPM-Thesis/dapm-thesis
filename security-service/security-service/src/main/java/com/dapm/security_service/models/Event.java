@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+
 @Data
 public class Event {
     private UUID id;

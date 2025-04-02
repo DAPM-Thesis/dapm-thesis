@@ -5,6 +5,7 @@ import com.dapm.security_service.models.dtos.CreateUserDto;
 import com.dapm.security_service.models.dtos.UserDto;
 import com.dapm.security_service.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,8 @@ public class UserController {
     private FacultyRepository facultyRepository;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private  PasswordEncoder passwordEncoder;
 
     @GetMapping
     public List<UserDto> getAllUsers() {
@@ -49,7 +52,8 @@ public UserDto createUser(@RequestBody CreateUserDto user) {
     newUser.setId(UUID.randomUUID());
     newUser.setEmail(user.getEmail());
     newUser.setUsername(user.getUsername());
-    newUser.setPasswordHash(user.getPasswordHash());
+    newUser.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+//    newUser.setPasswordHash(user.getPasswordHash());
 
     Organization organization = organizationRepository.findByName(user.getOrganization());
     if (organization == null) {

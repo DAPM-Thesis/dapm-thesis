@@ -27,6 +27,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Autowired private ResourceRepository resourceRepository;
     @Autowired private NodeRepository nodeRepository;
     @Autowired private PipelineRepository pipelineRepository;
+    @Autowired private PeTemplateRepository peTemplateRepository;
 
     // BCrypt encoder
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -359,6 +360,35 @@ public class DatabaseInitializer implements CommandLineRunner {
         // 13. Set tokens as empty for now.
         //pipeline.setTokens(new HashSet<>());
         pipeline.getTokens().clear();
+
+        // 14. Create sample PE Templates for testing assembly stage.
+
+// OrgB's PE Template: visible to OrgA, now for discovery.
+        PeTemplate peTemplateOrgB = peTemplateRepository.findById("pe_discovery").orElse(null);
+        if (peTemplateOrgB == null) {
+            peTemplateOrgB = PeTemplate.builder()
+                    .id("pe_discovery")
+                    .name("Discovery Module")
+                    .description("Discovers resources from OrgB for further analysis")
+                    .owner("OrgB")
+                    .visibility(new HashSet<>(Arrays.asList("OrgA"))) // OrgB makes it visible to OrgA
+                    .build();
+            peTemplateOrgB = peTemplateRepository.save(peTemplateOrgB);
+        }
+
+// OrgA's own PE Template: now for filtering.
+        PeTemplate peTemplateOrgA = peTemplateRepository.findById("pe_filter").orElse(null);
+        if (peTemplateOrgA == null) {
+            peTemplateOrgA = PeTemplate.builder()
+                    .id("pe_filter")
+                    .name("Filter Processor")
+                    .description("Filters and preprocesses data according to defined criteria")
+                    .owner("OrgA")
+                    .visibility(new HashSet<>(Arrays.asList("OrgA"))) // Visible to OrgA
+                    .build();
+            peTemplateOrgA = peTemplateRepository.save(peTemplateOrgA);
+        }
+
 
         // Save the pipeline.
         pipeline = pipelineRepository.save(pipeline);
