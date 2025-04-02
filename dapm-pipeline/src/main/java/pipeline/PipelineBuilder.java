@@ -12,9 +12,11 @@ public class PipelineBuilder {
     private Pipeline currentPipeline;
     private WebClient webClient;
 
-    public PipelineBuilder() {
-        webClient = WebClient.builder().baseUrl("").build();
-    }
+    // Hardcoded for now
+    private final String currentHost = "http://localhost:8080"; // orgA
+    private final String externalHost = "http://localhost:8081"; // orgB
+    private final String brokerFromPipelineOwner = "localhost";
+    private final String externalBroker = "localhost";
 
     public PipelineBuilder createPipeline(String organizationOwnerID) {
         currentPipeline = new Pipeline(organizationOwnerID);
@@ -36,13 +38,12 @@ public class PipelineBuilder {
 
         currentPipeline.getConnections().put(from, to);
         String connectionTopic = UUID.randomUUID().toString();
-        String brokerFromPipelineOwner = ""; // hard coded for now
-        String externalBroker = ""; // hard coded for now
         boolean pipelineOwnerOwnsPublisher = from.organizationID().equals(currentPipeline.getOrganizationOwnerID());
         String broker = pipelineOwnerOwnsPublisher ? brokerFromPipelineOwner : externalBroker;
+        String hostURL = pipelineOwnerOwnsPublisher ? currentHost : externalHost;
 
-        postToOrganization(from, connectionTopic, broker, true);
-        postToOrganization(to, connectionTopic, broker, false);
+        postToOrganization(from, connectionTopic, broker, hostURL, true);
+        postToOrganization(to, connectionTopic, broker, hostURL,false);
         return this;
     }
 
@@ -50,7 +51,7 @@ public class PipelineBuilder {
         return currentPipeline;
     }
 
-    private void postToOrganization(ProcessingElementReference ref, String topic, String broker, boolean isPublisher) {
+    private void postToOrganization(ProcessingElementReference ref, String topic, String broker, String hostURL, boolean isPublisher) {
         try {
             String organizationID = URLEncoder.encode(ref.organizationID(), StandardCharsets.UTF_8);
             String processElementID = URLEncoder.encode(String.valueOf(ref.processElementID()), StandardCharsets.UTF_8);
@@ -62,24 +63,33 @@ public class PipelineBuilder {
                             + publisherOrSubscriber + "/broker/"
                             + encodedBroker + "/topic/" + encodedTopic;
 
-            webClient.post().uri(url);
+            webClient = WebClient.builder().baseUrl(hostURL).build();
+            webClient.post().uri(url)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public void start() {
+        if(currentPipeline.getSources().isEmpty()) throw new IllegalArgumentException("No sources found in pipeline");
         for(ProcessingElementReference pe : currentPipeline.getSources()) {
-            String organizationID = URLEncoder.encode(pe.organizationID(), StandardCharsets.UTF_8);
-            String processElementID = URLEncoder.encode(String.valueOf(pe.processElementID()), StandardCharsets.UTF_8);
-            String url = "/" + organizationID + "/"
-                    + processElementID + "/start";
-            
-            webClient.post().uri(url)
-                    .retrieve()
-                    .bodyToMono(Void.class)
-                    .block();
+            try {
+                String organizationID = URLEncoder.encode(pe.organizationID(), StandardCharsets.UTF_8);
+                String processElementID = URLEncoder.encode(String.valueOf(pe.processElementID()), StandardCharsets.UTF_8);
+                String url = "/" + organizationID + "/"
+                        + processElementID + "/start";
+
+                webClient = WebClient.builder().baseUrl(currentHost).build(); // orgA has sources only at the moment
+                webClient.post().uri(url)
+                        .retrieve()
+                        .bodyToMono(Void.class)
+                        .block();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
-
 }
