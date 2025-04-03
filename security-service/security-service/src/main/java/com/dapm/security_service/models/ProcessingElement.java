@@ -25,8 +25,8 @@ public class ProcessingElement {
     private Organization ownerOrganization;
 
     // The identifier of the template used for this processing element.
-    @Column(name = "template_id", nullable = false)
-    private String templateId;
+    @Column(name = "node_Id", nullable = false)
+    private String nodeId;
 
     // A set of input types, e.g., ["Event", "PetriNet"]
     @ElementCollection(fetch = FetchType.EAGER)

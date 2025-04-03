@@ -1,7 +1,6 @@
 package com.dapm.security_service.controllers;
-
-import com.dapm.security_service.models.Node;
 import com.dapm.security_service.models.PipelineProcessingElementRequest;
+import com.dapm.security_service.models.ProcessingElement;
 import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.User;
 import com.dapm.security_service.models.dtos.PipelineProcessingElementRequestDto;
@@ -9,8 +8,8 @@ import com.dapm.security_service.models.dtos.peer.PipelineProcessingElementReque
 import com.dapm.security_service.models.dtos.peer.RequestResponse;
 import com.dapm.security_service.models.dtos.peer.RequesterInfoDto;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
-import com.dapm.security_service.repositories.NodeRepository;
-import com.dapm.security_service.repositories.PipelineNodeRequestRepository;
+import com.dapm.security_service.repositories.PipelineProcessingElementRequestRepository;
+import com.dapm.security_service.repositories.ProcessingElementRepository;
 import com.dapm.security_service.repositories.UserRepository;
 import com.dapm.security_service.services.OrgBRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +23,8 @@ public class PipelineProcessingElementRequestClientController {
 
     @Autowired private OrgBRequestService orgBRequestService;
 
-    @Autowired private PipelineNodeRequestRepository pipelineNodeRequestRepository;
-    @Autowired private NodeRepository nodeRepository;
+    @Autowired private PipelineProcessingElementRequestRepository pipelineNodeRequestRepository;
+    @Autowired private ProcessingElementRepository processingElementRepositry;
     @Autowired private UserRepository userRepository;
      //  Receive a webhook notification from OrgB about request status changes.
     @PostMapping("/webhook")
@@ -96,8 +95,8 @@ public class PipelineProcessingElementRequestClientController {
     }
 
     private PipelineProcessingElementRequest convertDtoToEntity(PipelineProcessingElementRequestDto dto) {
-        Node node = nodeRepository.findById(dto.getPipelineNodeId())
-                .orElseThrow(() -> new RuntimeException("Node not found: " + dto.getPipelineNodeId()));
+        ProcessingElement node = processingElementRepositry.findById(dto.getPipelinePeId())
+                .orElseThrow(() -> new RuntimeException("Node not found: " + dto.getPipelinePeId()));
         User user = userRepository.findById(dto.getRequesterId())
                 .orElseThrow(() -> new RuntimeException("Requester not found: " + dto.getRequesterId()));
 
@@ -147,7 +146,7 @@ public class PipelineProcessingElementRequestClientController {
 
         // 2) PipelineNode ID
         if (entity.getPipelineNode() != null) {
-            dto.setPipelineNodeId(entity.getPipelineNode().getId());
+            dto.setPipelinePeId(entity.getPipelineNode().getId());
         }
 
         // 3) RequesterInfo

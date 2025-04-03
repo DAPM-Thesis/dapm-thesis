@@ -5,7 +5,7 @@ import com.dapm.security_service.models.PipelineProcessingElementRequest;
 import com.dapm.security_service.models.dtos.ApproveProcessingElementRequestDto;
 import com.dapm.security_service.models.dtos.peer.RequestResponse;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
-import com.dapm.security_service.repositories.PipelineNodeRequestRepository;
+import com.dapm.security_service.repositories.PipelineProcessingElementRequestRepository;
 import com.dapm.security_service.services.OrgARequestService;
 import com.dapm.security_service.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +20,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/pipeline-node-requests")
-public class PipelineNodeRequestController {
+public class PipelineProcessingElementRequestController {
 
-    @Autowired private PipelineNodeRequestRepository requestRepository;
+    @Autowired private PipelineProcessingElementRequestRepository requestRepository;
     @Autowired private TokenService tokenService;
     @Autowired private OrgARequestService orgARequestService;
 

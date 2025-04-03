@@ -23,11 +23,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Autowired private RoleRepository roleRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private PolicyRepository policyRepository;
-    @Autowired private ResourceTypeRepository resourceTypeRepository;
-    @Autowired private ResourceRepository resourceRepository;
-    @Autowired private NodeRepository nodeRepository;
     @Autowired private PipelineRepository pipelineRepository;
-    @Autowired private PeTemplateRepository peTemplateRepository;
     @Autowired
     private ProcessingElementRepository processingElementRepository;
 
@@ -326,7 +322,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 // or generate new ones. Here, we're reusing the constants.
         ProcessingElement pe1 = ProcessingElement.builder()
                 .id(NODE_A1_ID)  // or UUID.randomUUID() if you prefer
-                .templateId("pe_filter")  // This template represents an OrgA template
+                .nodeId("pe_filter")  // This template represents an OrgA template
                 .ownerOrganization(orgA)
                 .inputs(new HashSet<>())   // Set default inputs as needed
                 .outputs(new HashSet<>())  // Set default outputs as needed
@@ -334,7 +330,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         ProcessingElement pe2 = ProcessingElement.builder()
                 .id(NODE_A2_ID)
-                .templateId("pe_filter")
+                .nodeId("pe_filter")
                 .ownerOrganization(orgA)
                 .inputs(new HashSet<>())
                 .outputs(new HashSet<>())
@@ -342,7 +338,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         ProcessingElement pe3 = ProcessingElement.builder()
                 .id(NODE_B_ID)
-                .templateId("pe_discovery")  // This template represents an OrgB template
+                .nodeId("pe_discovery")  // This template represents an OrgB template
                 .ownerOrganization(orgB)
                 .inputs(new HashSet<>())
                 .outputs(new HashSet<>())

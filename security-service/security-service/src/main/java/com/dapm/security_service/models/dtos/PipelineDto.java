@@ -23,16 +23,19 @@ public class PipelineDto {
 
     private String description;
 
-    private UUID pipelineRoleId;
+    private String channels;
+
+//    private UUID pipelineRoleId;
     private String pipelineRoleName;
 
     // Changed from nodeIds to processingElementIds
     private Set<UUID> processingElementIds;
-    private Set<UUID> tokenIds;
+//    private Set<UUID> tokenIds;
 
     private UUID createdBy;
     private Instant createdAt;
     private Instant updatedAt;
+
 
     public PipelineDto() {}
 
@@ -48,11 +51,11 @@ public class PipelineDto {
 
         this.description = pipeline.getDescription();
 
-        Role role = pipeline.getPipelineRole();
-        if (role != null) {
-            this.pipelineRoleId = role.getId();
-            this.pipelineRoleName = role.getName();
-        }
+//        Role role = pipeline.getPipelineRole();
+//        if (role != null) {
+//            this.pipelineRoleId = role.getId();
+//            this.pipelineRoleName = role.getName();
+//        }
 
         // Map processing elements instead of nodes
         this.processingElementIds = pipeline.getProcessingElements() != null
@@ -60,12 +63,14 @@ public class PipelineDto {
                 : Collections.emptySet();
 
         // Convert tokens collection to a set of IDs
-        this.tokenIds = pipeline.getTokens() != null
-                ? pipeline.getTokens().stream().map(Token::getId).collect(Collectors.toSet())
-                : Collections.emptySet();
+//        this.tokenIds = pipeline.getTokens() != null
+//                ? pipeline.getTokens().stream().map(Token::getId).collect(Collectors.toSet())
+//                : Collections.emptySet();
 
         this.createdBy = pipeline.getCreatedBy();
         this.createdAt = pipeline.getCreatedAt();
         this.updatedAt = pipeline.getUpdatedAt();
+        this.channels=pipeline.getChannelsJson();
     }
+
 }

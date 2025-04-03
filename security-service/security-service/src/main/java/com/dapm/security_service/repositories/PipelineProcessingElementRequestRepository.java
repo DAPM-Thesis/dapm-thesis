@@ -7,4 +7,4 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface PipelineNodeRequestRepository extends JpaRepository<PipelineProcessingElementRequest, UUID> { }
+public interface PipelineProcessingElementRequestRepository extends JpaRepository<PipelineProcessingElementRequest, UUID> { }

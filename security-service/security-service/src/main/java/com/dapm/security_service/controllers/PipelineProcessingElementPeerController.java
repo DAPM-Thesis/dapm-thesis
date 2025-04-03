@@ -6,8 +6,8 @@ import com.dapm.security_service.models.PipelineProcessingElementRequest;
 import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.dtos.peer.*;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
-import com.dapm.security_service.repositories.NodeRepository;
-import com.dapm.security_service.repositories.PipelineNodeRequestRepository;
+import com.dapm.security_service.repositories.PipelineProcessingElementRequestRepository;
+import com.dapm.security_service.repositories.ProcessingElementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +17,8 @@ import java.util.UUID;
 @RequestMapping("/api/peer/pipeline-node-requests")
 public class PipelineProcessingElementPeerController {
 
-    @Autowired private PipelineNodeRequestRepository requestRepository;
-    @Autowired private NodeRepository nodeRepository;
+    @Autowired private PipelineProcessingElementRequestRepository requestRepository;
+    @Autowired private ProcessingElementRepository processingElementRepository;
 
     /**
      * OrgA calls this endpoint to create a request in OrgB's DB.
@@ -33,7 +33,7 @@ public class PipelineProcessingElementPeerController {
         var request = PipelineProcessingElementRequest.builder()
                 .id(requestDto.getId())
                 .pipelineId(requestDto.getPipelineId())
-                .pipelineNode(nodeRepository.getById(requestDto.getPipelineNodeId()))
+                .pipelineNode(processingElementRepository.getById(requestDto.getPipelinePeId()))
                 .requesterInfo(convertToRequesterInfo(requestDto.getRequesterInfo()))
                 .requestedExecutionCount(0)
                 .requestedExecutionCount(0)
