@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class ApproveNodeRequestDto {
+public class ApproveProcessingElementRequestDto {
     private UUID requestId;
     private Integer allowedDurationHours;
     private Integer allowedNoExecutions;

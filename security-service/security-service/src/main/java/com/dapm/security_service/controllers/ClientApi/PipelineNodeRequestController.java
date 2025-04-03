@@ -1,8 +1,8 @@
 package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.ConfirmationResponse;
-import com.dapm.security_service.models.PipelineNodeRequest;
-import com.dapm.security_service.models.dtos.ApproveNodeRequestDto;
+import com.dapm.security_service.models.PipelineProcessingElementRequest;
+import com.dapm.security_service.models.dtos.ApproveProcessingElementRequestDto;
 import com.dapm.security_service.models.dtos.peer.RequestResponse;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
 import com.dapm.security_service.repositories.PipelineNodeRequestRepository;
@@ -28,19 +28,19 @@ public class PipelineNodeRequestController {
 
     // Get all pipeline node requests.
     @GetMapping
-    public List<PipelineNodeRequest> getAllRequests() {
+    public List<PipelineProcessingElementRequest> getAllRequests() {
         return requestRepository.findAll();
     }
 
     // Get a specific request by its ID.
     @GetMapping("/{id}")
-    public PipelineNodeRequest getRequestById(@PathVariable UUID id) {
+    public PipelineProcessingElementRequest getRequestById(@PathVariable UUID id) {
         return requestRepository.findById(id).orElse(null);
     }
 
     // Create a new pipeline node request.
     @PostMapping
-    public PipelineNodeRequest createRequest(@RequestBody PipelineNodeRequest request) {
+    public PipelineProcessingElementRequest createRequest(@RequestBody PipelineProcessingElementRequest request) {
         if (request.getId() == null) {
             request.setId(UUID.randomUUID());
         }
@@ -50,8 +50,8 @@ public class PipelineNodeRequestController {
 
     // Approve a request. This endpoint generates a JWT token with constraints for the approved request.
     @PutMapping("/{id}/approve")
-    public PipelineNodeRequest approveRequest(@PathVariable UUID id) {
-        PipelineNodeRequest request = requestRepository.findById(id)
+    public PipelineProcessingElementRequest approveRequest(@PathVariable UUID id) {
+        PipelineProcessingElementRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
         if (request.getStatus() != AccessRequestStatus.PENDING) {
             throw new RuntimeException("Request already processed");
@@ -68,8 +68,8 @@ public class PipelineNodeRequestController {
 
 
     @PostMapping("/approve")
-    public String approveNodeRequest(@RequestBody ApproveNodeRequestDto approveNodeRequestDto){
-        PipelineNodeRequest request = requestRepository.findById(approveNodeRequestDto.getRequestId())
+    public String approveNodeRequest(@RequestBody ApproveProcessingElementRequestDto approveNodeRequestDto){
+        PipelineProcessingElementRequest request = requestRepository.findById(approveNodeRequestDto.getRequestId())
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
         if(request.getStatus() != AccessRequestStatus.PENDING){
@@ -131,8 +131,8 @@ public class PipelineNodeRequestController {
 
     // Reject a request.
     @PutMapping("/{id}/reject")
-    public PipelineNodeRequest rejectRequest(@PathVariable UUID id) {
-        PipelineNodeRequest request = requestRepository.findById(id)
+    public PipelineProcessingElementRequest rejectRequest(@PathVariable UUID id) {
+        PipelineProcessingElementRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
         if (request.getStatus() != AccessRequestStatus.PENDING) {
             throw new RuntimeException("Request already processed");

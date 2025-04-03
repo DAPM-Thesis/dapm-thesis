@@ -2,7 +2,7 @@
 package com.dapm.security_service.controllers;
 
 import com.dapm.security_service.models.ConfirmationResponse;
-import com.dapm.security_service.models.PipelineNodeRequest;
+import com.dapm.security_service.models.PipelineProcessingElementRequest;
 import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.dtos.peer.*;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/peer/pipeline-node-requests")
-public class PipelineNodeRequestPeerController {
+public class PipelineProcessingElementPeerController {
 
     @Autowired private PipelineNodeRequestRepository requestRepository;
     @Autowired private NodeRepository nodeRepository;
@@ -24,13 +24,13 @@ public class PipelineNodeRequestPeerController {
      * OrgA calls this endpoint to create a request in OrgB's DB.
      */
     @PostMapping
-    public RequestResponse createRequest(@RequestBody PipelineNodeRequestOutboundDto requestDto) {
+    public RequestResponse createRequest(@RequestBody PipelineProcessingElementRequestOutboundDto requestDto) {
         // Generate an ID if not provided
         if (requestDto.getId() == null) {
             requestDto.setId(UUID.randomUUID());
         }
 
-        var request = PipelineNodeRequest.builder()
+        var request = PipelineProcessingElementRequest.builder()
                 .id(requestDto.getId())
                 .pipelineId(requestDto.getPipelineId())
                 .pipelineNode(nodeRepository.getById(requestDto.getPipelineNodeId()))
@@ -56,7 +56,7 @@ public class PipelineNodeRequestPeerController {
      * OrgA calls this endpoint to retrieve the entire request record (including the token if approved).
      */
     @GetMapping("/{id}")
-    public PipelineNodeRequest getRequestById(@PathVariable UUID id) {
+    public PipelineProcessingElementRequest getRequestById(@PathVariable UUID id) {
         return requestRepository.findById(id).orElse(null);
     }
 
@@ -65,7 +65,7 @@ public class PipelineNodeRequestPeerController {
      */
     @GetMapping("/{id}/status")
     public AccessRequestStatus getRequestStatus(@PathVariable UUID id) {
-        PipelineNodeRequest req = requestRepository.findById(id).orElse(null);
+        PipelineProcessingElementRequest req = requestRepository.findById(id).orElse(null);
         return (req == null) ? null : req.getStatus();
     }
 

@@ -248,63 +248,63 @@ public class DatabaseInitializer implements CommandLineRunner {
         // 8. Create a Policy for EXECUTE_PIPELINE in OrgA.
         createPolicyIfNotExistStatic(permissionMap.get("EXECUTE_PIPELINE"), department, faculty, "ALLOW", POLICY_EXEC_PIPELINE_ID);
 
-        // 9.0 Create Resource Types:
-        ResourceType resourceTypeA = ResourceType.builder()
-                .id(RESOURCETYPE_A_ID)
-                .name("DataSource")
-                .description("Data source type for OrgA")
-                .build();
-        resourceTypeA = resourceTypeRepository.save(resourceTypeA);
+//        // 9.0 Create Resource Types:
+//        ResourceType resourceTypeA = ResourceType.builder()
+//                .id(RESOURCETYPE_A_ID)
+//                .name("DataSource")
+//                .description("Data source type for OrgA")
+//                .build();
+//        resourceTypeA = resourceTypeRepository.save(resourceTypeA);
+//
+//        ResourceType resourceTypeB = ResourceType.builder()
+//                .id(RESOURCETYPE_B_ID)
+//                .name("Algorithm")
+//                .description("Data source type for OrgA + OrgB")
+//                .build();
+//        resourceTypeA = resourceTypeRepository.save(resourceTypeB);
 
-        ResourceType resourceTypeB = ResourceType.builder()
-                .id(RESOURCETYPE_B_ID)
-                .name("Algorithm")
-                .description("Data source type for OrgA + OrgB")
-                .build();
-        resourceTypeA = resourceTypeRepository.save(resourceTypeB);
+//        // 9.1 Create Resources.
+//        // Resource A for OrgA.
+//        Resource resourceA = Resource.builder()
+//                .id(RESOURCE_A_ID)
+//                .name("Resource A")
+//                .description("Data source A")
+//                .resourceType(ResourceType.builder()
+//                        .id(RESOURCETYPE_A_ID)
+//                        .name("DataSource")
+//                        .description("Data source type for OrgA")
+//                        .build())
+//                .organization(orgA)
+//                .build();
+//        resourceA = resourceRepository.save(resourceA);
 
-        // 9.1 Create Resources.
-        // Resource A for OrgA.
-        Resource resourceA = Resource.builder()
-                .id(RESOURCE_A_ID)
-                .name("Resource A")
-                .description("Data source A")
-                .resourceType(ResourceType.builder()
-                        .id(RESOURCETYPE_A_ID)
-                        .name("DataSource")
-                        .description("Data source type for OrgA")
-                        .build())
-                .organization(orgA)
-                .build();
-        resourceA = resourceRepository.save(resourceA);
+//        // Resource B for OrgA.
+//        Resource resourceB = Resource.builder()
+//                .id(RESOURCE_B_ID)
+//                .name("Resource B")
+//                .description("Data source B")
+//                .resourceType(ResourceType.builder()
+//                        .id(RESOURCETYPE_A_ID)
+//                        .name("DataSource")
+//                        .description("Data source type for OrgA")
+//                        .build())
+//                .organization(orgA)
+//                .build();
+//        resourceB = resourceRepository.save(resourceB);
 
-        // Resource B for OrgA.
-        Resource resourceB = Resource.builder()
-                .id(RESOURCE_B_ID)
-                .name("Resource B")
-                .description("Data source B")
-                .resourceType(ResourceType.builder()
-                        .id(RESOURCETYPE_A_ID)
-                        .name("DataSource")
-                        .description("Data source type for OrgA")
-                        .build())
-                .organization(orgA)
-                .build();
-        resourceB = resourceRepository.save(resourceB);
-
-        // Resource C for OrgB.
-        Resource resourceC = Resource.builder()
-                .id(RESOURCE_C_ID)
-                .name("Resource C")
-                .description("Data source C")
-                .resourceType(ResourceType.builder()
-                        .id(RESOURCETYPE_B_ID)
-                        .name("DataSource")
-                        .description("Data source type for OrgB")
-                        .build())
-                .organization(orgB)
-                .build();
-        resourceC = resourceRepository.save(resourceC);
+//        // Resource C for OrgB.
+//        Resource resourceC = Resource.builder()
+//                .id(RESOURCE_C_ID)
+//                .name("Resource C")
+//                .description("Data source C")
+//                .resourceType(ResourceType.builder()
+//                        .id(RESOURCETYPE_B_ID)
+//                        .name("DataSource")
+//                        .description("Data source type for OrgB")
+//                        .build())
+//                .organization(orgB)
+//                .build();
+//        resourceC = resourceRepository.save(resourceC);
 
         // 10. Create a Pipeline (owned by OrgA).
         Pipeline pipeline = Pipeline.builder()
@@ -372,31 +372,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         // 14. Create sample PE Templates for testing assembly stage.
 
-// OrgB's PE Template: visible to OrgA, now for discovery.
-        PeTemplate peTemplateOrgB = peTemplateRepository.findById("pe_discovery").orElse(null);
-        if (peTemplateOrgB == null) {
-            peTemplateOrgB = PeTemplate.builder()
-                    .id("pe_discovery")
-                    .name("Discovery Module")
-                    .description("Discovers resources from OrgB for further analysis")
-                    .owner("OrgB")
-                    .visibility(new HashSet<>(Arrays.asList("OrgA"))) // OrgB makes it visible to OrgA
-                    .build();
-            peTemplateOrgB = peTemplateRepository.save(peTemplateOrgB);
-        }
 
-// OrgA's own PE Template: now for filtering.
-        PeTemplate peTemplateOrgA = peTemplateRepository.findById("pe_filter").orElse(null);
-        if (peTemplateOrgA == null) {
-            peTemplateOrgA = PeTemplate.builder()
-                    .id("pe_filter")
-                    .name("Filter Processor")
-                    .description("Filters and preprocesses data according to defined criteria")
-                    .owner("OrgA")
-                    .visibility(new HashSet<>(Arrays.asList("OrgA"))) // Visible to OrgA
-                    .build();
-            peTemplateOrgA = peTemplateRepository.save(peTemplateOrgA);
-        }
 
 
         // Save the pipeline.

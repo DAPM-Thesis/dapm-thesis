@@ -1,8 +1,7 @@
 package com.dapm.security_service.services;
 
-import com.dapm.security_service.models.PipelineNodeRequest;
-import com.dapm.security_service.models.dtos.PipelineNodeRequestDto;
-import com.dapm.security_service.models.dtos.peer.PipelineNodeRequestOutboundDto;
+import com.dapm.security_service.models.PipelineProcessingElementRequest;
+import com.dapm.security_service.models.dtos.peer.PipelineProcessingElementRequestOutboundDto;
 import com.dapm.security_service.models.dtos.peer.RequestResponse;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ public class OrgBRequestService {
     /**
      * Send a new request to OrgB's PeerApi.
      */
-    public RequestResponse sendRequestToOrgB(PipelineNodeRequestOutboundDto requestDto) {
+    public RequestResponse sendRequestToOrgB(PipelineProcessingElementRequestOutboundDto requestDto) {
 
         // Send the DTO to OrgB and expect the same DTO type in response
         return restTemplate.postForObject(
@@ -43,8 +42,8 @@ public class OrgBRequestService {
     /**
      * Retrieve the entire request record from OrgB, which may include an approvalToken if approved.
      */
-    public PipelineNodeRequest getRequestDetailsFromOrgB(UUID requestId) {
+    public PipelineProcessingElementRequest getRequestDetailsFromOrgB(UUID requestId) {
         String url = ORG_B_BASE_URL + "/" + requestId;
-        return restTemplate.getForObject(url, PipelineNodeRequest.class);
+        return restTemplate.getForObject(url, PipelineProcessingElementRequest.class);
     }
 }

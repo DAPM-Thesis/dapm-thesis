@@ -7,10 +7,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Data
-public class PipelineNodeRequestDto {
+public class PipelineProcessingElementRequestDto {
     private UUID id;
 
-    private UUID pipelineNodeId;
+    private UUID pipelinePeId;
     private UUID requesterId;
 
     private UUID pipelineId;

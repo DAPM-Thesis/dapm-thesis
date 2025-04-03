@@ -1,11 +1,11 @@
 package com.dapm.security_service.controllers;
 
 import com.dapm.security_service.models.Node;
-import com.dapm.security_service.models.PipelineNodeRequest;
+import com.dapm.security_service.models.PipelineProcessingElementRequest;
 import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.User;
-import com.dapm.security_service.models.dtos.PipelineNodeRequestDto;
-import com.dapm.security_service.models.dtos.peer.PipelineNodeRequestOutboundDto;
+import com.dapm.security_service.models.dtos.PipelineProcessingElementRequestDto;
+import com.dapm.security_service.models.dtos.peer.PipelineProcessingElementRequestOutboundDto;
 import com.dapm.security_service.models.dtos.peer.RequestResponse;
 import com.dapm.security_service.models.dtos.peer.RequesterInfoDto;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/client/pipeline-node-requests")
-public class PipelineNodeRequestClientController {
+public class PipelineProcessingElementRequestClientController {
 
     @Autowired private OrgBRequestService orgBRequestService;
 
@@ -32,7 +32,7 @@ public class PipelineNodeRequestClientController {
     public String handleWebhookNotification(@RequestBody RequestResponse requestResponse) {
         UUID requestId = requestResponse.getRequestId();
         // Fetch the corresponding request from the database
-        PipelineNodeRequest request = pipelineNodeRequestRepository.findById(requestId).orElseThrow(() -> new RuntimeException("Request not found: " + requestId));
+        PipelineProcessingElementRequest request = pipelineNodeRequestRepository.findById(requestId).orElseThrow(() -> new RuntimeException("Request not found: " + requestId));
 
         // Update the status and other details based on the webhook response
         request.setStatus(requestResponse.getRequestStatus());
@@ -52,16 +52,16 @@ public class PipelineNodeRequestClientController {
      * We forward the request to OrgB's PeerApi.
      */
     @PostMapping("/peer")
-    public RequestResponse initiatePeerRequest(@RequestBody PipelineNodeRequestDto requestDto) {
-        PipelineNodeRequest request = convertDtoToEntity(requestDto);
+    public RequestResponse initiatePeerRequest(@RequestBody PipelineProcessingElementRequestDto requestDto) {
+        PipelineProcessingElementRequest request = convertDtoToEntity(requestDto);
         String webhookUrl = "http://localhost:8080/api/client/pipeline-node-requests/webhook";
         request.setWebhookUrl(webhookUrl);
 
         // 2. Save locally
-        PipelineNodeRequest localRequest = pipelineNodeRequestRepository.save(request);
+        PipelineProcessingElementRequest localRequest = pipelineNodeRequestRepository.save(request);
 
         // 3. Convert entity → outbound DTO
-        PipelineNodeRequestOutboundDto outboundDto = toOutboundDto(localRequest);
+        PipelineProcessingElementRequestOutboundDto outboundDto = toOutboundDto(localRequest);
 
 
         // 4. Send the outbound DTO to OrgB
@@ -91,11 +91,11 @@ public class PipelineNodeRequestClientController {
      * Get the final approved request record from OrgB (which may contain the JWT token).
      */
     @GetMapping("/{id}/details")
-    public PipelineNodeRequest getRequestDetails(@PathVariable UUID id) {
+    public PipelineProcessingElementRequest getRequestDetails(@PathVariable UUID id) {
         return orgBRequestService.getRequestDetailsFromOrgB(id);
     }
 
-    private PipelineNodeRequest convertDtoToEntity(PipelineNodeRequestDto dto) {
+    private PipelineProcessingElementRequest convertDtoToEntity(PipelineProcessingElementRequestDto dto) {
         Node node = nodeRepository.findById(dto.getPipelineNodeId())
                 .orElseThrow(() -> new RuntimeException("Node not found: " + dto.getPipelineNodeId()));
         User user = userRepository.findById(dto.getRequesterId())
@@ -119,7 +119,7 @@ public class PipelineNodeRequestClientController {
 
         requester.setPermissions("");
 
-        return PipelineNodeRequest.builder()
+        return PipelineProcessingElementRequest.builder()
                 .id(dto.getId() != null ? dto.getId() : UUID.randomUUID())
                 .pipelineNode(node)
                 .requesterInfo(requester)
@@ -131,8 +131,8 @@ public class PipelineNodeRequestClientController {
                 .decisionTime(dto.getDecisionTime())
                 .build();
     }
-    private PipelineNodeRequestOutboundDto toOutboundDto(PipelineNodeRequest entity) {
-        PipelineNodeRequestOutboundDto dto = new PipelineNodeRequestOutboundDto();
+    private PipelineProcessingElementRequestOutboundDto toOutboundDto(PipelineProcessingElementRequest entity) {
+        PipelineProcessingElementRequestOutboundDto dto = new PipelineProcessingElementRequestOutboundDto();
 
         // 1) Top-level fields
         dto.setId(entity.getId());

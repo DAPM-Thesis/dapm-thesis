@@ -1,9 +1,8 @@
 package com.dapm.security_service.services;
 
-import com.dapm.security_service.models.PipelineNodeRequest;
+import com.dapm.security_service.models.PipelineProcessingElementRequest;
 import com.dapm.security_service.models.Role;
 import com.dapm.security_service.models.User;
-import com.dapm.security_service.models.dtos.ApproveNodeRequestDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
@@ -84,7 +83,7 @@ public class TokenService {
                 .compact();
     }
 
-    public String generateTokenForNodeRequest(PipelineNodeRequest request){
+    public String generateTokenForNodeRequest(PipelineProcessingElementRequest request){
         Instant now = Instant.now();
 
         Map<String, Object> claims = new HashMap<>();

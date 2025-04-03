@@ -10,9 +10,9 @@ import java.util.UUID;
  * Outbound DTO for sending PipelineNodeRequest data to OrgB.
  */
 @Data
-public class PipelineNodeRequestOutboundDto {
+public class PipelineProcessingElementRequestOutboundDto {
     private UUID id;
-    private UUID pipelineNodeId;
+    private UUID pipelinePeId;
     private RequesterInfoDto requesterInfo;
     private UUID pipelineId;
 

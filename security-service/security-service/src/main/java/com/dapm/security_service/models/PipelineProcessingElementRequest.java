@@ -1,9 +1,7 @@
 // ** TODO: move the token to vault
 package com.dapm.security_service.models;
 
-import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
-import io.micrometer.core.annotation.Counted;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,20 +9,20 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "pipeline_node_request")
+@Table(name = "pipeline_pe_request")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PipelineNodeRequest {
+public class PipelineProcessingElementRequest {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_node_id", nullable = false)
-    private Node pipelineNode;
+    @JoinColumn(name = "pipeline_pe_id", nullable = false)
+    private ProcessingElement pipelineNode;
 
     @Column(name = "pipeline_id", nullable = false)
     private UUID pipelineId;
