@@ -1,6 +1,5 @@
 package com.dapm.security_service.repositories;
 
-import com.dapm.security_service.models.Node;
 import com.dapm.security_service.models.Pipeline;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,19 +13,21 @@ import java.util.UUID;
 
 @Repository
 public interface PipelineRepository extends JpaRepository<Pipeline, UUID> {
-    @EntityGraph(value = "Pipeline.nodesAndTokens", type = EntityGraph.EntityGraphType.FETCH)
+
+    // Using a defined EntityGraph (ensure you have updated the named entity graph in your Pipeline entity)
+    @EntityGraph(value = "Pipeline.processingElementsAndTokens", type = EntityGraph.EntityGraphType.FETCH)
     List<Pipeline> findAll();
 
-    // Fetch all pipelines, including nodes & tokens, in one go
-    @Query("SELECT DISTINCT p FROM Pipeline p "
-            + "LEFT JOIN FETCH p.nodes "
-            + "LEFT JOIN FETCH p.tokens")
-    List<Pipeline> findAllWithNodesAndTokens();
+    // Fetch all pipelines, including processingElements & tokens, in one go
+    @Query("SELECT DISTINCT p FROM Pipeline p " +
+            "LEFT JOIN FETCH p.processingElements " +
+            "LEFT JOIN FETCH p.tokens")
+    List<Pipeline> findAllWithProcessingElementsAndTokens();
 
-    // Fetch a single pipeline by ID, including nodes & tokens
-    @Query("SELECT DISTINCT p FROM Pipeline p "
-            + "LEFT JOIN FETCH p.nodes "
-            + "LEFT JOIN FETCH p.tokens "
-            + "WHERE p.id = :id")
-    Optional<Pipeline> findByIdWithNodesAndTokens(@Param("id") UUID id);
+    // Fetch a single pipeline by ID, including processingElements & tokens
+    @Query("SELECT DISTINCT p FROM Pipeline p " +
+            "LEFT JOIN FETCH p.processingElements " +
+            "LEFT JOIN FETCH p.tokens " +
+            "WHERE p.id = :id")
+    Optional<Pipeline> findByIdWithProcessingElementsAndTokens(@Param("id") UUID id);
 }

@@ -18,7 +18,7 @@ public class PipelineController {
 
     @GetMapping
     public List<PipelineDto> getAllPipelines() {
-        var pipelines =  pipelineRepository.findAll();
+        var pipelines = pipelineRepository.findAll();
         return pipelines.stream().map(PipelineDto::new).toList();
     }
 
@@ -33,10 +33,10 @@ public class PipelineController {
             pipeline.setId(UUID.randomUUID());
         }
 
-        if (pipeline.getNodes() != null) {
-            pipeline.getNodes().forEach(node -> {
-                if (node.getId() == null) {
-                    node.setId(UUID.randomUUID());
+        if (pipeline.getProcessingElements() != null) {
+            pipeline.getProcessingElements().forEach(pe -> {
+                if (pe.getId() == null) {
+                    pe.setId(UUID.randomUUID());
                 }
             });
         }

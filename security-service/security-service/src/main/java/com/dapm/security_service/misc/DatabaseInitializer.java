@@ -28,6 +28,9 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Autowired private NodeRepository nodeRepository;
     @Autowired private PipelineRepository pipelineRepository;
     @Autowired private PeTemplateRepository peTemplateRepository;
+    @Autowired
+    private ProcessingElementRepository processingElementRepository;
+
 
     // BCrypt encoder
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -308,54 +311,60 @@ public class DatabaseInitializer implements CommandLineRunner {
                 .id(PIPELINE_ID)
                 .name("Cross-Org Pipeline")
                 .ownerOrganization(orgA)
-                .description("Pipeline with nodes from OrgA and OrgB")
+                .description("Pipeline with processing elements from OrgA and OrgB")
                 .pipelineRole(pipelineRole)
-                .nodes(new HashSet<>())
+                .processingElements(new HashSet<>())  // Use processingElements field
                 .tokens(new HashSet<>())
                 .createdBy(CREATED_BY_ID)
                 .createdAt(Instant.parse("2025-03-11T13:45:07.455Z"))
                 .updatedAt(Instant.parse("2025-03-11T13:45:07.455Z"))
                 .build();
 
-        // 11. Create Nodes.
-        Node node1 = Node.builder()
-                .id(NODE_A1_ID)
-                .name("OrgA Node 1")
+
+        // 11. Create Processing Elements.
+// You can use your existing node IDs for processing element IDs if desired,
+// or generate new ones. Here, we're reusing the constants.
+        ProcessingElement pe1 = ProcessingElement.builder()
+                .id(NODE_A1_ID)  // or UUID.randomUUID() if you prefer
+                .templateId("pe_filter")  // This template represents an OrgA template
                 .ownerOrganization(orgA)
-                .defaultExecutionCount(10)
-                .defaultDurationHours(1)
+                .inputs(new HashSet<>())   // Set default inputs as needed
+                .outputs(new HashSet<>())  // Set default outputs as needed
                 .build();
-        Node node2 = Node.builder()
+
+        ProcessingElement pe2 = ProcessingElement.builder()
                 .id(NODE_A2_ID)
-                .name("OrgA Node 2")
+                .templateId("pe_filter")
                 .ownerOrganization(orgA)
-                .defaultExecutionCount(10)
-                .defaultDurationHours(1)
+                .inputs(new HashSet<>())
+                .outputs(new HashSet<>())
                 .build();
-        Node node3 = Node.builder()
+
+        ProcessingElement pe3 = ProcessingElement.builder()
                 .id(NODE_B_ID)
-                .name("OrgB Node")
+                .templateId("pe_discovery")  // This template represents an OrgB template
                 .ownerOrganization(orgB)
-                .defaultExecutionCount(5)
-                .defaultDurationHours(1)
+                .inputs(new HashSet<>())
+                .outputs(new HashSet<>())
                 .build();
 
-        // Associate allowed resources with nodes.
-        node1.setAllowedResources(new HashSet<>(Arrays.asList(resourceA, resourceB)));
-        node2.setAllowedResources(new HashSet<>());
-        node3.setAllowedResources(new HashSet<>(Collections.singletonList(resourceC)));
 
-        // Save nodes.
-        node1 = nodeRepository.save(node1);
-        node2 = nodeRepository.save(node2);
-        node3 = nodeRepository.save(node3);
+//        // Associate allowed resources with nodes.
+//        node1.setAllowedResources(new HashSet<>(Arrays.asList(resourceA, resourceB)));
+//        node2.setAllowedResources(new HashSet<>());
+//        node3.setAllowedResources(new HashSet<>(Collections.singletonList(resourceC)));
+
+        pe1 = processingElementRepository.save(pe1);
+        pe2 = processingElementRepository.save(pe2);
+        pe3 = processingElementRepository.save(pe3);
 
         // 12. Associate nodes with the pipeline (ManyToMany).
 
         // Set<Node> nodes = new HashSet<>(Arrays.asList(node1, node2, node3));
         // pipeline.setNodes(nodes);
-        pipeline.getNodes().clear();
-        pipeline.getNodes().addAll(Arrays.asList(node1,node2,node3));
+        pipeline.getProcessingElements().clear();
+        pipeline.getProcessingElements().addAll(Arrays.asList(pe1, pe2, pe3));
+
 
         // 13. Set tokens as empty for now.
         //pipeline.setTokens(new HashSet<>());

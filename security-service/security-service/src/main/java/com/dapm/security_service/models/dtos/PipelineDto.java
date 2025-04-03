@@ -4,7 +4,7 @@ import lombok.Data;
 import com.dapm.security_service.models.Pipeline;
 import com.dapm.security_service.models.Organization;
 import com.dapm.security_service.models.Role;
-import com.dapm.security_service.models.Node;
+import com.dapm.security_service.models.ProcessingElement;
 import com.dapm.security_service.models.Token;
 
 import java.time.Instant;
@@ -26,7 +26,8 @@ public class PipelineDto {
     private UUID pipelineRoleId;
     private String pipelineRoleName;
 
-    private Set<UUID> nodeIds;
+    // Changed from nodeIds to processingElementIds
+    private Set<UUID> processingElementIds;
     private Set<UUID> tokenIds;
 
     private UUID createdBy;
@@ -53,9 +54,9 @@ public class PipelineDto {
             this.pipelineRoleName = role.getName();
         }
 
-        // Convert nodes collection to a set of IDs
-        this.nodeIds = pipeline.getNodes() != null
-                ? pipeline.getNodes().stream().map(Node::getId).collect(Collectors.toSet())
+        // Map processing elements instead of nodes
+        this.processingElementIds = pipeline.getProcessingElements() != null
+                ? pipeline.getProcessingElements().stream().map(ProcessingElement::getId).collect(Collectors.toSet())
                 : Collections.emptySet();
 
         // Convert tokens collection to a set of IDs

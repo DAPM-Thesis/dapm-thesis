@@ -1,8 +1,9 @@
 package com.dapm.security_service.controllers.ClientApi;
 
-import com.dapm.security_service.models.dtos.PeTemplateDto;
-import com.dapm.security_service.models.dtos.PeTemplateDto;
-import com.dapm.security_service.services.PeTemplateService;
+import com.dapm.security_service.models.dtos.PipelineDesignDto;
+import com.dapm.security_service.models.dtos.ProcessingElementDto;
+import com.dapm.security_service.models.Pipeline;
+import com.dapm.security_service.services.PipelineDesignService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,22 +13,28 @@ import java.util.List;
 @RequestMapping("/api/pipeline/design")
 public class PipelineDesignController {
 
-    private final PeTemplateService peTemplateService;
+    private final PipelineDesignService pipelineDesignService;
 
-    public PipelineDesignController(PeTemplateService peTemplateService) {
-        this.peTemplateService = peTemplateService;
+    public PipelineDesignController(PipelineDesignService pipelineDesignService) {
+        this.pipelineDesignService = pipelineDesignService;
     }
 
     /**
-     * Endpoint to retrieve all available PE templates for the given organization.
-     * It aggregates local templates from OrgA and external templates from OrgB (if visible).
-     *
-     * @param org the name of the organization (e.g., "OrgA")
-     * @return a combined list of available PE templates as JSON.
+     * GET endpoint to retrieve all available processing element templates for the given organization.
      */
     @GetMapping("/available-pe-templates")
-    public ResponseEntity<List<PeTemplateDto>> getAvailablePeTemplates(@RequestParam String org) {
-        List<PeTemplateDto> templates = peTemplateService.getAvailablePeTemplates(org);
+    public ResponseEntity<List<ProcessingElementDto>> getAvailablePeTemplates(@RequestParam String org) {
+        List<ProcessingElementDto> templates = pipelineDesignService.getAvailablePeTemplates(org);
         return ResponseEntity.ok(templates);
+    }
+
+    /**
+     * POST endpoint to submit a new pipeline design.
+     * Accepts a PipelineDesignDto that contains processing elements and channel configuration.
+     */
+    @PostMapping
+    public ResponseEntity<Pipeline> createPipelineDesign(@RequestBody PipelineDesignDto pipelineDesignDto) {
+        Pipeline createdPipeline = pipelineDesignService.savePipelineDesign(pipelineDesignDto);
+        return ResponseEntity.ok(createdPipeline);
     }
 }
