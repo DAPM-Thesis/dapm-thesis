@@ -13,10 +13,11 @@ public class PipelineBuilder {
     private WebClient webClient;
 
     // Hardcoded for now
-    private final String currentHost = "http://localhost:8080"; // orgA
-    private final String externalHost = "http://localhost:8081"; // orgB
-    private final String brokerFromPipelineOwner = "localhost";
-    private final String externalBroker = "localhost";
+    private final String organizationAHost = "http://localhost:8082/"; // orgA
+    private final String organizationBHost = "http://localhost:8083/"; // orgB
+    private final String organizationABroker = "localhost:9092"; // broker in orgA
+    private final String organizationBBroker = "localhost:9082"; // broker in orgB
+    private int topicCount = 0;
 
     public PipelineBuilder createPipeline(String organizationOwnerID) {
         currentPipeline = new Pipeline(organizationOwnerID);
@@ -37,13 +38,33 @@ public class PipelineBuilder {
         { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
 
         currentPipeline.getConnections().put(from, to);
-        String connectionTopic = UUID.randomUUID().toString();
-        boolean pipelineOwnerOwnsPublisher = from.organizationID().equals(currentPipeline.getOrganizationOwnerID());
-        String broker = pipelineOwnerOwnsPublisher ? brokerFromPipelineOwner : externalBroker;
-        String hostURL = pipelineOwnerOwnsPublisher ? currentHost : externalHost;
+        String connectionTopic = "Topic" + topicCount;
 
-        postToOrganization(from, connectionTopic, broker, hostURL, true);
-        postToOrganization(to, connectionTopic, broker, hostURL,false);
+        String broker;
+        String hostURL;
+        // This is hardcoded too
+        if(from.processingElementType() == ProcessingElementType.SOURCE) {
+            hostURL = organizationAHost;
+            broker = organizationABroker;
+            postToOrganization(from, connectionTopic, broker, hostURL, true);
+        }
+        else if(from.processingElementType() == ProcessingElementType.OPERATOR) {
+            hostURL = organizationBHost;
+            broker = organizationBBroker;
+            postToOrganization(from, connectionTopic, broker, hostURL, true);
+        }
+
+         if(to.processingElementType() == ProcessingElementType.OPERATOR) {
+            hostURL = organizationBHost;
+            broker = organizationABroker;
+            postToOrganization(to, connectionTopic, broker, hostURL,false);
+        }
+         else if(to.processingElementType() == ProcessingElementType.SINK) {
+             hostURL = organizationAHost;
+             broker = organizationBBroker;
+             postToOrganization(to, connectionTopic, broker, hostURL,false);
+         }
+         topicCount++;
         return this;
     }
 
@@ -59,7 +80,7 @@ public class PipelineBuilder {
             String encodedBroker = URLEncoder.encode(broker, StandardCharsets.UTF_8);
 
             String publisherOrSubscriber = isPublisher ? "publisher" : "subscriber";
-            String url = "/" + organizationID + "/" + processElementID + "/"
+            String url = organizationID + "/" + processElementID + "/"
                             + publisherOrSubscriber + "/broker/"
                             + encodedBroker + "/topic/" + encodedTopic;
 
@@ -82,7 +103,7 @@ public class PipelineBuilder {
                 String url = "/" + organizationID + "/"
                         + processElementID + "/start";
 
-                webClient = WebClient.builder().baseUrl(currentHost).build(); // orgA has sources only at the moment
+                webClient = WebClient.builder().baseUrl(organizationAHost).build(); // orgA has sources only at the moment
                 webClient.post().uri(url)
                         .retrieve()
                         .bodyToMono(Void.class)

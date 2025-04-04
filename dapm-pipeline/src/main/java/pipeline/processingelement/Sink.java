@@ -16,6 +16,8 @@ public abstract class Sink extends ConsumingProcessingElement implements Subscri
 
     @Override
     public void registerConsumer(String connectionTopic, String brokerURL) {
-        consumers.add(new Consumer(this, connectionTopic, brokerURL));
+        Consumer consumer = new Consumer(this, connectionTopic, brokerURL);
+        consumer.start();
+        consumers.add(consumer);
     }
 }
