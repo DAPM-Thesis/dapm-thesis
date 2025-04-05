@@ -6,7 +6,6 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
 @Entity
 @Table(name = "processing_element")
 @Data
@@ -25,8 +24,8 @@ public class ProcessingElement {
     private Organization ownerOrganization;
 
     // The identifier of the template used for this processing element.
-    @Column(name = "node_Id", nullable = false)
-    private String nodeId;
+    @Column(name = "template_id", nullable = false)
+    private String templateId;
 
     // A set of input types, e.g., ["Event", "PetriNet"]
     @ElementCollection(fetch = FetchType.EAGER)
@@ -41,4 +40,11 @@ public class ProcessingElement {
     @Column(name = "output")
     @Builder.Default
     private Set<String> outputs = new HashSet<>();
+
+    // Visibility of this template.
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "processing_element_visibility", joinColumns = @JoinColumn(name = "processing_element_id"))
+    @Column(name = "visible_org")
+    @Builder.Default
+    private Set<String> visibility = new HashSet<>();
 }

@@ -5,7 +5,6 @@ import com.dapm.security_service.models.*;
 import com.dapm.security_service.models.dtos.AuthRequest;
 import com.dapm.security_service.models.dtos.AuthResponse;
 import com.dapm.security_service.models.dtos.CreateUserDto;
-import com.dapm.security_service.models.dtos.UserDto;
 import com.dapm.security_service.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,80 +21,61 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthenticationService2 {
 
-
-    @Autowired
-    private UserDetailsRepository repository;
-
-    @Autowired
-    private OrganizationRepository organizationRepository;
-    @Autowired
-    private DepartmentRepository departmentRepository;
-    @Autowired
-    private FacultyRepository facultyRepository;
-    @Autowired
-    private RoleRepository roleRepository;
+    @Autowired private UserDetailsRepository repository;
+    @Autowired private OrganizationRepository organizationRepository;
+    @Autowired private DepartmentRepository departmentRepository;
+    @Autowired private FacultyRepository facultyRepository;
+    @Autowired private RoleRepository roleRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthResponse register(CreateUserDto user){
-        User newUser=new User();
+    public AuthResponse register(CreateUserDto user) {
+        User newUser = new User();
         newUser.setId(UUID.randomUUID());
         newUser.setEmail(user.getEmail());
         newUser.setUsername(user.getUsername());
         newUser.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
 
-        Organization organization = organizationRepository.findByName(user.getOrganization());
-        if (organization == null) {
-            throw new IllegalArgumentException("Organization not found");
-        }
+        Organization organization = organizationRepository.findByName(user.getOrganization())
+                .orElseThrow(() -> new IllegalArgumentException("Organization not found"));
         newUser.setOrganization(organization);
 
-        Faculty faculty = facultyRepository.findByName(user.getFaculty());
-        if (faculty == null) {
-            throw new IllegalArgumentException("Faculty not found");
-        }
+        Faculty faculty = facultyRepository.findByName(user.getFaculty())
+                .orElseThrow(() -> new IllegalArgumentException("Faculty not found"));
         newUser.setFaculty(faculty);
 
-        Department department = departmentRepository.findByName(user.getDepartment());
-        if (department == null) {
-            throw new IllegalArgumentException("Department not found");
-        }
+        Department department = departmentRepository.findByName(user.getDepartment())
+                .orElseThrow(() -> new IllegalArgumentException("Department not found"));
         newUser.setDepartment(department);
 
         Set<Role> roles = user.getRoles().stream()
                 .map(roleName -> {
                     Role role = roleRepository.findByName(roleName);
-                    if (role == null) { // If not found, create a new one
+                    if (role == null) {
                         role = new Role();
                         role.setName(roleName);
-                        role = roleRepository.save(role); // Save new role
+                        role = roleRepository.save(role);
                     }
                     return role;
                 })
                 .collect(Collectors.toSet());
         newUser.setRoles(roles);
 
-
         repository.save(newUser);
-        var jwtToke= jwtService.generateToken(newUser);
-
-        AuthResponse res=new AuthResponse(jwtToke);
-        return res;
+        String jwtToken = jwtService.generateToken(newUser);
+        return new AuthResponse(jwtToken);
     }
 
-    public AuthResponse authenticate(AuthRequest request){
+    public AuthResponse authenticate(AuthRequest request) {
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
+
         var user = repository.findByUsername(request.getUsername())
-                .orElseThrow();
-        var jwtToke= jwtService.generateToken(user);
-        AuthResponse res=new AuthResponse(jwtToke);
-        return res;
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String jwtToken = jwtService.generateToken(user);
+        return new AuthResponse(jwtToken);
     }
 }

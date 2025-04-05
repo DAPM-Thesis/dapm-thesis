@@ -13,28 +13,36 @@ import java.util.List;
 @RequestMapping("/api/pipeline/design")
 public class PipelineDesignController {
 
-//    private final PipelineDesignService pipelineDesignService;
-//
-//    public PipelineDesignController(PipelineDesignService pipelineDesignService) {
-//        this.pipelineDesignService = pipelineDesignService;
-//    }
-//
-//    /**
-//     * GET endpoint to retrieve all available processing element templates for the given organization.
-//     */
-//    @GetMapping("/available-pe-templates")
-//    public ResponseEntity<List<ProcessingElementDto>> getAvailablePeTemplates(@RequestParam String org) {
-//        List<ProcessingElementDto> templates = pipelineDesignService.getAvailablePeTemplates(org);
-//        return ResponseEntity.ok(templates);
-//    }
-//
-//    /**
-//     * POST endpoint to submit a new pipeline design.
-//     * Accepts a PipelineDesignDto that contains processing elements and channel configuration.
-//     */
-//    @PostMapping
-//    public ResponseEntity<Pipeline> createPipelineDesign(@RequestBody PipelineDesignDto pipelineDesignDto) {
-//        Pipeline createdPipeline = pipelineDesignService.savePipelineDesign(pipelineDesignDto);
-//        return ResponseEntity.ok(createdPipeline);
-//    }
+    private final PipelineDesignService pipelineDesignService;
+
+    public PipelineDesignController(PipelineDesignService pipelineDesignService) {
+        this.pipelineDesignService = pipelineDesignService;
+    }
+
+    /**
+     * GET endpoint to retrieve all available processing element templates for the given organization.
+     * The service aggregates both local and externally visible templates.
+     *
+     * Example call: /api/pipeline/design/available-pe-templates?org=OrgA
+     */
+    @GetMapping("/available-pe-templates")
+    public ResponseEntity<List<ProcessingElementDto>> getAvailablePeTemplates(@RequestParam String org) {
+        List<ProcessingElementDto> templates = pipelineDesignService.getAvailablePeTemplates(org);
+        return ResponseEntity.ok(templates);
+    }
+
+    /**
+     * POST endpoint to submit a new pipeline design.
+     * Accepts a PipelineDesignDto that contains:
+     * - Pipeline metadata (name, description)
+     * - A list of processing elements (each with temporary IDs, templateId, ownerOrganization, inputs, and outputs)
+     * - Channels defined as lists of processing element IDs (the temporary IDs will be replaced with persistent IDs)
+     *
+     * The service maps this DTO to a Pipeline entity and persists it.
+     */
+    @PostMapping
+    public ResponseEntity<Pipeline> createPipelineDesign(@RequestBody PipelineDesignDto pipelineDesignDto) {
+        Pipeline createdPipeline = pipelineDesignService.savePipelineDesign(pipelineDesignDto);
+        return ResponseEntity.ok(createdPipeline);
+    }
 }

@@ -5,9 +5,9 @@ services:
     image: postgres:14
     container_name: dapm_postgres_orga
     environment:
-      - POSTGRES_USER=orga_user
-      - POSTGRES_PASSWORD=orga_pass
-      - POSTGRES_DB=orga_db
+      POSTGRES_USER: orga_user
+      POSTGRES_PASSWORD: orga_pass
+      POSTGRES_DB: orga_db
     ports:
       - "5433:5432"
     volumes:
@@ -19,9 +19,9 @@ services:
     image: postgres:14
     container_name: dapm_postgres_orgb
     environment:
-      - POSTGRES_USER=orgb_user
-      - POSTGRES_PASSWORD=orgb_pass
-      - POSTGRES_DB=orgb_db
+      POSTGRES_USER: orgb_user
+      POSTGRES_PASSWORD: orgb_pass
+      POSTGRES_DB: orgb_db
     ports:
       - "5434:5432"
     volumes:
@@ -31,25 +31,16 @@ services:
 
   dapm_orga:
     build: .
-    container_name: dapm_dapm_orga
+    container_name: orga
     environment:
-      # Organization
       - dapm.defaultOrgName=OrgA
-      # Datasource properties for OrgA database.
       - SPRING_DATASOURCE_URL=jdbc:postgresql://dapm_postgres_orga:5432/orga_db
       - SPRING_DATASOURCE_USERNAME=orga_user
       - SPRING_DATASOURCE_PASSWORD=orga_pass
       - spring.jpa.hibernate.ddl-auto=update
       - spring.jpa.show-sql=true
-      # Organization-specific properties for OrgA.
-      - org.keys.OrgA=-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsmKtRus8ARf6zXzF2t9rnRV9TaCTr3ReWejCPGD7dn4q83bhqLhL4W1fICw5LwGziXzQdHo15s/rhsCfYyqWdhtkSfIUDbeQUfiuiA3ous0dKXIo7cdp07GfmANs3UxnuRPVD5LK/UrDJ5pDxYwwRojRw4KkyhxtQ/ahIU5nYxOxTiyisAYP+PtxTDo2fN34/D+Z0KwqX0JgUNt8vR0AWyhkgnOOPEbTDFNFlg1mHSCopFPTi+N/B2X1ewYHuDRseDkoz4O9IdAQ0Up+IQEgpXSaobbzx/8uHV8GycakjwZPxs4lQgh8ZcB8UR4bvTXSmeihKi6xb1kcmKTKsHPIvwIDAQAB-----END PUBLIC KEY-----
-      - org.keys.OrgB=-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv/iEAeUOmX35tB8mGvZYuQMVcmt2KY5t7xT+o8+7DvRVioe6dcVO81xB0te9SjpF1XUpgT9JPIzZIurmeE9uLbi5pAjl+aGWN+fuh7z/vSAPJNS3HHdxOTsImzZaefgJwbSJslvyTrZ5c6BxjYbIRN5cOaQca/dFO0OOiGXPqwjIxwGRmWT7CH9Q64phO8r3qOKwaM5LpB7lGB3ljUwcA/Nag/PSsjVAwhctpOoai3oI2lNO7t/c+MAgTlZAFBJrxtMAJV/YJY5ufrrBxGuA3qeGcahnt30gIWslQgJGFp0L+4OdsAuX3IqbCN277jsGB7Oath+lCrOaK7BZtE4K5QIDAQAB-----END PUBLIC KEY-----
-      - org.private-key=-----BEGIN PRIVATE KEY-----MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCyYq1G6zwBF/rNfMXa32udFX1NoJOvdF5Z6MI8YPt2firzduGouEvhbV8gLDkvAbOJfNB0ejXmz+uGwJ9jKpZ2G2RJ8hQNt5BR+K6IDei6zR0pcijtx2nTsZ+YA2zdTGe5E9UPksr9SsMnmkPFjDBGiNHDgqTKHG1D9qEhTmdjE7FOLKKwBg/4+3FMOjZ83fj8P5nQrCpfQmBQ23y9HQBbKGSCc448RtMMU0WWDWYdIKikU9OL438HZfV7Bge4NGx4OSjPg70h0BDRSn4hASCldJqhtvPH/y4dXwbJxqSPBk/GziVCCHxlwHxRHhu9NdKZ6KEqLrFvWRyYpMqwc8i/AgMBAAECggEAQ5UI6s5iLFPmbAVyfCqa/adPkqJccWOX/14kgHWJr2m7YgPPGHnCHcSu/mRiwcFWQKdt3kMSusBZDfNaL1rKKDLWewFgwZWi8rtRfDAw1NyyyKn8gaFEIbSwrwnVK74vqbmuxbiqeO3jI9TZCjXDcGWTewu63OuKJe6BOzoWBz2iO88PVEY603IWHX8k39jMP2khQWb4NfifMd9lQU9uOkFxk/7xreaby+Z3F9mEfGZS6qD0Ds3ryQcI0OvrkxJ7o1ianEJJ3zcloajuzbQ8a64qNGQk8E3DGogxHg0U4bO2s0VvXyzzp+nL+TExSUB/4iGKppBw9L/4jte+MPCJOQKBgQD1bGvSfRKbTHCod6VL0qghJf16m8ICTHzvXY47K0OkiTtItlEyAnFXZZFbdZ3BbuxkJoGxkdQmQSXvap5Rwlay0tPSqqbPtWDEr6Rpo6WIRNtXn4VK5WDBHUEPxTN+Ks9fhRN8WbQ0ARdc/jf59BtjVm6cUuHw00dT8tyPga3Y3QKBgQC6EqxwMb0o1UeoPj3ErlaBgTk3kKKAnEOJhoz0Bv17MBh58tWkm34C+2ocNkR630YfQruJCHF/M8fYiIPfv8GCHYgVWqTLrApJaVT+SNiME+cosLy8JqaZC0J6ZF4qNWYQUpiD2GAhneEetzKxaBVcRoDomXIvPVZN6bxXwaZASwKBgGYWVH95EU1SLaaWJkb0+ITZZagjtD76jBmRhAFuzLNbdjKXzAyOYZEmKaGuuhFlT6WVMuunKmVDQkFlyzddLG00L3J5E+xgmUEXgr+Cl++oHMlFDNALvAR4Y8DombPIoPwtwd4+/iuHrK08/hHWDbJzmI0kGOHxMMFly4NSQPttAoGAT0Gi94sIIntuMUiJsNv9dt4fC/7saNGmps6L/Wl40N70ngUEYT/mFckXMnsfAiNWT/xxuvXAukjJB/9mBIk+GHkRvN7GMQbPvuNB06odqtTTcm6NhasE7U1xfIaB4YKrPaqg0g/5KniAKkAoNI68Anj5cZninCKJP1ie49ZVRS8CgYEA69qVMWyJtBVB9ByfBJ2MP7p5srbTv1gNGpr07Uuh+ftl0A2iJheKbvop1UZgyga2kmyeGWtV2HIemvvETziqEX1jLdvKPeeOm7+M0ZjeTMzabOQbPKa/rWpWRSgCt7FGNua60HJ9qoDjI1JD1cU329Qf9Lmt8GzmaFWphOZDx3Y=-----END PRIVATE KEY-----
-      - org.security.key-algorithm=RSA
-        # IMPORTANT: Set the OrgB Peer API URL in the OrgA container to point to OrgB's service by container name.
-      - ORGB_PEER_API_URL=http://dapm_orgb:8080/peer/api/pe-templates?org=
     ports:
-      - "8081:8080"
+      - "8081:8080"  # Mapping internal port 8080 to external port 8081
     depends_on:
       - postgres_orga
     networks:
@@ -57,24 +48,16 @@ services:
 
   dapm_orgb:
     build: .
-    container_name: dapm_dapm_orgb
+    container_name: orgb
     environment:
-      # Organization
       - dapm.defaultOrgName=OrgB
-      # Datasource properties for OrgB database.
       - SPRING_DATASOURCE_URL=jdbc:postgresql://dapm_postgres_orgb:5432/orgb_db
       - SPRING_DATASOURCE_USERNAME=orgb_user
       - SPRING_DATASOURCE_PASSWORD=orgb_pass
       - spring.jpa.hibernate.ddl-auto=update
       - spring.jpa.show-sql=true
-      # Keys: not fixed (should be renamed also in the code: code uses these statically)
-      - org.keys.OrgA=-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsmKtRus8ARf6zXzF2t9rnRV9TaCTr3ReWejCPGD7dn4q83bhqLhL4W1fICw5LwGziXzQdHo15s/rhsCfYyqWdhtkSfIUDbeQUfiuiA3ous0dKXIo7cdp07GfmANs3UxnuRPVD5LK/UrDJ5pDxYwwRojRw4KkyhxtQ/ahIU5nYxOxTiyisAYP+PtxTDo2fN34/D+Z0KwqX0JgUNt8vR0AWyhkgnOOPEbTDFNFlg1mHSCopFPTi+N/B2X1ewYHuDRseDkoz4O9IdAQ0Up+IQEgpXSaobbzx/8uHV8GycakjwZPxs4lQgh8ZcB8UR4bvTXSmeihKi6xb1kcmKTKsHPIvwIDAQAB-----END PUBLIC KEY-----
-      - org.keys.OrgB=-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv/iEAeUOmX35tB8mGvZYuQMVcmt2KY5t7xT+o8+7DvRVioe6dcVO81xB0te9SjpF1XUpgT9JPIzZIurmeE9uLbi5pAjl+aGWN+fuh7z/vSAPJNS3HHdxOTsImzZaefgJwbSJslvyTrZ5c6BxjYbIRN5cOaQca/dFO0OOiGXPqwjIxwGRmWT7CH9Q64phO8r3qOKwaM5LpB7lGB3ljUwcA/Nag/PSsjVAwhctpOoai3oI2lNO7t/c+MAgTlZAFBJrxtMAJV/YJY5ufrrBxGuA3qeGcahnt30gIWslQgJGFp0L+4OdsAuX3IqbCN277jsGB7Oath+lCrOaK7BZtE4K5QIDAQAB-----END PUBLIC KEY-----
-      - org.private-key=-----BEGIN PRIVATE KEY-----MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/+IQB5Q6Zffm0HyYa9li5AxVya3Ypjm3vFP6jz7sO9FWKh7p1xU7zXEHS171KOkXVdSmBP0k8jNki6uZ4T24tuLmkCOX5oZY35+6HvP+9IA8k1Lccd3E5OwibNlp5+AnBtImyW/JOtnlzoHGNhshE3lw5pBxr90U7Q46IZc+rCMjHAZGZZPsIf1DrimE7yveo4rBozkukHuUYHeWNTBwD81qD89KyNUDCFy2k6hqLegjaU07u39z4wCBOVkAUEmvG0wAlX9gljm5+usHEa4Dep4ZxqGe3fSAhayVCAkYWnQv7g52wC5fcipsI3bvuOwYHs5q2H6UKs5orsFm0TgrlAgMBAAECggEAFCoik6Bf3DejVww+kG53+1cblZ08GDlhys9FwCc92uBHa/m92EkVdfKm52LJ+1YLp9Rau7zOEJIq7MQH2XNee2b/+P8GSSZ0BQNTxuZPZqpLbO77HP5e4kgVK1iWQGGRhMtV+2o1FZeNQlwEEX2q47EHtvZKFf0vRH5gJmurWKewthA4nJmqsIqvzpQOb2m5nTmuGJYJ0kc6QUJtJYe0OkfB8pyKqwRHhKV74luqWOi2UBphbwz8JBHgJUe1+QQyqLfQlrSmDikLASHCnL0ZuIYpgKoK8ax1Uxn3jb/YB5RpgsgkBkmIePZSO6If1NPIq7ZqhOGLUmBB6E3Nq5D/sQKBgQD3L9WJkOLcCmTQvpuhhmqTbXJLrD1ECuz2NRoFr9N0TLtzAj6d8bDuuolk9uOfAmStObf+D5SGQThDnYpYRNdFM0bvUD0Gk9WYlDA5Uio8GDKa9onKDRZMlUviLtS0bv77PWoRqEeeG/P2mOxB3WCo7mvT/rR5vrnH+uOqjOD23wKBgQDG0LQwBEIvReYgoWjV5GA0X5yZAzfWpczDSOJQ6tPGIsQE3wfdJ33UcxA384I3iPg7UXIOB6offb2NlizrNCbuwsIDgAEsM+TSkBKALA4n229XOFjw0+zjVNAtOBcwsNLU03Ve3lra3jwVRDKANB8H4iC4dmmGe+Oli2ZFMUsKuwKBgAv3t+n6JtGqeykUIWrXnC9ZHDCHvUufD8v31DO0SJOX53dxA2EYQ427YE2QGoMnVYKBieP2EyXQ4I19giY15wpFqkiJ5Pp9i9jgS9lqnfrc3Q5do1wx+ANrMwpXZBr8SMIXPhxuvlDsX4pv6vhhZH2pVXUlHs3KKyqAfidSvM2XAoGBAJdAO3S0KK3SHYsBgMIIZfAyNO5rdlWD+U0v64znuYjo9ftGubLT0nSHvPTz+kLJnx9xjLWDuzcN7+EBONcO6/eEjxkejsXUDObr2EdOPM6xr/jI01ETyQoBggaEv4+5Vgu3e3la6//KRidfpJPIEztqGr56xzkak0tjy8AkChT1AoGAaEIzE1w6726smTDtGbcrLQFnYyAHQa4fabpsCRFfch6yeSaIewFv9bpYoR2fOsgunIr+2pSJfotCcFPGY4wVmDQZm1cNCJJU66CgJCBtrIfUuCzt2VNlMe2/1EQnxzKSWXzqHO0DmiqWzORuhp6yXXUzxt/wUfwjHwfokpH3n5M=-----END PRIVATE KEY-----
-      - org.security.key-algorithm=RSA
-
     ports:
-      - "8082:8080"
+      - "8082:8080"  # Mapping internal port 8080 to external port 8082
     depends_on:
       - postgres_orgb
     networks:

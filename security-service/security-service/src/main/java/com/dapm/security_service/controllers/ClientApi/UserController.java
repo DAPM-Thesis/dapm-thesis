@@ -17,26 +17,16 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private OrganizationRepository organizationRepository;
-    @Autowired
-    private DepartmentRepository departmentRepository;
-    @Autowired
-    private FacultyRepository facultyRepository;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private  PasswordEncoder passwordEncoder;
+    @Autowired private UserRepository userRepository;
+    @Autowired private OrganizationRepository organizationRepository;
+    @Autowired private DepartmentRepository departmentRepository;
+    @Autowired private FacultyRepository facultyRepository;
+    @Autowired private RoleRepository roleRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
 
     @GetMapping
     public List<UserDto> getAllUsers() {
-        return userRepository
-                .findAll()
-                .stream()
-                .map(UserDto::new)
-                .toList();
+        return userRepository.findAll().stream().map(UserDto::new).toList();
     }
 
     @GetMapping("/{id}")
@@ -44,51 +34,42 @@ public class UserController {
         return userRepository.findById(id).map(UserDto::new).orElse(null);
     }
 
+    @PostMapping
+    public UserDto createUser(@RequestBody CreateUserDto user) {
+        User newUser = new User();
+        newUser.setId(UUID.randomUUID());
+        newUser.setEmail(user.getEmail());
+        newUser.setUsername(user.getUsername());
+        newUser.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
 
-@PostMapping
-public UserDto createUser(@RequestBody CreateUserDto user) {
+        Organization organization = organizationRepository.findByName(user.getOrganization())
+                .orElseThrow(() -> new IllegalArgumentException("Organization not found"));
+        newUser.setOrganization(organization);
 
-    User newUser=new User();
-    newUser.setId(UUID.randomUUID());
-    newUser.setEmail(user.getEmail());
-    newUser.setUsername(user.getUsername());
-    newUser.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
-//    newUser.setPasswordHash(user.getPasswordHash());
+        Faculty faculty = facultyRepository.findByName(user.getFaculty())
+                .orElseThrow(() -> new IllegalArgumentException("Faculty not found"));
+        newUser.setFaculty(faculty);
 
-    Organization organization = organizationRepository.findByName(user.getOrganization());
-    if (organization == null) {
-        throw new IllegalArgumentException("Organization not found");
+        Department department = departmentRepository.findByName(user.getDepartment())
+                .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+        newUser.setDepartment(department);
+
+        Set<Role> roles = user.getRoles().stream()
+                .map(roleName -> {
+                    Role role = roleRepository.findByName(roleName);
+                    if (role == null) {
+                        role = new Role();
+                        role.setName(roleName);
+                        role = roleRepository.save(role);
+                    }
+                    return role;
+                })
+                .collect(Collectors.toSet());
+        newUser.setRoles(roles);
+
+        return new UserDto(userRepository.save(newUser));
     }
-    newUser.setOrganization(organization);
 
-    Faculty faculty = facultyRepository.findByName(user.getFaculty());
-    if (faculty == null) {
-        throw new IllegalArgumentException("Faculty not found");
-    }
-    newUser.setFaculty(faculty);
-
-    Department department = departmentRepository.findByName(user.getDepartment());
-    if (department == null) {
-        throw new IllegalArgumentException("Department not found");
-    }
-    newUser.setDepartment(department);
-
-    Set<Role> roles = user.getRoles().stream()
-            .map(roleName -> {
-                Role role = roleRepository.findByName(roleName);
-                if (role == null) { // If not found, create a new one
-                    role = new Role();
-                    role.setName(roleName);
-                    role = roleRepository.save(role); // Save new role
-                }
-                return role;
-            })
-            .collect(Collectors.toSet());
-    newUser.setRoles(roles);
-
-
-    return new UserDto(userRepository.save(newUser));
-}
     @PutMapping("/{id}")
     public UserDto updateUser(@PathVariable UUID id, @RequestBody User user) {
         user.setId(id);
