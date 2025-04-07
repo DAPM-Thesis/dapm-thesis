@@ -15,8 +15,8 @@ public class PipelineBuilder {
     // Hardcoded for now
     private final String organizationAHost = "http://localhost:8082/"; // orgA
     private final String organizationBHost = "http://localhost:8083/"; // orgB
-    private final String organizationABroker = "localhost:9092"; // broker in orgA
-    private final String organizationBBroker = "localhost:9082"; // broker in orgB
+    private final String organizationABroker = "localhost:29092"; // broker in orgA
+    private final String organizationBBroker = "localhost:29082"; // broker in orgB
     private int topicCount = 0;
 
     public PipelineBuilder createPipeline(String organizationOwnerID) {
