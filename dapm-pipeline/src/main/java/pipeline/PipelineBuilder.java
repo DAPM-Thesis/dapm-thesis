@@ -53,9 +53,8 @@ public class PipelineBuilder {
         String hostFrom = organizations.get(from.organizationID());
         postToOrganization(from, connectionTopic, brokerFrom, hostFrom, true);
 
-        String brokerTo = organizationBrokers.get(to.organizationID());
         String hostTo = organizations.get(to.organizationID());
-        postToOrganization(to, connectionTopic, brokerTo, hostTo, false);
+        postToOrganization(to, connectionTopic, brokerFrom, hostTo, false);
         return this;
     }
 
