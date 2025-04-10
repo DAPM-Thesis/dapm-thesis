@@ -1,18 +1,16 @@
 package pipeline;
 
-import communication.Producer;
 import pipeline.processingelement.*;
-import pipeline.processingelement.operator.Operator;
 
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class Pipeline {
     private String organizationOwnerID;
     private Set<ProcessingElementReference> processingElements;
     private Set<ProcessingElementReference> sources;
     private Map<ProcessingElementReference, ProcessingElementReference> connections;
+
+    private final Map<String, String> organizations = new HashMap<>();
 
     public Pipeline(String organizationOwnerID) {
         processingElements = new HashSet<>();

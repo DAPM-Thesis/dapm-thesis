@@ -37,7 +37,7 @@ public class PipelineTest2 {
         Sink sink = new DualInputSink();
 
         // Create pipeline using pipeline builder
-        PipelineBuilder builder = new PipelineBuilder();
+//        PipelineBuilder builder = new PipelineBuilder();
 
         // petri net put in first
 //        Pipeline pipeline = builder.createPipeline()

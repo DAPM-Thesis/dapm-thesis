@@ -3,7 +3,6 @@ package impl.pipe1;
 import algorithm.Algorithm;
 import communication.message.impl.event.Event;
 import communication.message.Message;
-import pipeline.Pipeline;
 import pipeline.PipelineBuilder;
 import pipeline.processingelement.*;
 import pipeline.processingelement.operator.SimpleOperator;
@@ -28,14 +27,14 @@ public class PipelineTest {
         ProcessingElementReference operatorReference = new ProcessingElementReference("org2", operator.getID(), ProcessingElementType.OPERATOR);
         ProcessingElementReference sinkReference = new ProcessingElementReference("org1", sink.getID(), ProcessingElementType.SINK);
 
-        // Create pipeline using pipeline builder
-        PipelineBuilder builder = new PipelineBuilder();
-                 builder.createPipeline("org1")
-                .addProcessingElement(sourceReference)
-                .addProcessingElement(operatorReference)
-                .addProcessingElement(sinkReference)
-                .connect(sourceReference, operatorReference)
-                .connect(operatorReference, sinkReference)
-                         .start();
+//        // Create pipeline using pipeline builder
+//        PipelineBuilder builder = new PipelineBuilder();
+//                 builder.createPipeline("org1")
+//                .addProcessingElement(sourceReference)
+//                .addProcessingElement(operatorReference)
+//                .addProcessingElement(sinkReference)
+//                .connect(sourceReference, operatorReference)
+//                .connect(operatorReference, sinkReference)
+//                         .start();
     }
 }

@@ -1,5 +1,6 @@
 package communication;
 
+import communication.config.KafkaConfiguration;
 import communication.message.Message;
 import communication.message.serialization.deserialization.MessageFactory;
 import org.apache.kafka.clients.admin.AdminClient;

@@ -1,7 +1,8 @@
 package pipeline;
 
+import communication.HTTPClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import pipeline.processingelement.ProcessingElementReference;
 import pipeline.processingelement.ProcessingElementType;
 
@@ -14,17 +15,19 @@ import java.util.UUID;
 @Service
 public class PipelineBuilder {
     private Pipeline currentPipeline;
-    private WebClient webClient;
+    private final HTTPClient webClient;
 
     private final Map<String, String> organizations = new HashMap<>();
     private final Map<String, String> organizationBrokers = new HashMap<>();
 
-    public PipelineBuilder() {
+    @Autowired
+    public PipelineBuilder(HTTPClient webClient) {
         // Organizations are hard-coded
         organizations.put("orgA", "http://localhost:8082/");
         organizationBrokers.put("orgA", "localhost:29092");
         organizations.put("orgB", "http://localhost:8083/");
         organizationBrokers.put("orgB", "localhost:29082");
+        this.webClient = webClient;
     }
 
     public PipelineBuilder createPipeline(String organizationOwnerID) {
@@ -73,16 +76,13 @@ public class PipelineBuilder {
                     organizationID, processElementID, role, encodedBroker, encodedTopic
             );
 
-            webClient = WebClient.builder().baseUrl(hostURL).build();
-            webClient.post().uri(url)
-                    .retrieve()
-                    .bodyToMono(Void.class)
-                    .subscribe();
+            webClient.post(hostURL + url);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    // TODO: Put this somewhere else. A separate pipeline execution service?
     public void start() {
         if(currentPipeline.getSources().isEmpty()) throw new IllegalArgumentException("No sources found in pipeline");
         for(ProcessingElementReference pe : currentPipeline.getSources()) {
@@ -96,11 +96,7 @@ public class PipelineBuilder {
                         organizationID, processElementID
                 );
 
-                webClient = WebClient.builder().baseUrl(sourceHost).build();
-                webClient.post().uri(url)
-                        .retrieve()
-                        .bodyToMono(Void.class)
-                        .subscribe();
+                webClient.post(sourceHost + url);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

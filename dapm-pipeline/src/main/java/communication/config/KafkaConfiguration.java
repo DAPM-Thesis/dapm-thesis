@@ -1,4 +1,4 @@
-package communication;
+package communication.config;
 
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -7,7 +7,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
-import java.util.Set;
 import java.util.UUID;
 
 public class KafkaConfiguration {

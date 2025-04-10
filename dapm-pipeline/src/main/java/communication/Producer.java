@@ -1,14 +1,12 @@
 package communication;
 
+import communication.config.KafkaConfiguration;
 import communication.message.Message;
 import communication.message.serialization.MessageSerializer;
-import org.apache.kafka.clients.admin.ListTopicsOptions;
-import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.common.KafkaFuture;
 
 import java.util.Collections;
 import java.util.Properties;
