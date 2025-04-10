@@ -30,30 +30,35 @@ public class Consumer {
     }
 
     public void start() {
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        final int maxRetries = 10;
+        final int retryDelayMillis = 5000;
 
-        if (topicExists()) {
-            kafkaConsumer.subscribe(List.of(topic));
-            observe();
-        } else {
-            System.out.println("Topic " + topic + " does not exist. Unable to subscribe.");
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            if (topicExists()) {
+                kafkaConsumer.subscribe(List.of(topic));
+                observe();
+                return;
+            }
+            System.out.println("Attempt " + attempt + ": Topic '" + topic + "' does not exist. Retrying...");
+            if (attempt < maxRetries) {
+                try {
+                    Thread.sleep(retryDelayMillis);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
         }
+        throw new RuntimeException("Failed to find topic '" + topic + "'");
     }
 
     private void observe() {
         new Thread(() -> {
-            System.out.println("CONSUMER STARTED..." + topic + " broker: " + brokerURL);
             while (true) {
                 var records = kafkaConsumer.poll(java.time.Duration.ofMillis(100));
                 if (!records.isEmpty()) {
-                    System.out.println("CONSUMER POLLING..." + topic + " records: " + records);
                     for (ConsumerRecord<String, String> record : records) {
                         Message msg =  MessageFactory.deserialize(record.value());
-                        System.out.println("Passing message on to observe...");
                         this.subscriber.observe(msg);
                     }
                 }
