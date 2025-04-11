@@ -20,7 +20,6 @@ public class DraftParserTest {
     public static Pair<Collection<MetadataProcessingElement>, Collection<MetadataChannel>> getPipelineDraft(String path) {
         String contents;
         try { contents = Files.readString(Paths.get(path)); }
-
         catch (IOException e) {
             System.out.println(System.getProperty("user.dir") + "\n\n");
             throw new RuntimeException(e);
@@ -40,7 +39,7 @@ public class DraftParserTest {
         MetadataProcessingElement source = new MetadataProcessingElement("Pepsi", "$$$ Source", sourceInputs, sourceOutputs);
 
         // make operator
-        List<Class<? extends Message>> operatorInputs = List.of(Event.class, PetriNet.class);
+        List<Class<? extends Message>> operatorInputs = List.of(Event.class);
         List<Class<? extends Message>> operatorOutputs = List.of(PetriNet.class);
         MetadataProcessingElement operator = new MetadataProcessingElement("Coca Cola", "The Profit Miner", operatorInputs, operatorOutputs);
 
@@ -58,9 +57,7 @@ public class DraftParserTest {
         Pair<Collection<MetadataProcessingElement>, Collection<MetadataChannel>> pipelineDraft = getPipelineDraft(path);
         Collection<MetadataProcessingElement> outputElements = pipelineDraft.getFirst();
         Collection<MetadataChannel> outputChannels = pipelineDraft.getSecond();
-        System.out.println("LOL");
 
-        // TODO: make sure this test fails; expected sets should currently be non-empty, and output is empty
         assertEquals(Set.of(expectedElements), Set.of(outputElements));
         assertEquals(Set.of(expectedChannels), Set.of(outputChannels));
     }

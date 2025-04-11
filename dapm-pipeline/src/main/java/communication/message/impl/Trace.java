@@ -4,7 +4,7 @@ import communication.message.serialization.MessageVisitor;
 import communication.message.Message;
 import communication.message.impl.event.Event;
 import communication.message.serialization.deserialization.DeserializationStrategy;
-import communication.message.serialization.deserialization.TraceDeserializationStrategy;
+import communication.message.serialization.deserialization.impl.TraceDeserializationStrategy;
 
 import java.util.ArrayList;
 import java.util.Iterator;

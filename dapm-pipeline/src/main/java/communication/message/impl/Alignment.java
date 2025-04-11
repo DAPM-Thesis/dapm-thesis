@@ -2,8 +2,9 @@ package communication.message.impl;
 
 import communication.message.serialization.MessageVisitor;
 import communication.message.Message;
-import communication.message.serialization.deserialization.AlignmentDeserializationStrategy;
+import communication.message.serialization.deserialization.impl.AlignmentDeserializationStrategy;
 import communication.message.serialization.deserialization.DeserializationStrategy;
+
 
 public class Alignment extends Message {
     private final Trace logTrace;
@@ -28,9 +29,7 @@ public class Alignment extends Message {
     }
 
     @Override
-    public DeserializationStrategy getDeserializationStrategy() {
-        return new AlignmentDeserializationStrategy();
-    }
+    public DeserializationStrategy getDeserializationStrategy() { return new AlignmentDeserializationStrategy(); }
 
     @Override
     public boolean equals(Object other) {

@@ -3,7 +3,7 @@ package communication.message.impl.event;
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
 import communication.message.serialization.deserialization.DeserializationStrategy;
-import communication.message.serialization.deserialization.EventDeserializationStrategy;
+import communication.message.serialization.deserialization.impl.EventDeserializationStrategy;
 
 import java.util.Collection;
 import java.util.Set;

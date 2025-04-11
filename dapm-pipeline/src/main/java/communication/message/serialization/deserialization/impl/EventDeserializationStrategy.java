@@ -1,7 +1,8 @@
-package communication.message.serialization.deserialization;
+package communication.message.serialization.deserialization.impl;
 
 import communication.message.serialization.JXESParsing;
 import communication.message.Message;
+import communication.message.serialization.deserialization.DeserializationStrategy;
 import utils.Pair;
 
 import java.util.HashMap;

@@ -1,5 +1,5 @@
 {
-  "processing elements": [
+  "processing elements":[
     {
       "orgID": "Pepsi",
       "templateID": "$$$ Source",
@@ -9,7 +9,7 @@
     {
       "orgID": "Coca Cola",
       "templateID": "The Profit Miner",
-      "inputs": ["Event", "PetriNet"],
+      "inputs": ["Event"],
       "outputs": ["PetriNet"]
     },
     {
@@ -30,7 +30,7 @@
       {
         "orgID": "Coca Cola",
         "templateID": "The Profit Miner",
-        "inputs": ["Event", "PetriNet"],
+        "inputs": ["Event"],
         "outputs": ["PetriNet"]
       }
     ],
@@ -38,7 +38,7 @@
       {
         "orgID": "Coca Cola",
         "templateID": "The Profit Miner",
-        "inputs": ["Event", "PetriNet"],
+        "inputs": ["Event"],
         "outputs": ["PetriNet"]
       },
       {

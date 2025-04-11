@@ -3,6 +3,7 @@ package draft_validation;
 import communication.message.Message;
 
 import java.util.List;
+import java.util.Objects;
 
 public class MetadataProcessingElement {
     private final String orgID;
@@ -18,5 +19,25 @@ public class MetadataProcessingElement {
         this.templateID = templateID;
         this.inputs = inputs;
         this.outputs = outputs;
+    }
+
+    @Override
+    public String toString() {
+        return "MPE[" + orgID + "," + templateID + "," + inputs.size() + "," + outputs.size() + "]";
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) { return true; }
+        if (!(other instanceof MetadataProcessingElement otherMPE)) { return false; }
+        return orgID.equals(otherMPE.orgID)
+                && templateID.equals(otherMPE.templateID)
+                && inputs.equals(otherMPE.inputs)
+                && outputs.equals(otherMPE.outputs);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(orgID, templateID, inputs, outputs);
     }
 }

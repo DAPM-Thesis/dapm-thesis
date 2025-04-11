@@ -1,9 +1,10 @@
-package communication.message.serialization.deserialization;
+package communication.message.serialization.deserialization.impl;
 
 import communication.message.Message;
 import communication.message.impl.Trace;
 import communication.message.serialization.JXESParsing;
 import communication.message.impl.event.Event;
+import communication.message.serialization.deserialization.DeserializationStrategy;
 import utils.Pair;
 
 import java.util.ArrayList;
