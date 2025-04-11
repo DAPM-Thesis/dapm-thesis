@@ -5,12 +5,6 @@
       "templateID": "$$$ Source",
       "inputs": [],
       "outputs": ["Event"]
-    },
-    {
-      "orgID": "Coca Cola",
-      "templateID": "The Profit Miner",
-      "inputs": ["Event", "PetriNet"],
-      "outputs": ["PetriNet"]
     }
   ],
   "channels": [
@@ -22,10 +16,10 @@
         "outputs": ["Event"]
       },
       {
-        "orgID": "Coca Cola",
-        "templateID": "The Profit Miner",
-        "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet"]
+        "orgID": "UNKNOWN",
+        "templateID": "SINK",
+        "inputs": ["Event"],
+        "outputs": []
       }
     ]
   ]

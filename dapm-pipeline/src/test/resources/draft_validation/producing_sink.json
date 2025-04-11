@@ -1,0 +1,52 @@
+{
+  "processing elements":[
+    {
+      "orgID": "Pepsi",
+      "templateID": "$$$ Source",
+      "inputs": [],
+      "outputs": ["Event"]
+    },
+    {
+      "orgID": "Coca Cola",
+      "templateID": "The Profit Miner",
+      "inputs": ["Event"],
+      "outputs": ["Event"]
+    },
+    {
+      "orgID": "DTU",
+      "templateID": "Dream Sink",
+      "inputs": ["Event"],
+      "outputs": []
+    }],
+
+  "channels": [
+    [
+      {
+        "orgID": "Pepsi",
+        "templateID": "$$$ Source",
+        "inputs": [],
+        "outputs": ["Event"]
+      },
+      {
+        "orgID": "DTU",
+        "templateID": "Dream Sink",
+        "inputs": ["Event"],
+        "outputs": []
+      }
+    ],
+    [
+      {
+        "orgID": "DTU",
+        "templateID": "Dream Sink",
+        "inputs": ["Event"],
+        "outputs": []
+      },
+      {
+        "orgID": "DTU",
+        "templateID": "Dream Sink",
+        "inputs": ["Event"],
+        "outputs": []
+      }
+    ]
+  ]
+}

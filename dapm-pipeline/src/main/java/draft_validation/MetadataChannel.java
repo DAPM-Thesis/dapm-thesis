@@ -11,6 +11,9 @@ public class MetadataChannel {
         this.to = to;
     }
 
+    public MetadataProcessingElement fromElement() { return from; }
+    public MetadataProcessingElement toElement() { return to; }
+
     @Override
     public String toString() {
         return "MC[" + from + ", " + to + "]";
@@ -27,5 +30,4 @@ public class MetadataChannel {
     public int hashCode() {
         return Objects.hash(from, to);
     }
-
 }

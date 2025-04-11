@@ -1,0 +1,38 @@
+{
+  "processing elements": [
+    {
+      "orgID": "Pepsi",
+      "templateID": "$$$ Source",
+      "inputs": [],
+      "outputs": ["Event"]
+    },
+    {
+      "orgID": "DTU",
+      "templateID": "Dream Sink",
+      "inputs": ["Event"],
+      "outputs": []
+    },
+    {
+      "orgID": "NOT IN A CHANNEL",
+      "templateID": "something",
+      "inputs": ["Event"],
+      "outputs": ["Event"]
+    }
+  ],
+  "channels": [
+    [
+      {
+        "orgID": "Pepsi",
+        "templateID": "$$$ Source",
+        "inputs": [],
+        "outputs": ["Event"]
+      },
+      {
+        "orgID": "DTU",
+        "templateID": "Dream Sink",
+        "inputs": ["Event"],
+        "outputs": []
+      }
+    ]
+  ]
+}

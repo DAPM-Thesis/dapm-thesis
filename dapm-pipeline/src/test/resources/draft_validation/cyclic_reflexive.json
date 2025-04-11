@@ -1,0 +1,66 @@
+{
+  "processing elements":[
+    {
+      "orgID": "Pepsi",
+      "templateID": "$$$ Source",
+      "inputs": [],
+      "outputs": ["Event"]
+    },
+    {
+      "orgID": "REFLEXIVE CYCLE",
+      "templateID": "The Profit Miner",
+      "inputs": ["Event", "PetriNet"],
+      "outputs": ["PetriNet", "PetriNet"]
+    },
+    {
+      "orgID": "DTU",
+      "templateID": "Dream Sink",
+      "inputs": ["PetriNet"],
+      "outputs": []
+    }],
+
+  "channels": [
+    [
+      {
+        "orgID": "Pepsi",
+        "templateID": "$$$ Source",
+        "inputs": [],
+        "outputs": ["Event"]
+      },
+      {
+        "orgID": "REFLEXIVE CYCLE",
+        "templateID": "The Profit Miner",
+        "inputs": ["Event", "PetriNet"],
+        "outputs": ["PetriNet", "PetriNet"]
+      }
+    ],
+    [
+      {
+        "orgID": "REFLEXIVE CYCLE",
+        "templateID": "The Profit Miner",
+        "inputs": ["Event", "PetriNet"],
+        "outputs": ["PetriNet", "PetriNet"]
+      },
+      {
+        "orgID": "REFLEXIVE CYCLE",
+        "templateID": "The Profit Miner",
+        "inputs": ["Event", "PetriNet"],
+        "outputs": ["PetriNet", "PetriNet"]
+      }
+    ],
+    [
+      {
+        "orgID": "REFLEXIVE CYCLE",
+        "templateID": "The Profit Miner",
+        "inputs": ["Event", "PetriNet"],
+        "outputs": ["PetriNet", "PetriNet"]
+      },
+      {
+        "orgID": "DTU",
+        "templateID": "Dream Sink",
+        "inputs": ["PetriNet"],
+        "outputs": []
+      }
+    ]
+  ]
+}

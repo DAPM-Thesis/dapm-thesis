@@ -1,0 +1,32 @@
+{
+  "processing elements":[
+    {
+      "orgID": "Coca Cola",
+      "templateID": "The Profit Miner",
+      "inputs": ["Event"],
+      "outputs": ["PetriNet"]
+    },
+    {
+      "orgID": "DTU",
+      "templateID": "Dream Sink",
+      "inputs": ["PetriNet"],
+      "outputs": []
+    }],
+
+  "channels": [
+    [
+      {
+        "orgID": "Coca Cola",
+        "templateID": "The Profit Miner",
+        "inputs": ["Event"],
+        "outputs": ["PetriNet"]
+      },
+      {
+        "orgID": "DTU",
+        "templateID": "Dream Sink",
+        "inputs": ["PetriNet"],
+        "outputs": []
+      }
+    ]
+  ]
+}

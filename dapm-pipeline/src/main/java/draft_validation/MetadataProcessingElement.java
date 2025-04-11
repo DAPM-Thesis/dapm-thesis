@@ -21,6 +21,16 @@ public class MetadataProcessingElement {
         this.outputs = outputs;
     }
 
+    public boolean isSource() {
+        assert inputs != null;
+        return inputs.isEmpty();
+    }
+
+    public boolean isSink() {
+        assert outputs != null;
+        return outputs.isEmpty();
+    }
+
     @Override
     public String toString() {
         return "MPE[" + orgID + "," + templateID + "," + inputs.size() + "," + outputs.size() + "]";
