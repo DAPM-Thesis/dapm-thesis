@@ -2,7 +2,7 @@ package pipeline;
 
 import communication.HTTPClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import pipeline.processingelement.ProcessingElementReference;
 import pipeline.processingelement.ProcessingElementType;
 
@@ -12,8 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Service
+// TODO: should be able to input a Json assembly file and set up the connections
+@Component
 public class PipelineBuilder {
+
     private Pipeline currentPipeline;
     private final HTTPClient webClient;
 
@@ -78,27 +80,6 @@ public class PipelineBuilder {
             webClient.post(hostURL + url);
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    // TODO: Put this somewhere else. A separate pipeline execution service?
-    public void start() {
-        if(currentPipeline.getSources().isEmpty()) throw new IllegalArgumentException("No sources found in pipeline");
-        for(ProcessingElementReference pe : currentPipeline.getSources()) {
-            try {
-                String organizationID = URLEncoder.encode(pe.organizationID(), StandardCharsets.UTF_8);
-                String processElementID = URLEncoder.encode(String.valueOf(pe.processElementID()), StandardCharsets.UTF_8);
-                String sourceHost = organizations.get(pe.organizationID());
-
-                String url = String.format(
-                        "/%s/%s/start",
-                        organizationID, processElementID
-                );
-
-                webClient.post(sourceHost + url);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 }

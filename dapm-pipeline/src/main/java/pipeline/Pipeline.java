@@ -10,8 +10,6 @@ public class Pipeline {
     private Set<ProcessingElementReference> sources;
     private Map<ProcessingElementReference, ProcessingElementReference> connections;
 
-    private final Map<String, String> organizations = new HashMap<>();
-
     public Pipeline(String organizationOwnerID) {
         processingElements = new HashSet<>();
         connections = new HashMap<>();
