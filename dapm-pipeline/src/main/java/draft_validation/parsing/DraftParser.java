@@ -6,14 +6,15 @@ import communication.message.serialization.JSONParsing;
 import draft_validation.MetadataChannel;
 import draft_validation.MetadataConsumer;
 import draft_validation.MetadataProcessingElement;
+import draft_validation.PipelineDraft;
 import utils.Pair;
 
 import java.util.*;
 
-public class DraftParser implements Parser<Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>>> {
+public class DraftParser implements Parser<PipelineDraft> {
 
     @Override
-    public Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> deserialize(String str) {
+    public PipelineDraft deserialize(String str) {
         Map<String, Object> jsonMap = JSONParsing.toJSONMap(str);
         assert jsonMap.containsKey("\"processing elements\"") && jsonMap.containsKey("\"channels\"");
 
@@ -36,7 +37,7 @@ public class DraftParser implements Parser<Pair<Set<MetadataProcessingElement>, 
             channels.add(new MetadataChannel(producer, consumers));
         }
 
-        return new Pair<>(processingElements, channels);
+        return new PipelineDraft(processingElements, channels);
     }
 
     private Set<MetadataConsumer> extractConsumers(List<List<Object>> rawConsumers) {

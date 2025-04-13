@@ -17,6 +17,10 @@ public class MetadataChannel {
         this.consumers = Set.of(singleConsumer);
     }
 
+    public MetadataProcessingElement getProducer() { return producer; }
+
+    public Set<MetadataConsumer> getConsumers() { return consumers; }
+
     @Override
     public String toString() {
         return "MC[" + producer + ", " + consumers + "]";
@@ -33,4 +37,5 @@ public class MetadataChannel {
     public int hashCode() {
         return Objects.hash(producer, consumers);
     }
+
 }

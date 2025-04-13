@@ -1,30 +1,22 @@
 package draft_validation;
 
-import communication.message.Message;
-
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PipelineValidator {
-    public static boolean isValid(Set<MetadataProcessingElement> elements,
-                                  Set<MetadataChannel> channels) {
-        return true;
-    }
-    /*
-    public static boolean isValid(Set<MetadataProcessingElement> elements,
-                                  Set<MetadataChannel> channels) {
-        return hasConsistentElements(elements, channels)
-                && hasSource(elements)
-                && hasSink(elements)
-                && !hasProducingSink(channels)
-                && !hasConsumingSource(channels)
-                && !isCyclic(elements, channels)
-                && isConnected(elements, channels)
-                && channelInputsAndOutputsMatch(elements, channels);
+    public static boolean isValid(PipelineDraft draft) {
+        return hasConsistentElements(draft)
+                && hasSource(draft.elements())
+                && hasSink(draft.elements())
+                && !hasProducingSink(draft.channels())
+                && !hasConsumingSource(draft.channels())
+                && !isCyclic(draft)
+                && isConnected(draft)
+                && channelInputsAndOutputsMatch(draft);
     }
 
-    private static boolean channelInputsAndOutputsMatch(Set<MetadataProcessingElement> elements, Set<MetadataChannel> channels) {
+    private static boolean channelInputsAndOutputsMatch(PipelineDraft draft) {
+        /*
         Map<MetadataProcessingElement, List<Class<? extends Message>>> inputs = new HashMap<>();
         elements.forEach(e -> inputs.put(e, e.getInputs()));
 
@@ -33,26 +25,26 @@ public class PipelineValidator {
             MetadataProcessingElement from = channel.getProducer();
             MetadataProcessingElement to = channel.toElement();
         }
-
-        return false;
+        */
+        return true;
     }
 
 
-    private static boolean isConnected(Set<MetadataProcessingElement> elements, Set<MetadataChannel> channels) {
-        if (elements.isEmpty()) {
-            assert channels.isEmpty() : "Channels over non-existing elements.";
+    private static boolean isConnected(PipelineDraft draft) {
+        if (draft.elements().isEmpty()) {
+            assert draft.channels().isEmpty() : "Channels over non-existing elements.";
             return true;
         }
-        assert hasConsistentElements(elements, channels);
+        assert hasConsistentElements(draft);
 
-        List<MetadataProcessingElement> orderedSources = getSources(elements).stream().toList();
+        List<MetadataProcessingElement> orderedSources = getSources(draft).stream().toList();
         assert !orderedSources.isEmpty();
 
         HashSet<MetadataProcessingElement> visited =  new HashSet<>();
-        Map<MetadataProcessingElement, Set<MetadataProcessingElement>> unDirectedSuccessors = getUndirectedSuccessors(channels);
+        Map<MetadataProcessingElement, Set<MetadataProcessingElement>> unDirectedSuccessors = getUndirectedSuccessors(draft.channels());
         depthFirstVisit(orderedSources.getFirst(), visited, unDirectedSuccessors);
 
-        return visited.equals(elements);
+        return visited.equals(draft.elements());
     }
 
     private static void depthFirstVisit(MetadataProcessingElement current,
@@ -66,17 +58,19 @@ public class PipelineValidator {
         }
     }
 
-    private static Set<MetadataProcessingElement> getSources(Collection<MetadataProcessingElement> elements) {
-        return elements.stream().filter(MetadataProcessingElement::isSource).collect(Collectors.toSet());
+    private static Set<MetadataProcessingElement> getSources(PipelineDraft draft) {
+        assert !hasConsumingSource(draft.channels());
+        return draft.elements().stream().filter(MetadataProcessingElement::isSource).collect(Collectors.toSet());
     }
 
-    private static boolean isCyclic(Set<MetadataProcessingElement> elements, Set<MetadataChannel> channels) {
-        // isCyclic() makes no assumptions about connectedness.
-        assert hasConsistentElements(elements, channels)
+    private static boolean isCyclic(PipelineDraft draft) {
+        // isCyclic() makes no assumptions about connectedness
+        Set<MetadataChannel> channels = draft.channels();
+        assert hasConsistentElements(draft)
                 : "Assumes all processing elements in channels are in the elements set and vice versa.";
         Map<MetadataProcessingElement, Set<MetadataProcessingElement>> successors = getSuccessors(channels);
-        Set<MetadataProcessingElement> sources = getSources(elements);
-        assert channels.stream().map(MetadataChannel::toElement).noneMatch(sources::contains) : "Sources are not consumers.";
+        Set<MetadataProcessingElement> sources = getSources(draft);
+        assert !hasConsumingSource(channels) : "Sources are not consumers";
 
         Set<MetadataProcessingElement> potentiallyRecurring = new HashSet<>();
         Set<MetadataProcessingElement> visited = new HashSet<>();
@@ -119,31 +113,40 @@ public class PipelineValidator {
         for (MetadataChannel channel : channels) {
             MetadataProcessingElement from = channel.getProducer();
             if (!successors.containsKey(from)) { successors.put(from, new HashSet<>()); }
-
-            successors.get(from).add(channel.toElement());
+            Set<MetadataProcessingElement> consumingElements = extractConsumerElements(channel);
+            successors.get(from).addAll(consumingElements);
         }
 
         return successors;
+    }
+
+    private static Set<MetadataProcessingElement> extractConsumerElements(MetadataChannel channel) {
+        return channel.getConsumers().stream().map(MetadataConsumer::getElement).collect(Collectors.toSet());
     }
 
     private static Map<MetadataProcessingElement, Set<MetadataProcessingElement>> getUndirectedSuccessors(Set<MetadataChannel> channels) {
         Map<MetadataProcessingElement, Set<MetadataProcessingElement>> successors = new HashMap<>();
         for (MetadataChannel channel : channels) {
             MetadataProcessingElement from = channel.getProducer();
-            MetadataProcessingElement to = channel.toElement();
-            if (!successors.containsKey(from)) { successors.put(from, new HashSet<>()); }
-            if (!successors.containsKey(to)) { successors.put(to, new HashSet<>()); }
-            successors.get(from).add(to);
-            successors.get(to).add(from);
+            Set<MetadataProcessingElement> consumerElements = extractConsumerElements(channel);
+            successors.computeIfAbsent(from, k -> new HashSet<>()).addAll(consumerElements);
+            for (MetadataProcessingElement consumerElement : consumerElements) {
+                successors.computeIfAbsent(consumerElement, k -> new HashSet<>()).add(from);
+            }
         }
 
         return successors;
     }
 
     private static boolean hasConsumingSource(Collection<MetadataChannel> channels) {
+        return extractConsumerElements(channels).stream().anyMatch(MetadataProcessingElement::isSource);
+    }
+
+    private static Set<MetadataProcessingElement> extractConsumerElements(Collection<MetadataChannel> channels) {
         return channels.stream()
-                .map(MetadataChannel::toElement)
-                .anyMatch(MetadataProcessingElement::isSource);
+                .flatMap(channel -> channel.getConsumers().stream())
+                .map(MetadataConsumer::getElement)
+                .collect(Collectors.toSet());
     }
 
     private static boolean hasProducingSink(Collection<MetadataChannel> channels) {
@@ -152,12 +155,17 @@ public class PipelineValidator {
                 .anyMatch(MetadataProcessingElement::isSink);
     }
 
-    private static boolean hasConsistentElements(Collection<MetadataProcessingElement> elements,
-                                                 Collection<MetadataChannel> channels) {
-        return channels.stream()
-                .flatMap(channel -> Stream.of(channel.getProducer(), channel.toElement()))
-                .collect(Collectors.toSet())
-                .equals(elements);
+    /** Ensures that the processing elements in draft.elements() are exactly the same as in draft.channels() */
+    private static boolean hasConsistentElements(PipelineDraft draft) {
+        Set<MetadataProcessingElement> channelElements =  new HashSet<>();
+        for (MetadataChannel channel : draft.channels()) {
+            channelElements.add(channel.getProducer());
+            for (MetadataConsumer consumer : channel.getConsumers()) {
+                channelElements.add(consumer.getElement());
+            }
+        }
+
+        return channelElements.equals(draft.elements());
     }
 
     private static boolean hasSource(Collection<MetadataProcessingElement> elements) {
@@ -168,5 +176,5 @@ public class PipelineValidator {
         return elements.stream().anyMatch(MetadataProcessingElement::isSink);
     }
 
-     */
+
 }

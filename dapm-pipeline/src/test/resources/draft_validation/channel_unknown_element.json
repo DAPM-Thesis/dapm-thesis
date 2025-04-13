@@ -6,7 +6,7 @@
     [
       { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
       [
-        [{ "orgID": "UNKNOWN", "templateID": "SINK", "inputs": ["Event"], "outputs": null, "instanceID": 1 }, 1]
+        [{ "orgID": "UNKNOWN", "templateID": "SINK", "inputs": ["Event"], "output": null, "instanceID": 1 }, 1]
       ]
     ]
   ]

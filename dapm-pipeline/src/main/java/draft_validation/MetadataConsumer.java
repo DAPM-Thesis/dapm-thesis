@@ -13,6 +13,8 @@ public class MetadataConsumer {
         this.portNumber = portNumber - 1;
     }
 
+    public MetadataProcessingElement getElement() { return this.consumer; }
+
     @Override
     public String toString() {
         return "MCons[" + consumer + ", " + portNumber + "]";

@@ -4,6 +4,7 @@ import communication.message.impl.petrinet.PetriNet;
 import draft_validation.MetadataChannel;
 import draft_validation.MetadataConsumer;
 import draft_validation.MetadataProcessingElement;
+import draft_validation.PipelineDraft;
 import draft_validation.parsing.DraftParser;
 import org.junit.jupiter.api.Test;
 import utils.Pair;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DraftParserTest {
 
-    public static Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> getPipelineDraft(String path) {
+    public static PipelineDraft getPipelineDraft(String path) {
         String contents;
         try { contents = Files.readString(Paths.get(path)); }
         catch (IOException e) {
@@ -29,7 +30,7 @@ public class DraftParserTest {
         return (new DraftParser()).deserialize(contents);
     }
 
-    public static Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> getSimpleValid() {
+    public static PipelineDraft getSimpleValid() {
         String simpleValidPath = "src/test/resources/draft_validation/simple_valid.json";
         return getPipelineDraft(simpleValidPath);
     }
@@ -61,28 +62,26 @@ public class DraftParserTest {
         MetadataChannel c1 = new MetadataChannel(source, operatorPort1);
         MetadataChannel c2 = new MetadataChannel(operator, sinkPort1);
         Set<MetadataChannel> expectedChannels = Set.of(c1, c2);
+        PipelineDraft expected = new  PipelineDraft(expectedElements, expectedChannels);
 
-        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> pipelineDraft = getPipelineDraft(path);
-        Set<MetadataProcessingElement> outputElements = pipelineDraft.getFirst();
-        Set<MetadataChannel> outputChannels = pipelineDraft.getSecond();
+        PipelineDraft output = getPipelineDraft(path);
 
-        assertEquals(expectedElements, outputElements);
-        assertEquals(expectedChannels, outputChannels);
+        assertEquals(expected, output);
     }
 
     @Test
     public void ElementOrderInvariance() {
         String outputPath = "src/test/resources/draft_validation/parser/element_order_invariance.json";
-        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> output = getPipelineDraft(outputPath);
-        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> expected = getSimpleValid();
+        PipelineDraft output = getPipelineDraft(outputPath);
+        PipelineDraft expected = getSimpleValid();
         assertEquals(output, expected);
     }
 
     @Test
     public void ChannelOrderInvariance() {
         String outputPath = "src/test/resources/draft_validation/parser/channel_order_invariance.json";
-        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> output = getPipelineDraft(outputPath);
-        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> expected = getSimpleValid();
+        PipelineDraft output = getPipelineDraft(outputPath);
+        PipelineDraft expected = getSimpleValid();
         assertEquals(output, expected);
     }
 
@@ -90,8 +89,8 @@ public class DraftParserTest {
     public void DuplicateInvariance() {
         // It should not matter whether a channel or element exists twice [with same instanceID] in the given json
         String outputPath = "src/test/resources/draft_validation/parser/duplicate_invariance.json";
-        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> output = getPipelineDraft(outputPath);
-        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> expected = getSimpleValid();
+        PipelineDraft output = getPipelineDraft(outputPath);
+        PipelineDraft expected = getSimpleValid();
         assertEquals(output, expected);
     }
 }
