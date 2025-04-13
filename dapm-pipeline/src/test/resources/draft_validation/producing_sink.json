@@ -1,52 +1,23 @@
 {
   "processing elements":[
-    {
-      "orgID": "Pepsi",
-      "templateID": "$$$ Source",
-      "inputs": [],
-      "outputs": ["Event"]
-    },
-    {
-      "orgID": "Coca Cola",
-      "templateID": "The Profit Miner",
-      "inputs": ["Event"],
-      "outputs": ["Event"]
-    },
-    {
-      "orgID": "DTU",
-      "templateID": "Dream Sink",
-      "inputs": ["Event"],
-      "outputs": []
-    }],
+    { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
+    { "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["Event"], "outputs": null, "instanceID": 1 },
+    { "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["Event"], "outputs": null, "instanceID": 2 }
+  ],
 
   "channels": [
     [
-      {
-        "orgID": "Pepsi",
-        "templateID": "$$$ Source",
-        "inputs": [],
-        "outputs": ["Event"]
-      },
-      {
-        "orgID": "DTU",
-        "templateID": "Dream Sink",
-        "inputs": ["Event"],
-        "outputs": []
-      }
+      { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
+      [
+        [{ "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["Event"], "outputs": null, "instanceID": 1 }, 1]
+      ]
     ],
+
     [
-      {
-        "orgID": "DTU",
-        "templateID": "Dream Sink",
-        "inputs": ["Event"],
-        "outputs": []
-      },
-      {
-        "orgID": "DTU",
-        "templateID": "Dream Sink",
-        "inputs": ["Event"],
-        "outputs": []
-      }
+      { "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["Event"], "outputs": null, "instanceID": 1 },
+      [
+        [{ "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["Event"], "outputs": null, "instanceID": 2 }, 1]
+      ]
     ]
   ]
 }

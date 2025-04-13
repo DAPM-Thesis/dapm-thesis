@@ -4,13 +4,15 @@
       "orgID": "Pepsi",
       "templateID": "$$$ Source",
       "inputs": [],
-      "outputs": ["Event"]
+      "outputs": ["Event"],
+      "instanceID": 1
     },
     {
       "orgID": "Coca Cola",
       "templateID": "The Profit Miner",
       "inputs": ["Event", "PetriNet"],
-      "outputs": ["PetriNet"]
+      "outputs": ["PetriNet"],
+      "instanceID": 1
     }
   ],
   "channels": [
@@ -19,13 +21,15 @@
         "orgID": "Pepsi",
         "templateID": "$$$ Source",
         "inputs": [],
-        "outputs": ["Event"]
+        "outputs": ["Event"],
+        "instanceID": 1
       },
       {
         "orgID": "Coca Cola",
         "templateID": "The Profit Miner",
         "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet"]
+        "outputs": ["PetriNet"],
+        "instanceID": 1
       }
     ]
   ]

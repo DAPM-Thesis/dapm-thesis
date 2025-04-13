@@ -4,19 +4,22 @@
       "orgID": "Pepsi",
       "templateID": "$$$ Source",
       "inputs": [],
-      "outputs": ["Event"]
+      "outputs": ["Event"],
+      "instanceID": 1
     },
     {
       "orgID": "DTU",
       "templateID": "Dream Sink",
       "inputs": ["Event"],
-      "outputs": []
+      "outputs": [],
+      "instanceID": 1
     },
     {
       "orgID": "NOT IN A CHANNEL",
       "templateID": "something",
       "inputs": ["Event"],
-      "outputs": ["Event"]
+      "outputs": ["Event"],
+      "instanceID": 1
     }
   ],
   "channels": [
@@ -25,13 +28,15 @@
         "orgID": "Pepsi",
         "templateID": "$$$ Source",
         "inputs": [],
-        "outputs": ["Event"]
+        "outputs": ["Event"],
+        "instanceID": 1
       },
       {
         "orgID": "DTU",
         "templateID": "Dream Sink",
         "inputs": ["Event"],
-        "outputs": []
+        "outputs": [],
+        "instanceID": 1
       }
     ]
   ]

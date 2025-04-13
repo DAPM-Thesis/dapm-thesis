@@ -1,0 +1,16 @@
+{
+  "processing elements":[
+    { "orgID": "Pepsi",  "templateID": "$$$ Source",  "inputs": [],  "output": "PetriNet",  "instanceID": 1 },
+    { "orgID": "DTU","templateID": "Dream Sink","inputs": ["PetriNet"],"output": null,"instanceID": 1 },
+    { "orgID": "DTU",  "templateID": "Dream Sink",  "inputs": ["PetriNet"],  "output": null,  "instanceID": 2 }],
+
+  "channels": [
+    [
+      { "orgID": "Pepsi",  "templateID": "$$$ Source",  "inputs": [],  "output": "PetriNet",  "instanceID": 1 },
+      [
+        [{ "orgID": "DTU","templateID": "Dream Sink","inputs": ["PetriNet"],"output": null,"instanceID": 1 }, 1],
+        [{ "orgID": "DTU","templateID": "Dream Sink","inputs": ["PetriNet"],"output": null,"instanceID": 2 }, 1]
+      ]
+    ]
+  ]
+}

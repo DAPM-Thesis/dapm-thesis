@@ -2,6 +2,7 @@ import communication.message.Message;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
 import draft_validation.MetadataChannel;
+import draft_validation.MetadataConsumer;
 import draft_validation.MetadataProcessingElement;
 import draft_validation.parsing.DraftParser;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DraftParserTest {
 
-    public static Pair<Collection<MetadataProcessingElement>, Collection<MetadataChannel>> getPipelineDraft(String path) {
+    public static Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> getPipelineDraft(String path) {
         String contents;
         try { contents = Files.readString(Paths.get(path)); }
         catch (IOException e) {
@@ -28,6 +29,11 @@ public class DraftParserTest {
         return (new DraftParser()).deserialize(contents);
     }
 
+    public static Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> getSimpleValid() {
+        String simpleValidPath = "src/test/resources/draft_validation/simple_valid.json";
+        return getPipelineDraft(simpleValidPath);
+    }
+
     @Test
     public void ValidDraft() {
         String path = "src/test/resources/draft_validation/simple_valid.json";
@@ -35,31 +41,57 @@ public class DraftParserTest {
 
         // make source
         List<Class<? extends Message>> sourceInputs = new ArrayList<>();
-        List<Class<? extends Message>> sourceOutputs = List.of(Event.class);
-        MetadataProcessingElement source = new MetadataProcessingElement("Pepsi", "$$$ Source", sourceInputs, sourceOutputs);
+        Class<? extends Message> sourceOutput = Event.class;
+        MetadataProcessingElement source = new MetadataProcessingElement("Pepsi", "$$$ Source", sourceInputs, sourceOutput, 1);
 
         // make operator
         List<Class<? extends Message>> operatorInputs = List.of(Event.class);
-        List<Class<? extends Message>> operatorOutputs = List.of(PetriNet.class);
-        MetadataProcessingElement operator = new MetadataProcessingElement("Coca Cola", "The Profit Miner", operatorInputs, operatorOutputs);
+        Class<? extends Message> operatorOutput = PetriNet.class;
+        MetadataProcessingElement operator = new MetadataProcessingElement("Coca Cola", "The Profit Miner", operatorInputs, operatorOutput, 1);
 
         // make sink
         List<Class<? extends Message>> sinkInputs = List.of(PetriNet.class);
-        List<Class<? extends Message>> sinkOutputs = new ArrayList<>();
-        MetadataProcessingElement sink = new MetadataProcessingElement("DTU", "Dream Sink", sinkInputs, sinkOutputs);
+        Class<? extends Message> sinkOutput = null;
+        MetadataProcessingElement sink = new MetadataProcessingElement("DTU", "Dream Sink", sinkInputs, sinkOutput, 1);
 
-        List<MetadataProcessingElement> expectedElements = List.of(source, operator, sink);
+        Set<MetadataProcessingElement> expectedElements = Set.of(source, operator, sink);
 
-        MetadataChannel c1 = new MetadataChannel(source, operator);
-        MetadataChannel c2 = new MetadataChannel(operator, sink);
-        List<MetadataChannel> expectedChannels = List.of(c1, c2);
+        MetadataConsumer operatorPort1 = new MetadataConsumer(operator, 1);
+        MetadataConsumer sinkPort1 = new MetadataConsumer(sink, 1);
+        MetadataChannel c1 = new MetadataChannel(source, operatorPort1);
+        MetadataChannel c2 = new MetadataChannel(operator, sinkPort1);
+        Set<MetadataChannel> expectedChannels = Set.of(c1, c2);
 
-        Pair<Collection<MetadataProcessingElement>, Collection<MetadataChannel>> pipelineDraft = getPipelineDraft(path);
-        Collection<MetadataProcessingElement> outputElements = pipelineDraft.getFirst();
-        Collection<MetadataChannel> outputChannels = pipelineDraft.getSecond();
+        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> pipelineDraft = getPipelineDraft(path);
+        Set<MetadataProcessingElement> outputElements = pipelineDraft.getFirst();
+        Set<MetadataChannel> outputChannels = pipelineDraft.getSecond();
 
-        assertEquals(Set.of(expectedElements), Set.of(outputElements));
-        assertEquals(Set.of(expectedChannels), Set.of(outputChannels));
+        assertEquals(expectedElements, outputElements);
+        assertEquals(expectedChannels, outputChannels);
     }
 
+    @Test
+    public void ElementOrderInvariance() {
+        String outputPath = "src/test/resources/draft_validation/parser/element_order_invariance.json";
+        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> output = getPipelineDraft(outputPath);
+        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> expected = getSimpleValid();
+        assertEquals(output, expected);
+    }
+
+    @Test
+    public void ChannelOrderInvariance() {
+        String outputPath = "src/test/resources/draft_validation/parser/channel_order_invariance.json";
+        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> output = getPipelineDraft(outputPath);
+        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> expected = getSimpleValid();
+        assertEquals(output, expected);
+    }
+
+    @Test
+    public void DuplicateInvariance() {
+        // It should not matter whether a channel or element exists twice [with same instanceID] in the given json
+        String outputPath = "src/test/resources/draft_validation/parser/duplicate_invariance.json";
+        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> output = getPipelineDraft(outputPath);
+        Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> expected = getSimpleValid();
+        assertEquals(output, expected);
+    }
 }

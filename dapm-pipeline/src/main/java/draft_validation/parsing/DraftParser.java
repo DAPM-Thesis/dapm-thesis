@@ -4,52 +4,68 @@ import communication.message.Message;
 import communication.message.MessageTypeRegistry;
 import communication.message.serialization.JSONParsing;
 import draft_validation.MetadataChannel;
+import draft_validation.MetadataConsumer;
 import draft_validation.MetadataProcessingElement;
 import utils.Pair;
 
 import java.util.*;
 
-public class DraftParser implements Parser<Pair<Collection<MetadataProcessingElement>, Collection<MetadataChannel>>> {
+public class DraftParser implements Parser<Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>>> {
 
     @Override
-    public Pair<Collection<MetadataProcessingElement>, Collection<MetadataChannel>> deserialize(String str) {
+    public Pair<Set<MetadataProcessingElement>, Set<MetadataChannel>> deserialize(String str) {
         Map<String, Object> jsonMap = JSONParsing.toJSONMap(str);
         assert jsonMap.containsKey("\"processing elements\"") && jsonMap.containsKey("\"channels\"");
 
         // extract processing elements
         List<Map<String, Object>> elements = (List<Map<String, Object>>) jsonMap.get("\"processing elements\"");
         assert !elements.isEmpty();
-        List<MetadataProcessingElement> processingElements = new ArrayList<>();
+        Set<MetadataProcessingElement> processingElements = new HashSet<>();
         for (Map<String, Object> elementMap : elements) {
             processingElements.add(getMetaDataProcessingElement(elementMap));
         }
 
         // extract channels
-        List<List<Map<String, Object>>> rawChannels = (List<List<Map<String, Object>>>) jsonMap.get("\"channels\"");
+        List<List<Object>> rawChannels = (List<List<Object>>) jsonMap.get("\"channels\"");
         assert !rawChannels.isEmpty();
-        List<MetadataChannel> channels = new ArrayList<>();
-        for (List<Map<String, Object>> channel : rawChannels) {
-            assert channel.size() == 2;
-            MetadataProcessingElement from = getMetaDataProcessingElement(channel.get(0));
-            MetadataProcessingElement to = getMetaDataProcessingElement(channel.get(1));
-            channels.add(new MetadataChannel(from, to));
+        Set<MetadataChannel> channels = new HashSet<>();
+        for (List<Object> producerAndConsumers : rawChannels) {
+            assert producerAndConsumers.size() == 2 : "There should be 1 producer and 1 list of consumers";
+            MetadataProcessingElement producer = getMetaDataProcessingElement((Map<String, Object>) producerAndConsumers.getFirst());
+            Set<MetadataConsumer> consumers = extractConsumers((List<List<Object>>) producerAndConsumers.get(1));
+            channels.add(new MetadataChannel(producer, consumers));
         }
 
         return new Pair<>(processingElements, channels);
+    }
 
+    private Set<MetadataConsumer> extractConsumers(List<List<Object>> rawConsumers) {
+        Set<MetadataConsumer> consumers = new HashSet<>();
+        for (List<Object> rawConsumer : rawConsumers) {
+            assert rawConsumer.size() == 2 : "Consumer should only consist of 1 processing element and 1 port";
+            MetadataProcessingElement element = getMetaDataProcessingElement((Map<String, Object>) rawConsumer.getFirst());
+            int port = Integer.parseInt((String) rawConsumer.get(1));
+            consumers.add(new MetadataConsumer(element, port));
+        }
 
+        return consumers;
     }
 
     private MetadataProcessingElement getMetaDataProcessingElement(Map<String, Object> elementMap) {
-        assert elementMap.containsKey("\"orgID\"") && elementMap.containsKey("\"templateID\"") && elementMap.containsKey("\"inputs\"") && elementMap.containsKey("\"outputs\"");
+        List<String> attributeNames = List.of("\"orgID\"", "\"templateID\"", "\"inputs\"", "\"output\"", "\"instanceID\"");
+        assert attributeNames.stream().allMatch(elementMap::containsKey) : "All attributes must be present in the processing element";
+
         String orgID = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"orgID\""));
         String templateID = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"templateID\""));
 
         List<Class<? extends Message>> inputs = parseClassList((List<String>) elementMap.get("\"inputs\""));
-        List<Class<? extends Message>> outputs = parseClassList((List<String>) elementMap.get("\"outputs\""));
+        String outputClassString = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"output\""));
+        Class<? extends Message> output = MessageTypeRegistry.getMessageType(outputClassString);
+
+        int instanceID = Integer.parseInt((String) elementMap.get("\"instanceID\""));
 
         assert orgID != null && templateID != null;
-        return new MetadataProcessingElement(orgID, templateID, inputs, outputs);
+        return new MetadataProcessingElement(orgID, templateID, inputs, output, instanceID);
     }
 
     private List<Class<? extends Message>> parseClassList(List<String> messageClassList) {

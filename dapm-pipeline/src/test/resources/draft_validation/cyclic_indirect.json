@@ -8,9 +8,16 @@
       "instanceID": 1
     },
     {
-      "orgID": "REFLEXIVE CYCLE",
-      "templateID": "---",
+      "orgID": "INDIRECT CYCLE CONSUMER",
+      "templateID": "TID1",
       "inputs": ["Event", "PetriNet"],
+      "outputs": ["PetriNet"],
+      "instanceID": 1
+    },
+    {
+      "orgID": "INDIRECT CYCLE PRODUCER",
+      "templateID": "TID2",
+      "inputs": ["PetriNet"],
       "outputs": ["PetriNet", "PetriNet"],
       "instanceID": 1
     },
@@ -32,34 +39,50 @@
         "instanceID": 1
       },
       {
-        "orgID": "REFLEXIVE CYCLE",
-        "templateID": "---",
+        "orgID": "INDIRECT CYCLE CONSUMER",
+        "templateID": "TID1",
         "inputs": ["Event", "PetriNet"],
+        "outputs": ["PetriNet"],
+        "instanceID": 1
+      }
+    ],
+    [
+      {
+        "orgID": "INDIRECT CYCLE CONSUMER",
+        "templateID": "TID1",
+        "inputs": ["Event", "PetriNet"],
+        "outputs": ["PetriNet"],
+        "instanceID": 1
+      },
+      {
+        "orgID": "INDIRECT CYCLE PRODUCER",
+        "templateID": "TID2",
+        "inputs": ["PetriNet"],
         "outputs": ["PetriNet", "PetriNet"],
         "instanceID": 1
       }
     ],
     [
       {
-        "orgID": "REFLEXIVE CYCLE",
-        "templateID": "---",
-        "inputs": ["Event", "PetriNet"],
+        "orgID": "INDIRECT CYCLE PRODUCER",
+        "templateID": "TID2",
+        "inputs": ["PetriNet"],
         "outputs": ["PetriNet", "PetriNet"],
         "instanceID": 1
       },
       {
-        "orgID": "REFLEXIVE CYCLE",
-        "templateID": "---",
+        "orgID": "INDIRECT CYCLE CONSUMER",
+        "templateID": "TID1",
         "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet", "PetriNet"],
+        "outputs": ["PetriNet"],
         "instanceID": 1
       }
     ],
     [
       {
-        "orgID": "REFLEXIVE CYCLE",
-        "templateID": "---",
-        "inputs": ["Event", "PetriNet"],
+        "orgID": "INDIRECT CYCLE PRODUCER",
+        "templateID": "TID2",
+        "inputs": ["PetriNet"],
         "outputs": ["PetriNet", "PetriNet"],
         "instanceID": 1
       },

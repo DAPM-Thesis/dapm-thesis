@@ -8,10 +8,10 @@
       "instanceID": 1
     },
     {
-      "orgID": "REFLEXIVE CYCLE",
-      "templateID": "---",
-      "inputs": ["Event", "PetriNet"],
-      "outputs": ["PetriNet", "PetriNet"],
+      "orgID": "Coca Cola",
+      "templateID": "The Profit Miner",
+      "inputs": ["Event"],
+      "outputs": ["PetriNet"],
       "instanceID": 1
     },
     {
@@ -19,6 +19,13 @@
       "templateID": "Dream Sink",
       "inputs": ["PetriNet"],
       "outputs": [],
+      "instanceID": 1
+    },
+    {
+      "orgID": "Coca Cola",
+      "templateID": "The Profit Miner",
+      "inputs": ["Event"],
+      "outputs": ["PetriNet"],
       "instanceID": 1
     }],
 
@@ -32,35 +39,35 @@
         "instanceID": 1
       },
       {
-        "orgID": "REFLEXIVE CYCLE",
-        "templateID": "---",
-        "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet", "PetriNet"],
+        "orgID": "Coca Cola",
+        "templateID": "The Profit Miner",
+        "inputs": ["Event"],
+        "outputs": ["PetriNet"],
         "instanceID": 1
       }
     ],
     [
       {
-        "orgID": "REFLEXIVE CYCLE",
-        "templateID": "---",
-        "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet", "PetriNet"],
+        "orgID": "Coca Cola",
+        "templateID": "The Profit Miner",
+        "inputs": ["Event"],
+        "outputs": ["PetriNet"],
         "instanceID": 1
       },
       {
-        "orgID": "REFLEXIVE CYCLE",
-        "templateID": "---",
-        "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet", "PetriNet"],
+        "orgID": "DTU",
+        "templateID": "Dream Sink",
+        "inputs": ["PetriNet"],
+        "outputs": [],
         "instanceID": 1
       }
     ],
     [
       {
-        "orgID": "REFLEXIVE CYCLE",
-        "templateID": "---",
-        "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet", "PetriNet"],
+        "orgID": "Coca Cola",
+        "templateID": "The Profit Miner",
+        "inputs": ["Event"],
+        "outputs": ["PetriNet"],
         "instanceID": 1
       },
       {
