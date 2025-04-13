@@ -1,10 +1,7 @@
 import communication.message.Message;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
-import draft_validation.MetadataChannel;
-import draft_validation.MetadataConsumer;
-import draft_validation.MetadataProcessingElement;
-import draft_validation.PipelineDraft;
+import draft_validation.*;
 import draft_validation.parsing.DraftParser;
 import org.junit.jupiter.api.Test;
 import utils.Pair;
@@ -14,8 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DraftParserTest {
 
@@ -93,4 +89,30 @@ public class DraftParserTest {
         PipelineDraft expected = getSimpleValid();
         assertEquals(output, expected);
     }
+
+    @Test
+    public void empty() {
+        String path = "src/test/resources/draft_validation/parser/empty.json";
+        assertThrows(AssertionError.class, () -> {
+            PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        });
+    }
+
+    @Test
+    public void singleElement() {
+        String path = "src/test/resources/draft_validation/parser/single_element.json";
+        assertThrows(AssertionError.class, () -> {
+            PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        });
+    }
+
+    @Test
+    public void noChannels() {
+        String path = "src/test/resources/draft_validation/parser/no_channels.json";
+        assertThrows(AssertionError.class, () -> {
+            PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        });
+    }
+
+    // TODO: make error test for every assertion in DraftParser
 }

@@ -35,7 +35,11 @@ public class MetadataProcessingElement {
     public List<Class<? extends Message>> getInputs() { return new ArrayList<>(inputs); }
 
     /** returns a copy of the MetaProcessingElement's outputs List */
-    public Class<? extends Message> getOutputs() { return output; }
+    public Class<? extends Message> getOutput() { return output; }
+
+    public Class<? extends Message> typeAt(int index) { return inputs.get(index); }
+
+    public int inputCount() { return inputs.size(); }
 
     public boolean isSource() {
         return inputs.isEmpty();

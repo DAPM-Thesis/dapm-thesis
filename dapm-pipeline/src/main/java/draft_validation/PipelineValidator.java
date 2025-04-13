@@ -1,5 +1,7 @@
 package draft_validation;
 
+import communication.message.Message;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,16 +18,72 @@ public class PipelineValidator {
     }
 
     private static boolean channelInputsAndOutputsMatch(PipelineDraft draft) {
-        /*
-        Map<MetadataProcessingElement, List<Class<? extends Message>>> inputs = new HashMap<>();
-        elements.forEach(e -> inputs.put(e, e.getInputs()));
+        return hasConsistentTypeAtPort(draft.channels())
+                && consumerInputsMatchElementInputs(draft);
+    }
 
-        // TODO: It seems difficult to figure out what the type of a channel is. Consider using dynamic programming
+    /** returns true iff the elements in draft all have all their inputs filled. */
+    private static boolean consumerInputsMatchElementInputs(PipelineDraft draft) {
+        // method: reverse engineer inputs from draft channels and validate that they match the inputs of the draft elements
+        assert hasConsistentElements(draft);
+
+        Map<MetadataProcessingElement, List<Class<? extends Message>>> inferredInputs = getInferredInputs(draft.channels());
+        if (inferredInputs == null)
+            { return false; }
+
+        Set<MetadataProcessingElement> draftConsumers = draft.elements().stream().filter(element -> !element.isSource()).collect(Collectors.toSet());
+        // inferred inputs match actual inputs for all elements
+        return inferredInputs.keySet().equals(draftConsumers)
+                && draftConsumers.stream().allMatch(element -> inferredInputs.get(element).equals(element.getInputs()));
+    }
+
+    /** returns A map with all the input channel's consumers as keys. The corresponding values is the inferred list of
+     *  inputs for that element. returns null if a consumer's port is invalid or if the same consumer has multiple
+     *  producers to the same port. */
+    private static Map<MetadataProcessingElement, List<Class<? extends Message>>> getInferredInputs(Set<MetadataChannel> channels) {
+        assert !channels.isEmpty() : "expects the channels of a pipeline draft";
+
+        Map<MetadataProcessingElement, List<Class<? extends Message>>> inferredInputs = new HashMap<>();
         for (MetadataChannel channel : channels) {
-            MetadataProcessingElement from = channel.getProducer();
-            MetadataProcessingElement to = channel.toElement();
+            Class<? extends Message> producerOutput = channel.output();
+            for (MetadataConsumer consumer : channel.getConsumers()) {
+                int port = consumer.getPortNumber();
+                MetadataProcessingElement consumerElement = consumer.getElement();
+                if (!inferredInputs.containsKey(consumerElement)) {
+                    nullInitializeConsumerInputs(consumerElement, inferredInputs);
+                }
+
+                List<Class<? extends Message>> inferredInputList = inferredInputs.get(consumerElement);
+                if ((port < 0 || port >= inferredInputList.size()) // the consumer's port is out of bounds
+                        || inferredInputList.get(port) != null) // element has multiple producers to the same port
+                    { return null; }
+
+                inferredInputs.get(consumerElement).set(port, producerOutput);
+            }
         }
-        */
+
+        assert extractConsumerElements(channels).equals(inferredInputs.keySet()) : "inferred inputs not set correctly";
+        return inferredInputs;
+    }
+
+    private static void nullInitializeConsumerInputs(MetadataProcessingElement consumerElement, Map<MetadataProcessingElement, List<Class<? extends Message>>> inferredInputs) {
+        int consumerInputCount = consumerElement.inputCount();
+        List<Class<? extends Message>> nullFilledInputs = new ArrayList<>(Collections.nCopies(consumerInputCount, null));
+        inferredInputs.put(consumerElement, nullFilledInputs);
+    }
+
+    private static boolean hasConsistentTypeAtPort(Set<MetadataChannel> channels) {
+        for (MetadataChannel channel : channels) {
+            for (MetadataConsumer consumer : channel.getConsumers()) {
+                MetadataProcessingElement consumerElement = consumer.getElement();
+                int port = consumer.getPortNumber();
+                assert !consumerElement.isSource() : "Consumer must have at least one input.";
+
+                Class<? extends Message> producerOutput = channel.output();
+                if (port >= consumerElement.inputCount() || producerOutput != consumerElement.typeAt(port))
+                    { return false; }
+            }
+        }
         return true;
     }
 
@@ -169,11 +227,13 @@ public class PipelineValidator {
     }
 
     private static boolean hasSource(Collection<MetadataProcessingElement> elements) {
-        return elements.stream().anyMatch(MetadataProcessingElement::isSource);
+        return !elements.isEmpty()
+                && elements.stream().anyMatch(MetadataProcessingElement::isSource);
     }
 
     private static boolean hasSink(Collection<MetadataProcessingElement> elements) {
-        return elements.stream().anyMatch(MetadataProcessingElement::isSink);
+        return !elements.isEmpty()
+                && elements.stream().anyMatch(MetadataProcessingElement::isSink);
     }
 
 

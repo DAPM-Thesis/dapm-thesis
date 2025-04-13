@@ -1,0 +1,15 @@
+{
+  "processing elements":[
+    { "orgID": "Pepsi", "templateID": "source", "inputs": [], "output": "Event", "instanceID": 1 },
+    { "orgID": "Coca Cola", "templateID": "mismatching port in channel", "inputs": ["PetriNet"], "output": null, "instanceID": 1 }
+  ],
+
+  "channels": [
+    [
+      { "orgID": "Pepsi", "templateID": "source", "inputs": [], "output": "Event", "instanceID": 1 },
+      [
+        [{ "orgID": "Coca Cola", "templateID": "mismatching port in channel", "inputs": ["PetriNet"], "output": null, "instanceID": 1 }, 1]
+      ]
+    ]
+  ]
+}

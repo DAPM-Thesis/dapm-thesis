@@ -14,13 +14,16 @@ import java.util.*;
 public class DraftParser implements Parser<PipelineDraft> {
 
     @Override
-    public PipelineDraft deserialize(String str) {
+    public PipelineDraft deserialize(String str) throws InvalidDraft {
         Map<String, Object> jsonMap = JSONParsing.toJSONMap(str);
-        assert jsonMap.containsKey("\"processing elements\"") && jsonMap.containsKey("\"channels\"");
+        if (!(jsonMap.containsKey("\"processing elements\"") && jsonMap.containsKey("\"channels\"")))
+            { throw new InvalidDraft("\"processing elements\" and/or \"channels\" keys missing from draft"); }
 
         // extract processing elements
         List<Map<String, Object>> elements = (List<Map<String, Object>>) jsonMap.get("\"processing elements\"");
-        assert !elements.isEmpty();
+        if (elements.size() < 2)
+            { throw new InvalidDraft("A minimal pipeline contains 2 elements: a source and a sink. " + elements.size() + " provided in draft."); }
+
         Set<MetadataProcessingElement> processingElements = new HashSet<>();
         for (Map<String, Object> elementMap : elements) {
             processingElements.add(getMetaDataProcessingElement(elementMap));
@@ -28,10 +31,15 @@ public class DraftParser implements Parser<PipelineDraft> {
 
         // extract channels
         List<List<Object>> rawChannels = (List<List<Object>>) jsonMap.get("\"channels\"");
-        assert !rawChannels.isEmpty();
+
+        if (rawChannels.isEmpty())
+            { throw new InvalidDraft("A minimal pipeline contains 1 channel (between a source and a sink). No channels founds."); }
+
         Set<MetadataChannel> channels = new HashSet<>();
         for (List<Object> producerAndConsumers : rawChannels) {
-            assert producerAndConsumers.size() == 2 : "There should be 1 producer and 1 list of consumers";
+            if (producerAndConsumers.size() != 2)
+                { throw new InvalidDraft("Invalid channel found. It should contain 1 producer and 1 list of consumers. Provided: " + producerAndConsumers); }
+
             MetadataProcessingElement producer = getMetaDataProcessingElement((Map<String, Object>) producerAndConsumers.getFirst());
             Set<MetadataConsumer> consumers = extractConsumers((List<List<Object>>) producerAndConsumers.get(1));
             channels.add(new MetadataChannel(producer, consumers));
@@ -40,10 +48,12 @@ public class DraftParser implements Parser<PipelineDraft> {
         return new PipelineDraft(processingElements, channels);
     }
 
-    private Set<MetadataConsumer> extractConsumers(List<List<Object>> rawConsumers) {
+    private Set<MetadataConsumer> extractConsumers(List<List<Object>> rawConsumers) throws InvalidDraft {
         Set<MetadataConsumer> consumers = new HashSet<>();
         for (List<Object> rawConsumer : rawConsumers) {
-            assert rawConsumer.size() == 2 : "Consumer should only consist of 1 processing element and 1 port";
+            if (rawConsumer.size() != 2)
+                { throw new InvalidDraft("Consumer should consist of exactly 1 processing element and 1 port, but given: " + rawConsumer); }
+
             MetadataProcessingElement element = getMetaDataProcessingElement((Map<String, Object>) rawConsumer.getFirst());
             int port = Integer.parseInt((String) rawConsumer.get(1));
             consumers.add(new MetadataConsumer(element, port));
@@ -52,27 +62,59 @@ public class DraftParser implements Parser<PipelineDraft> {
         return consumers;
     }
 
-    private MetadataProcessingElement getMetaDataProcessingElement(Map<String, Object> elementMap) {
+    private MetadataProcessingElement getMetaDataProcessingElement(Map<String, Object> elementMap) throws InvalidDraft {
         List<String> attributeNames = List.of("\"orgID\"", "\"templateID\"", "\"inputs\"", "\"output\"", "\"instanceID\"");
-        assert attributeNames.stream().allMatch(elementMap::containsKey) : "All attributes must be present in the processing element";
+        if (!(attributeNames.stream().allMatch(elementMap::containsKey)))
+            { throw new InvalidDraft("All attributes must be present in the processing element."); }
 
-        String orgID = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"orgID\""));
-        String templateID = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"templateID\""));
-
+        String orgID = extractOrgID(elementMap);
+        String templateID = extractTemplateID(elementMap);
         List<Class<? extends Message>> inputs = parseClassList((List<String>) elementMap.get("\"inputs\""));
-        String outputClassString = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"output\""));
-        Class<? extends Message> output = MessageTypeRegistry.getMessageType(outputClassString);
+        Class<? extends Message> output = extractOutput(elementMap);
+        int instanceID = extractInstanceID(elementMap);
 
-        int instanceID = Integer.parseInt((String) elementMap.get("\"instanceID\""));
-
-        assert orgID != null && templateID != null;
         return new MetadataProcessingElement(orgID, templateID, inputs, output, instanceID);
     }
 
-    private List<Class<? extends Message>> parseClassList(List<String> messageClassList) {
+    private String extractTemplateID(Map<String, Object> elementMap) throws InvalidDraft {
+        String templateID = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"templateID\""));
+        if (templateID.isEmpty())
+            { throw new InvalidDraft("templateID must be present and non-empty."); }
+        return templateID;
+    }
+
+    private String extractOrgID(Map<String, Object> elementMap) throws InvalidDraft {
+        String orgID = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"orgID\""));
+        if (orgID.isEmpty())
+            { throw new InvalidDraft("orgID must be present and non-empty in the processing element."); }
+        return orgID;
+    }
+
+    private int extractInstanceID(Map<String, Object> elementMap) throws InvalidDraft {
+        int instanceID;
+        try { instanceID = Integer.parseInt((String) elementMap.get("\"instanceID\"")); }
+        catch (NumberFormatException e) { throw new InvalidDraft("Invalid instance ID: " + elementMap.get("\"instanceID\"")); }
+        if (instanceID <= 0)
+            { throw new InvalidDraft("Invalid instance ID (must be a positive integer by convention): " + elementMap.get("\"instanceID\"")); }
+        return instanceID;
+    }
+
+    private Class<? extends Message> extractOutput(Map<String, Object> elementMap) throws InvalidDraft {
+        String outputClassString = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"output\""));
+        if (outputClassString.equals("null"))
+            { return null; }
+
+        if (MessageTypeRegistry.getMessageType(outputClassString) == null)
+            { throw new InvalidDraft("Invalid output class: " + outputClassString); }
+        return MessageTypeRegistry.getMessageType(outputClassString);
+    }
+
+    private List<Class<? extends Message>> parseClassList(List<String> messageClassList) throws InvalidDraft {
         List<Class<? extends Message>> messageClasses = new ArrayList<>();
         for (String classString : messageClassList) {
             classString = JSONParsing.maybeRemoveOuterQuotes(classString);
+            if (MessageTypeRegistry.getMessageType(classString) == null)
+                { throw new  InvalidDraft("Invalid message class: " + classString); }
             messageClasses.add(MessageTypeRegistry.getMessageType(classString));
         }
 

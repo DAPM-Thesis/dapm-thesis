@@ -7,7 +7,7 @@ import utils.Pair;
 import java.util.*;
 
 public class JSONParsing {
-    public static Map<String, Object> toJSONMap(String json) {
+    public static Map<String, Object> toJSONMap(String json) { // TODO: instead of assertions, make it throw errors when given incorrect JSON. Test errors.
         return getContainer(json);
     }
 

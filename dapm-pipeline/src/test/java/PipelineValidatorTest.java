@@ -1,12 +1,6 @@
-import draft_validation.MetadataChannel;
-import draft_validation.MetadataProcessingElement;
 import draft_validation.PipelineDraft;
 import draft_validation.PipelineValidator;
 import org.junit.jupiter.api.Test;
-import utils.Pair;
-
-import java.util.Collection;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -81,24 +75,44 @@ public class PipelineValidatorTest {
     }
 
     @Test
-    public void SameTypeConsumer() {
+    public void SameTemplateConsumer() {
         // A pipeline should be able to contain two instances of the same template. This test suggests duplicates are handled correctly
-        String path = "src/test/resources/draft_validation/same_type_consumer.json";
+        String path = "src/test/resources/draft_validation/same_template_consumer.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         assertTrue(PipelineValidator.isValid(draft));
     }
 
-    /*
+
     @Test
-    public void ChannelInputsMatchOutputs() {
-        String path = "src/test/resources/draft_validation/channel_inputs_match_outputs.json";
+    public void ChannelMismatchPortType() {
+        // for any channel in the pipeline, the output type of the producer must match the input type for the given port of every consumer
+        String path = "src/test/resources/draft_validation/channel_mismatch_port_type.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
-        assertTrue(PipelineValidator.isValid(draft));
+        assertFalse(PipelineValidator.isValid(draft));
     }
-    */
 
+    @Test
+    public void ElementMissingProducers() {
+        // every processing element in the elements of a pipeline must have all of their inputs produced to by channels
+        String path = "src/test/resources/draft_validation/element_missing_producers.json";
+        PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        assertFalse(PipelineValidator.isValid(draft));
+    }
+
+    // TODO: make pipeline draft with empty processing elements and channels, and verify that it is not valid (which it won't be because of e.g. hasSource)
+
+    // TODO: channel inputs can mismatch outputs either when
+        // 1) the port expected type does not match the produced type
+        // 2) some element does not have producers for all of its inputs
+        // 3) the same port of a consumer is produced to by more than 1 producer
+
+    // TODO: make negative test for channel inputs match outputs (i.e. where they don't match)
 
     // TODO: test instanceID works correctly
+        // TODO: make SameTypeProducer where two instances of same source template produce to the same sink instance
+        // TODO: make negative test for both SameTemplateConsumer and SameTemplateProducer where the same instance is
+             //  used as consumer producer. Try to make it such that the duplicate instance is not just removed as a
+             // duplicate, e.g. by having some variation in channel; i.e. mismatching channels for the same instance [maybe isolated test?].
 
     // TODO: test that all elements are either a sink or a source or on a path from a sink to a source
 

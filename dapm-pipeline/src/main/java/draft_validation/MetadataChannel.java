@@ -1,5 +1,7 @@
 package draft_validation;
 
+import communication.message.Message;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -20,6 +22,8 @@ public class MetadataChannel {
     public MetadataProcessingElement getProducer() { return producer; }
 
     public Set<MetadataConsumer> getConsumers() { return consumers; }
+
+    public Class<? extends Message> output() { return producer.getOutput(); }
 
     @Override
     public String toString() {

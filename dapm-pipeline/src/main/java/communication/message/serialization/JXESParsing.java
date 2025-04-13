@@ -6,7 +6,7 @@ import utils.Pair;
 
 import java.util.*;
 
-public class JXESParsing extends JSONParsing {
+public class JXESParsing extends JSONParsing { // TODO: make it throw errors instead of assertions when given incorrect JXES. Test errors.
 
     /** Parses attributes that are not the case ID, activity, and time stamp */
     public static Set<Attribute<?>> parseNonEssentialEventAttributes(Map<String, Object> traceGlobalAttributes,

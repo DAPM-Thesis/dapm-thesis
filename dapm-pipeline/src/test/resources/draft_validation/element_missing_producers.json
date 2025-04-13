@@ -1,0 +1,15 @@
+{
+  "processing elements":[
+    { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
+    { "orgID": "DTU",  "templateID": "Not all inputs filled in channels",  "inputs": ["Event", "PetriNet"],  "output": null,  "instanceID": 1 }
+  ],
+
+  "channels": [
+    [
+      { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
+      [
+        [{ "orgID": "DTU", "templateID": "Not all inputs filled in channels", "inputs": ["Event", "PetriNet"], "output": null, "instanceID": 1 }, 1]
+      ]
+    ]
+  ]
+}
