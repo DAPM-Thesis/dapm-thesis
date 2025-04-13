@@ -3,6 +3,7 @@ import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
 import draft_validation.*;
 import draft_validation.parsing.DraftParser;
+import draft_validation.parsing.InvalidDraft;
 import org.junit.jupiter.api.Test;
 import utils.Pair;
 
@@ -32,7 +33,7 @@ public class DraftParserTest {
     }
 
     @Test
-    public void ValidDraft() {
+    public void validDraft() {
         String path = "src/test/resources/draft_validation/simple_valid.json";
         System.out.println(path);
 
@@ -66,7 +67,7 @@ public class DraftParserTest {
     }
 
     @Test
-    public void ElementOrderInvariance() {
+    public void elementOrderInvariance() {
         String outputPath = "src/test/resources/draft_validation/parser/element_order_invariance.json";
         PipelineDraft output = getPipelineDraft(outputPath);
         PipelineDraft expected = getSimpleValid();
@@ -74,7 +75,7 @@ public class DraftParserTest {
     }
 
     @Test
-    public void ChannelOrderInvariance() {
+    public void channelOrderInvariance() {
         String outputPath = "src/test/resources/draft_validation/parser/channel_order_invariance.json";
         PipelineDraft output = getPipelineDraft(outputPath);
         PipelineDraft expected = getSimpleValid();
@@ -82,7 +83,7 @@ public class DraftParserTest {
     }
 
     @Test
-    public void DuplicateInvariance() {
+    public void duplicateInvariance() {
         // It should not matter whether a channel or element exists twice [with same instanceID] in the given json
         String outputPath = "src/test/resources/draft_validation/parser/duplicate_invariance.json";
         PipelineDraft output = getPipelineDraft(outputPath);
@@ -93,7 +94,7 @@ public class DraftParserTest {
     @Test
     public void empty() {
         String path = "src/test/resources/draft_validation/parser/empty.json";
-        assertThrows(AssertionError.class, () -> {
+        assertThrows(InvalidDraft.class, () -> {
             PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         });
     }
@@ -101,7 +102,7 @@ public class DraftParserTest {
     @Test
     public void singleElement() {
         String path = "src/test/resources/draft_validation/parser/single_element.json";
-        assertThrows(AssertionError.class, () -> {
+        assertThrows(InvalidDraft.class, () -> {
             PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         });
     }
@@ -109,7 +110,7 @@ public class DraftParserTest {
     @Test
     public void noChannels() {
         String path = "src/test/resources/draft_validation/parser/no_channels.json";
-        assertThrows(AssertionError.class, () -> {
+        assertThrows(InvalidDraft.class, () -> {
             PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         });
     }

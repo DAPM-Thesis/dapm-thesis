@@ -99,9 +99,7 @@ public class PipelineValidatorTest {
         assertFalse(PipelineValidator.isValid(draft));
     }
 
-    // TODO: make pipeline draft with empty processing elements and channels, and verify that it is not valid (which it won't be because of e.g. hasSource)
-
-    // TODO: channel inputs can mismatch outputs either when
+    // TODO: make tests: channel inputs can mismatch outputs either when
         // 1) the port expected type does not match the produced type
         // 2) some element does not have producers for all of its inputs
         // 3) the same port of a consumer is produced to by more than 1 producer

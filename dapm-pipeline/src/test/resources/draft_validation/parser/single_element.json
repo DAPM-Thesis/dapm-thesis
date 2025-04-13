@@ -1,8 +1,6 @@
 {
   "processing elements":[
-    { "orgID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event"], "output": "PetriNet", "instanceID": 1 },
-    { "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output": null, "instanceID": 1 },
-    { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1}
+    { "orgID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event"], "output": "PetriNet", "instanceID": 1 }
   ],
 
   "channels": [
@@ -10,13 +8,6 @@
       { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
       [
         [{ "orgID": "Coca Cola",  "templateID": "The Profit Miner",  "inputs": ["Event"],  "output": "PetriNet",  "instanceID": 1 }, 1]
-      ]
-    ],
-
-    [
-      { "orgID": "Coca Cola",  "templateID": "The Profit Miner",  "inputs": ["Event"],  "output": "PetriNet",  "instanceID": 1 },
-      [
-        [{ "orgID": "DTU",  "templateID": "Dream Sink",  "inputs": ["PetriNet"],  "output": null,  "instanceID": 1 }, 1]
       ]
     ]
   ]
