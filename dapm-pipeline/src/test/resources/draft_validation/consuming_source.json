@@ -1,37 +1,24 @@
 {
   "processing elements":[
-    {
-      "orgID": "Pepsi",
-      "templateID": "$$$ Source",
-      "inputs": [],
-      "outputs": ["Event"],
-      "instanceID": 1
-    },
-    {
-      "orgID": "other",
-      "templateID": "source",
-      "inputs": [],
-      "outputs": ["Event"],
-      "instanceID": 1
-    }
+    { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
+    { "orgID": "other", "templateID": "source", "inputs": [], "output": "Event", "instanceID": 1 },
+    { "orgID": "other", "templateID": "sink", "inputs": ["Event"], "output": null, "instanceID": 1 }
+
   ],
 
   "channels": [
     [
-      {
-        "orgID": "Pepsi",
-        "templateID": "$$$ Source",
-        "inputs": [],
-        "outputs": ["Event"],
-        "instanceID": 1
-      },
-      {
-        "orgID": "other",
-        "templateID": "source",
-        "inputs": [],
-        "outputs": ["Event"],
-        "instanceID": 1
-      }
+      { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
+      [
+        [{ "orgID": "other", "templateID": "source", "inputs": [], "output": "Event", "instanceID": 1 }, 1]
+      ]
+    ],
+
+    [
+      { "orgID": "other", "templateID": "source", "inputs": [], "output": "Event", "instanceID": 1 },
+      [
+        [{ "orgID": "other", "templateID": "sink", "inputs": ["Event"], "output": null, "instanceID": 1 }, 1]
+      ]
     ]
   ]
 }

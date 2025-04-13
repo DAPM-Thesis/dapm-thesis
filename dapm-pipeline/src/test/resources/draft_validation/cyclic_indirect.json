@@ -1,98 +1,31 @@
 {
   "processing elements":[
-    {
-      "orgID": "Pepsi",
-      "templateID": "$$$ Source",
-      "inputs": [],
-      "outputs": ["Event"],
-      "instanceID": 1
-    },
-    {
-      "orgID": "INDIRECT CYCLE CONSUMER",
-      "templateID": "TID1",
-      "inputs": ["Event", "PetriNet"],
-      "outputs": ["PetriNet"],
-      "instanceID": 1
-    },
-    {
-      "orgID": "INDIRECT CYCLE PRODUCER",
-      "templateID": "TID2",
-      "inputs": ["PetriNet"],
-      "outputs": ["PetriNet", "PetriNet"],
-      "instanceID": 1
-    },
-    {
-      "orgID": "DTU",
-      "templateID": "Dream Sink",
-      "inputs": ["PetriNet"],
-      "outputs": [],
-      "instanceID": 1
-    }],
+    { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
+    { "orgID": "INDIRECT CYCLE CONSUMER", "templateID": "TID1", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceID": 1 },
+    { "orgID": "INDIRECT CYCLE PRODUCER", "templateID": "TID2", "inputs": ["PetriNet"], "output": "PetriNet", "instanceID": 1 },
+    { "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output": null, "instanceID": 1 }],
 
   "channels": [
     [
-      {
-        "orgID": "Pepsi",
-        "templateID": "$$$ Source",
-        "inputs": [],
-        "outputs": ["Event"],
-        "instanceID": 1
-      },
-      {
-        "orgID": "INDIRECT CYCLE CONSUMER",
-        "templateID": "TID1",
-        "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet"],
-        "instanceID": 1
-      }
+      { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
+      [
+        [{ "orgID": "INDIRECT CYCLE CONSUMER", "templateID": "TID1", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceID": 1 }, 1]
+      ]
     ],
+
     [
-      {
-        "orgID": "INDIRECT CYCLE CONSUMER",
-        "templateID": "TID1",
-        "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet"],
-        "instanceID": 1
-      },
-      {
-        "orgID": "INDIRECT CYCLE PRODUCER",
-        "templateID": "TID2",
-        "inputs": ["PetriNet"],
-        "outputs": ["PetriNet", "PetriNet"],
-        "instanceID": 1
-      }
+      { "orgID": "INDIRECT CYCLE CONSUMER", "templateID": "TID1", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceID": 1 },
+      [
+        [{ "orgID": "INDIRECT CYCLE PRODUCER", "templateID": "TID2", "inputs": ["PetriNet"], "output": "PetriNet", "instanceID": 1 }, 1]
+      ]
     ],
+
     [
-      {
-        "orgID": "INDIRECT CYCLE PRODUCER",
-        "templateID": "TID2",
-        "inputs": ["PetriNet"],
-        "outputs": ["PetriNet", "PetriNet"],
-        "instanceID": 1
-      },
-      {
-        "orgID": "INDIRECT CYCLE CONSUMER",
-        "templateID": "TID1",
-        "inputs": ["Event", "PetriNet"],
-        "outputs": ["PetriNet"],
-        "instanceID": 1
-      }
-    ],
-    [
-      {
-        "orgID": "INDIRECT CYCLE PRODUCER",
-        "templateID": "TID2",
-        "inputs": ["PetriNet"],
-        "outputs": ["PetriNet", "PetriNet"],
-        "instanceID": 1
-      },
-      {
-        "orgID": "DTU",
-        "templateID": "Dream Sink",
-        "inputs": ["PetriNet"],
-        "outputs": [],
-        "instanceID": 1
-      }
+      { "orgID": "INDIRECT CYCLE PRODUCER", "templateID": "TID2", "inputs": ["PetriNet"], "output": "PetriNet", "instanceID": 1 },
+      [
+        [{ "orgID": "INDIRECT CYCLE CONSUMER", "templateID": "TID1", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceID": 1 }, 2],
+        [{ "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output": null, "instanceID": 1 }, 1]
+      ]
     ]
   ]
 }
