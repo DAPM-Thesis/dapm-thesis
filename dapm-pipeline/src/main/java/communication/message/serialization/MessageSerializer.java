@@ -1,5 +1,6 @@
 package communication.message.serialization;
 import communication.message.impl.Alignment;
+import communication.message.impl.Heartbeat;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
 import communication.message.impl.event.Event;
@@ -50,6 +51,16 @@ public class MessageSerializer implements MessageVisitor<String> {
                 + toJXES(alignment.getLogTrace()) + ", "
                 + toJXES(alignment.getModelTrace())
                 + "]}";
+        return getSerialization();
+    }
+
+    @Override
+    public String visit(Heartbeat hb) {
+        this.serialization = "heartbeat:" +
+                "{\"senderId\": \"" + hb.getSenderId() + "\", " +
+                "\"timestamp\": \"" + hb.getTimestamp().toString() + "\", " +
+                "\"tokenStatus\": \"" + hb.getTokenStatus().toString() + "\", " +
+                "\"immediateFlag\": " + hb.isImmediateFlag() + "}";
         return getSerialization();
     }
 

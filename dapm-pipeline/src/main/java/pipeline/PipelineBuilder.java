@@ -3,6 +3,7 @@ package pipeline;
 import communication.HTTPClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pipeline.accesscontrolled.processingelement.AccessControlledProcessingElement;
 import pipeline.processingelement.ProcessingElementReference;
 import pipeline.processingelement.ProcessingElementType;
 
@@ -37,13 +38,44 @@ public class PipelineBuilder {
         return this;
     }
 
+    /*
     public PipelineBuilder addProcessingElement(ProcessingElementReference pe) {
         if (pe == null) { throw new IllegalArgumentException("processingElement cannot be null"); }
         currentPipeline.getProcessingElements().add(pe);
         if(pe.processingElementType() == ProcessingElementType.SOURCE) currentPipeline.getSources().add(pe);
         return this;
+    }*/
+    public PipelineBuilder addACPE(AccessControlledProcessingElement<?> acpe){
+        nullCheck(acpe);
+        currentPipeline.addACPE(acpe);
+        return this;
+    }
+    public PipelineBuilder connec(AccessControlledProcessingElement<?> from, AccessControlledProcessingElement<?>to){
+        nullCheck(from);
+        nullCheck(to);
+
+        to.setUpstream(from);
+        from.addDownstream(to);
+        String connectionTopic = "Topic-" + UUID.randomUUID();
+
+        // TODO: CONFIRM (should the orgId be in the Token class or ACPE)
+        String brokerFrom = organizationBrokers.get(from.getToken().getOrganizationID());
+        String hostFrom = organizations.get(from.getToken().getOrganizationID());
+        postToOrganization(from, connectionTopic, brokerFrom, hostFrom, true);
+
+        String hostTo = organizations.get(to.getToken().getOrganizationID());
+        postToOrganization(to, connectionTopic, brokerFrom, hostTo, false);
+
+        return this;
     }
 
+    private static void nullCheck(AccessControlledProcessingElement<?> acpe) {
+        if(acpe == null || acpe.getProcessingElement() == null){
+            throw new IllegalArgumentException("AccessControlledProcessingElement or Processing Element cannot be null");
+        }
+    }
+
+    /*
     public PipelineBuilder connect(ProcessingElementReference from, ProcessingElementReference to) {
         if (!currentPipeline.getProcessingElements().contains(from) || !currentPipeline.getProcessingElements().contains(to))
         { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
@@ -59,11 +91,12 @@ public class PipelineBuilder {
         postToOrganization(to, connectionTopic, brokerFrom, hostTo, false);
         return this;
     }
+    */
 
     public Pipeline getCurrentPipeline() {
         return currentPipeline;
     }
-
+    /*
     private void postToOrganization(ProcessingElementReference ref, String topic, String broker, String hostURL, boolean isPublisher) {
         try {
             String organizationID = URLEncoder.encode(ref.organizationID(), StandardCharsets.UTF_8);
@@ -80,6 +113,26 @@ public class PipelineBuilder {
             webClient.post(hostURL + url);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+    */
+    private void postToOrganization(AccessControlledProcessingElement<?> acpe, String topic,String broker, String hostURL, boolean isPublisher){
+        try{
+            String organizationID = URLEncoder.encode(acpe.getToken().getOrganizationID(), StandardCharsets.UTF_8);
+            String processElementID = URLEncoder.encode(String.valueOf(acpe.getProcessingElement().getID()), StandardCharsets.UTF_8);
+            String encodedTopic = URLEncoder.encode(topic, StandardCharsets.UTF_8);
+            String encodedBroker = URLEncoder.encode(broker, StandardCharsets.UTF_8);
+            String role = isPublisher ? "publisher" : "subscriber";
+
+            String url = String.format(
+                    "/%s/%s/%s/broker/%s/topic/%s",
+                    organizationID, processElementID, role, encodedBroker, encodedTopic
+            );
+
+            webClient.post(hostURL + url);
+        }
+        catch (Exception e){
+            throw new RuntimeException();
         }
     }
 }

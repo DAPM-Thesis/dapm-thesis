@@ -27,7 +27,7 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
 
     public void registerConsumer(String connectionTopic, String brokerURL) {
         Consumer consumer = new Consumer(this, connectionTopic, brokerURL);
-        consumer.start();
+        consumer.start(); // could we add the isavailable check here? based on the token
         consumers.add(consumer);
     }
 }
