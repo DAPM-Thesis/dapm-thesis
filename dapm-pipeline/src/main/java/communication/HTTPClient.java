@@ -18,7 +18,7 @@ public class HTTPClient {
         webClient.post().uri(url)
                 .retrieve()
                 .bodyToMono(Void.class)
-                .subscribe();
+                .block();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
