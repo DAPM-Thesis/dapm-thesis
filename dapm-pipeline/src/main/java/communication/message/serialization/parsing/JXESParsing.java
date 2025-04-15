@@ -1,4 +1,4 @@
-package communication.message.serialization;
+package communication.message.serialization.parsing;
 
 import communication.message.impl.event.Attribute;
 import communication.message.impl.event.Event;
@@ -7,6 +7,17 @@ import utils.Pair;
 import java.util.*;
 
 public class JXESParsing extends JSONParsing { // TODO: make it throw errors instead of assertions when given incorrect JXES. Test errors.
+
+    public static Map<String, Object> parse(String jxes) {
+        if (!(isJSONObject(jxes))) {
+            throw new InvalidJXES("JXES string must start with an object, but received: " + jxes);
+        }
+        return parseJSONObject(jxes);
+    }
+
+    // TODO: refactor
+    private static Attribute<?> parseAttribute(String name, Object value) { return null; }
+    private static String maybeRemoveOuterQuotes(String caseID) { return null; }
 
     /** Parses attributes that are not the case ID, activity, and time stamp */
     public static Set<Attribute<?>> parseNonEssentialEventAttributes(Map<String, Object> traceGlobalAttributes,
@@ -32,7 +43,7 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
         assert eventMap.containsKey("\"date\"") : "No \"date\" (timestamp) in the given event. Timestamp must be in event - and not trace or global attributes; events are atomic and therefore must have distinct timestamps";
         assert eventMap.containsKey("\"concept:name\"") : "No \"concept:name\" (activity) in the given event. Activity must be in event - and not in trace or global attributes; this would be ambiguous since caseID is also called \"concept:name\"";
 
-        String caseID = maybeRemoveOuterQuotes(JXESParsing.getCaseID(traceGlobalAttrs, traceAttributes));
+        String caseID = maybeRemoveOuterQuotes(getCaseID(traceGlobalAttrs, traceAttributes));
         String activity = maybeRemoveOuterQuotes((String) eventMap.get("\"concept:name\""));
         String timestamp = maybeRemoveOuterQuotes((String) eventMap.get("\"date\""));
         Set<Attribute<?>> attributes = parseNonEssentialEventAttributes(traceGlobalAttrs, eventGlobalAttrs, traceAttributes, eventMap); // TODO: can be optimized; combine global and trace attributes in the loop, rather than in this method.
@@ -41,6 +52,17 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
 
     private static boolean isEssentialAttributeKey(String key) {
         return key.equals("\"date\"") || key.equals("\"concept:name\"");
+    }
+
+    public static String getCaseID(Map<String, Object> globalAttributes, Map<String, Object> traceAttributes) {
+        String caseID;
+        String identifier = "\"concept:name\"";
+        // fetch caseID from trace attributes before global attributes.
+        caseID = (String) traceAttributes.get(identifier);
+        if (caseID == null) { caseID = (String) globalAttributes.get(identifier); }
+        assert caseID != null : "no caseID found";
+
+        return caseID;
     }
 
     public static Pair<Map<String, Object>, Map<String, Object>> getTraceAndEventGlobalAttributes(Map<String, Object> jsonMap) {

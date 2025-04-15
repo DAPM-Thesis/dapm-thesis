@@ -2,12 +2,11 @@ package draft_validation.parsing;
 
 import communication.message.Message;
 import communication.message.MessageTypeRegistry;
-import communication.message.serialization.JSONParsing;
+import communication.message.serialization.parsing.JSONParsing;
 import draft_validation.MetadataChannel;
 import draft_validation.MetadataConsumer;
 import draft_validation.MetadataProcessingElement;
 import draft_validation.PipelineDraft;
-import utils.Pair;
 
 import java.util.*;
 
@@ -15,7 +14,7 @@ public class DraftParser implements Parser<PipelineDraft> {
 
     @Override
     public PipelineDraft deserialize(String str) throws InvalidDraft {
-        Map<String, Object> jsonMap = JSONParsing.toJSONMap(str);
+        Map<String, Object> jsonMap = (Map<String, Object>) JSONParsing.parse(str);
         if (!(jsonMap.containsKey("\"processing elements\"") && jsonMap.containsKey("\"channels\"")))
             { throw new InvalidDraft("\"processing elements\" and/or \"channels\" keys missing from draft"); }
 
@@ -77,14 +76,14 @@ public class DraftParser implements Parser<PipelineDraft> {
     }
 
     private String extractTemplateID(Map<String, Object> elementMap) throws InvalidDraft {
-        String templateID = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"templateID\""));
+        String templateID = (String) elementMap.get("\"templateID\""); //TODO: remove JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"templateID\""));
         if (templateID.isEmpty())
             { throw new InvalidDraft("templateID must be present and non-empty."); }
         return templateID;
     }
 
     private String extractOrgID(Map<String, Object> elementMap) throws InvalidDraft {
-        String orgID = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"orgID\""));
+        String orgID = (String) elementMap.get("\"orgID\""); // TODO: remove JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"orgID\""));
         if (orgID.isEmpty())
             { throw new InvalidDraft("orgID must be present and non-empty in the processing element."); }
         return orgID;
@@ -100,7 +99,7 @@ public class DraftParser implements Parser<PipelineDraft> {
     }
 
     private Class<? extends Message> extractOutput(Map<String, Object> elementMap) throws InvalidDraft {
-        String outputClassString = JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"output\""));
+        String outputClassString = (String) elementMap.get("\"output\""); // TODO: remove JSONParsing.maybeRemoveOuterQuotes((String) elementMap.get("\"output\""));
         if (outputClassString.equals("null"))
             { return null; }
 
@@ -112,7 +111,7 @@ public class DraftParser implements Parser<PipelineDraft> {
     private List<Class<? extends Message>> parseClassList(List<String> messageClassList) throws InvalidDraft {
         List<Class<? extends Message>> messageClasses = new ArrayList<>();
         for (String classString : messageClassList) {
-            classString = JSONParsing.maybeRemoveOuterQuotes(classString);
+            // TODO: remove: classString = JSONParsing.maybeRemoveOuterQuotes(classString);
             if (MessageTypeRegistry.getMessageType(classString) == null)
                 { throw new  InvalidDraft("Invalid message class: " + classString); }
             messageClasses.add(MessageTypeRegistry.getMessageType(classString));

@@ -1,4 +1,4 @@
-package serialization;
+package serialization.message;
 
 import communication.message.Message;
 import communication.message.impl.Alignment;

@@ -1,6 +1,6 @@
 package communication.message.serialization.deserialization.impl;
 
-import communication.message.serialization.JXESParsing;
+import communication.message.serialization.parsing.JXESParsing;
 import communication.message.Message;
 import communication.message.serialization.deserialization.DeserializationStrategy;
 import utils.Pair;
@@ -18,7 +18,7 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
      *  returned event's attributes. */
     @Override
     public Message deserialize(String payload) {
-        Map<String, Object> jsonMap = JXESParsing.toJSONMap(payload);
+        Map<String, Object> jsonMap = JXESParsing.parse(payload);
 
         // since we assume only a single event can be deserialized at a time, all global attributes can be combined
         // and so can the trace "attrs" key:value pairs.

@@ -2,7 +2,7 @@ package communication.message.serialization.deserialization.impl;
 
 import communication.message.Message;
 import communication.message.impl.Trace;
-import communication.message.serialization.JXESParsing;
+import communication.message.serialization.parsing.JXESParsing;
 import communication.message.impl.event.Event;
 import communication.message.serialization.deserialization.DeserializationStrategy;
 import utils.Pair;
@@ -15,7 +15,7 @@ import java.util.Map;
 public class TraceDeserializationStrategy implements DeserializationStrategy {
     @Override
     public Message deserialize(String payload) {
-        Map<String, Object> jsonMap = JXESParsing.toJSONMap(payload);
+        Map<String, Object> jsonMap = JXESParsing.parse(payload);
 
         Pair<Map<String, Object>, Map<String, Object>> traceAndEventGlobalAttributes = JXESParsing.getTraceAndEventGlobalAttributes(jsonMap);
         Map<String, Object> traceGlobalAttrs = traceAndEventGlobalAttributes.getFirst();
