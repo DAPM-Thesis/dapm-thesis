@@ -1,11 +1,11 @@
+package draft_validation;
+
 import communication.message.Message;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
-import draft_validation.*;
 import draft_validation.parsing.DraftParser;
 import draft_validation.parsing.InvalidDraft;
 import org.junit.jupiter.api.Test;
-import utils.Pair;
 
 import java.io.IOException;
 import java.nio.file.Files;

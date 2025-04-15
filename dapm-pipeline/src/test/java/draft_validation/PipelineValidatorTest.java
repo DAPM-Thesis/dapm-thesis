@@ -1,5 +1,5 @@
-import draft_validation.PipelineDraft;
-import draft_validation.PipelineValidator;
+package draft_validation;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

@@ -31,11 +31,6 @@ public class Event extends Message {
     public Collection<Attribute<?>> getAttributes() {return attributes;}
 
     @Override
-    public String getName() {
-        return "event";
-    }
-
-    @Override
     public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);
     }

@@ -1,7 +1,6 @@
 package communication.message.serialization;
 
 import communication.message.impl.event.Attribute;
-import communication.message.impl.event.Event;
 import utils.Pair;
 
 import java.util.*;
@@ -21,7 +20,7 @@ public class JSONParsing {
         return last != -1; // End wrapper found
     }
 
-    public static String unWrap(String str, char startWrapper, int endWrapper) {
+    public static String unwrap(String str, char startWrapper, int endWrapper) {
         assert str.length() >= 2;
         int startIndex = str.indexOf(startWrapper);
         int endIndex = str.lastIndexOf(endWrapper);
@@ -29,6 +28,7 @@ public class JSONParsing {
         return str.substring(startIndex+1, endIndex);
     }
 
+    // TODO: this should be in JXESParsing?
     public static String getCaseID(Map<String, Object> globalAttributes, Map<String, Object> traceAttributes) {
         String caseID;
         String identifier = "\"concept:name\"";
@@ -40,22 +40,32 @@ public class JSONParsing {
         return caseID;
     }
 
-    public static String maybeRemoveOuterQuotes(String str) {
+    public static String maybeRemoveOuterQuotes(String str) { // TODO: remove this - and actually analyze when removing outer quotes is necessary or not; this is too lazy+unsafe
         if (JXESParsing.isWrapped(str, '\"', '\"')) {
-            return JXESParsing.unWrap(str, '\"', '\"');
+            return JXESParsing.unwrap(str, '\"', '\"');
         }
         return str;
     }
 
     protected static Attribute<?> parseAttribute(String name, Object value) {
-        name = maybeRemoveOuterQuotes(name);
+        name = unwrap(name, '\"', '\"');
 
-        if (value instanceof Map<?, ?> && isNestedAttribute((Map<String, Object>) value)) {
+        if (value instanceof Map<?, ?>) {
+            if (!isNestedAttribute((Map<String, Object>) value)) {
+                // TODO: remove this (and potentially move it to JXESParsing); it is not conceptually part of JSONParsing
+                // TODO: potentially by overriding this method in JXESParsing
+                throw new IllegalStateException("I don't think we should ever have this?");
+            }
             Map<String, Object> map = (Map<String, Object>) value;
             Object nestedAttrValue = parseAttrValue(map.get("\"value\""));
             Map<String, Attribute<?>> nestedAttrs = getNestedAttributes((Map<String, Object>) map.get("\"nested-attrs\""));
             return new Attribute<>(name, nestedAttrValue, nestedAttrs);
-        } else {
+        } else if (value instanceof List<?>){
+            List<Attribute<?>> listItems = new ArrayList<>();
+            for (Object item  : (List<Object>) value) {
+            }
+            return new Attribute<>(name, listItems);
+        }else {
             return new Attribute<>(name, parseAttrValue(value));
         }
     }
@@ -82,7 +92,7 @@ public class JSONParsing {
 
     private static Object getSimpleAttributeValue(String value) {
         assert !value.isEmpty() : "string may not be empty [but is allowed to contain empty quotation marks, i.e. '\"\"']";
-        if (isStringValue(value)) { return JXESParsing.unWrap(value, '"', '"'); }
+        if (isStringValue(value)) { return JXESParsing.unwrap(value, '"', '"'); }
         else if (isBooleanValue(value)) {return Boolean.parseBoolean(value); }
         else if (isInteger(value)) { return Integer.parseInt(value); }
         else if (isDouble(value)) { return Double.parseDouble(value); }
@@ -152,7 +162,7 @@ public class JSONParsing {
     private static Map<String, Object> getContainer(String container) {
         Object value;
         Map<String, Object> containerMap = new HashMap<>();
-        String contents = unWrap(container, '{', '}');
+        String contents = unwrap(container, '{', '}');
         List<String> keyValuePairs = commaSplit(contents);
         for (String pair : keyValuePairs) { // pair has format key:value [potentially with whitespace chars between]
             Pair<String, String> keyAndValue = splitAndStripKeyAndValue(pair);
@@ -178,7 +188,7 @@ public class JSONParsing {
     /** returns the list of items in the given list ('[' and ']' wrapped string */
     private static List<Object> getList(String listStr) {
         List<Object> elements = new ArrayList<>();
-        listStr = unWrap(listStr, '[', ']');
+        listStr = unwrap(listStr, '[', ']');
         List<String> stringElements = commaSplit(listStr);
         // list items can be either containers [e.g. events in a trace] or string values [e.g. in classifiers]
         for (String elem : stringElements) {
