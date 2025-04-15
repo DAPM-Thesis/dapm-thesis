@@ -25,8 +25,8 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
     protected abstract Map<Class<? extends Message>, Integer> setConsumedInputs();
 
 
-    public void registerConsumer(String connectionTopic, String brokerURL) {
-        Consumer consumer = new Consumer(this, connectionTopic, brokerURL);
+    public void registerConsumer(String brokerURL, String topic) {
+        Consumer consumer = new Consumer(this, brokerURL, topic);
         consumer.start();
         consumers.add(consumer);
     }

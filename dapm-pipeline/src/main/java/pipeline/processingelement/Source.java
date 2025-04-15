@@ -30,9 +30,9 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public void publish(O data) { producer.publish(data); }
 
     @Override
-    public void registerProducer(String connectionTopic, String brokerURL) {
+    public void registerProducer(String brokerURL, String topic) {
         if(this.producer == null) {
-            this.producer = new Producer(connectionTopic, brokerURL);
+            this.producer = new Producer(brokerURL, topic);
         }
     }
 }

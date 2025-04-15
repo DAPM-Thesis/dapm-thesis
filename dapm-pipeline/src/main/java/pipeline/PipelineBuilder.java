@@ -1,6 +1,8 @@
 package pipeline;
 
-import communication.HTTPClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import communication.API.HTTPClient;
+import communication.API.SourceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pipeline.processingelement.ProcessingElementReference;
@@ -8,9 +10,8 @@ import pipeline.processingelement.ProcessingElementType;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Collection;
 
 // TODO: should be able to input a Json assembly file and set up the connections
 @Component
@@ -18,18 +19,12 @@ public class PipelineBuilder {
 
     private Pipeline currentPipeline;
     private final HTTPClient webClient;
-
-    private final Map<String, String> organizations = new HashMap<>();
-    private final Map<String, String> organizationBrokers = new HashMap<>();
+    private ObjectMapper objectMapper;
 
     @Autowired
     public PipelineBuilder(HTTPClient webClient) {
-        // Organizations are hard-coded
-        organizations.put("orgA", "http://localhost:8082/");
-        organizationBrokers.put("orgA", "localhost:29092");
-        organizations.put("orgB", "http://localhost:8083/");
-        organizationBrokers.put("orgB", "localhost:29082");
         this.webClient = webClient;
+        this.objectMapper = new ObjectMapper();
     }
 
     public PipelineBuilder createPipeline(String organizationOwnerID) {
@@ -48,15 +43,13 @@ public class PipelineBuilder {
         if (!currentPipeline.getProcessingElements().contains(from) || !currentPipeline.getProcessingElements().contains(to))
         { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
 
+        Collection<String> instanceIDS = new ArrayList<>();
         currentPipeline.getConnections().put(from, to);
-        String connectionTopic = "Topic-" + UUID.randomUUID();
+        SourceResponse response = postToSource(from.organizationHostURL(), from.templateID(), from.instanceNumber());
+        instanceIDS.add(response.instanceID());
 
-        String brokerFrom = organizationBrokers.get(from.organizationID());
-        String hostFrom = organizations.get(from.organizationID());
-        postToOrganization(from, connectionTopic, brokerFrom, hostFrom, true);
+        postToOperator(to.organizationHostURL(), to.templateID(), to.instanceNumber(), response.topic(), response.brokerURL(), true);
 
-        String hostTo = organizations.get(to.organizationID());
-        postToOrganization(to, connectionTopic, brokerFrom, hostTo, false);
         return this;
     }
 
@@ -64,17 +57,32 @@ public class PipelineBuilder {
         return currentPipeline;
     }
 
-    private void postToOrganization(ProcessingElementReference ref, String topic, String broker, String hostURL, boolean isPublisher) {
+    private SourceResponse postToSource(String hostURL, String templateID, int instanceNumber) {
         try {
-            String organizationID = URLEncoder.encode(ref.organizationID(), StandardCharsets.UTF_8);
-            String processElementID = URLEncoder.encode(String.valueOf(ref.processElementID()), StandardCharsets.UTF_8);
-            String encodedTopic = URLEncoder.encode(topic, StandardCharsets.UTF_8);
-            String encodedBroker = URLEncoder.encode(broker, StandardCharsets.UTF_8);
-            String role = isPublisher ? "publisher" : "subscriber";
+            String encodedTemplateID = URLEncoder.encode(templateID, StandardCharsets.UTF_8);
 
             String url = String.format(
-                    "%s/%s/%s/broker/%s/topic/%s",
-                    organizationID, processElementID, role, encodedBroker, encodedTopic
+                    "/pipelineBuilder/source/templateID/%s/instanceNumber/%s",
+                     encodedTemplateID, instanceNumber
+            );
+
+           String response = webClient.post(hostURL + url);
+           return objectMapper.readValue(response, SourceResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void postToOperator(String hostURL, String templateID, int instanceNumber, String broker, String topic, boolean setProducer) {
+        try {
+            String encodedTemplateID = URLEncoder.encode(templateID, StandardCharsets.UTF_8);
+            String encodedTopic = URLEncoder.encode(topic, StandardCharsets.UTF_8);
+            String encodedBroker = URLEncoder.encode(broker, StandardCharsets.UTF_8);
+            String role = setProducer ? "producer" : "consumer";
+
+            String url = String.format(
+                    "/pipelineBuilder/operator/%s/templateID/%s/instanceNumber/%s/broker/%s/topic/%s",
+                     role, encodedTemplateID, instanceNumber, encodedBroker, encodedTopic
             );
 
             webClient.post(hostURL + url);

@@ -1,4 +1,4 @@
-package communication;
+package communication.API;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,11 +13,11 @@ public class HTTPClient {
         this.webClient = webClient;
     }
 
-    public void post(String url) {
+    public String post(String url) {
         try {
-        webClient.post().uri(url)
+       return webClient.post().uri(url)
                 .retrieve()
-                .bodyToMono(Void.class)
+                .bodyToMono(String.class)
                 .block();
         } catch (Exception e) {
             throw new RuntimeException(e);

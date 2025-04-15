@@ -1,6 +1,6 @@
 package pipeline.service;
 
-import communication.HTTPClient;
+import communication.API.HTTPClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pipeline.Pipeline;
@@ -29,16 +29,9 @@ public class PipelineExecutionService {
         if(pipeline.getSources().isEmpty()) throw new IllegalArgumentException("No sources found in pipeline");
         for(ProcessingElementReference pe : pipeline.getSources()) {
             try {
-                String organizationID = URLEncoder.encode(pe.organizationID(), StandardCharsets.UTF_8);
-                String processElementID = URLEncoder.encode(String.valueOf(pe.processElementID()), StandardCharsets.UTF_8);
-                String sourceHost = organizations.get(pe.organizationID());
+                String url = "/pipelineBuilder/start";
 
-                String url = String.format(
-                        "/%s/%s/start",
-                        organizationID, processElementID
-                );
-
-                webClient.post(sourceHost + url);
+                webClient.post(pe.organizationHostURL() + url);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

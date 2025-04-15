@@ -17,7 +17,7 @@ public class Producer {
     private KafkaProducer<String, String> kafkaProducer;
     private final String topic;
 
-    public Producer(String topic, String brokerURL) {
+    public Producer(String brokerURL, String topic) {
         Properties props = KafkaConfiguration.getProducerProperties(brokerURL);
         this.kafkaProducer = new KafkaProducer<>(props);
         this.topic = topic;
