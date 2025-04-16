@@ -67,4 +67,10 @@ public class JSONParserTest {
                 "src/test/resources/serialization/JSONParser/empty_array_item.json"));
     }
 
+
+
+
+
+
+    // TODO: make test for every JSON error
 }
