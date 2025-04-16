@@ -38,7 +38,7 @@ public class MessageSerializerTest {
         Set<Attribute<?>> extraAttributes = new HashSet<>(Arrays.asList(intAttr, stringAttr, doubleAttr, booleanAttr));
         Event event = new Event("caseID", "activity", "timestamp", extraAttributes);
 
-        String expected = "event:{\"traces\": [{\"attrs\": {\"concept:name\": \"caseID\"}, \"events\": [{\"concept:name\": \"activity\", \"date\": \"timestamp\", \"boolean\": true, \"string\": \"str '\":({ ing\", \"double\": 5.0, \"int\": 5}]}]}\n";
+        String expected = Event.class.getName() + ":{\"traces\": [{\"attrs\": {\"concept:name\": \"caseID\"}, \"events\": [{\"concept:name\": \"activity\", \"date\": \"timestamp\", \"boolean\": true, \"string\": \"str '\":({ ing\", \"double\": 5.0, \"int\": 5}]}]}\n";
         MessageSerializer serializer = new MessageSerializer();
         String output = serializer.visit(event);
         assertEquals(expected.replaceAll("\\s+", ""), output.replaceAll("\\s+", ""));
@@ -51,7 +51,7 @@ public class MessageSerializerTest {
         String output = serializer.visit(petriNet);
 
         String expected = getExpectedSerialization(petriNet,
-                "src/test/resources/message_serialization/petrinet/example.xml");
+                "src/test/resources/serialization/message/petrinet/example.xml");
 
         assertEquals(output.replaceAll("\\s+", ""),
                 expected.replaceAll("\\s+", ""));
@@ -74,7 +74,7 @@ public class MessageSerializerTest {
         String output = serializer.visit(singletonTrace);
 
         String expected = getExpectedSerialization(singletonTrace,
-                "src/test/resources/message_serialization/trace/single.json");
+                "src/test/resources/serialization/message/trace/single.json");
 
         assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
     }
@@ -91,14 +91,14 @@ public class MessageSerializerTest {
         String output = serializer.visit(multipleTrace);
 
         String expected = getExpectedSerialization(multipleTrace,
-                "src/test/resources/message_serialization/trace/multiple.json");
+                "src/test/resources/serialization/message/trace/multiple.json");
 
         assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
 
     }
 
     @Test
-    public void illegalMultipleCaseIDTraceTest(){
+    public void multipleCaseIDTraceTest(){
         // trace serialization assumes all event case IDs in a trace are the same. If this is not the case, update trace serialization
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
         Event e2 = new Event("c2", "a2", "t2", new HashSet<>());
@@ -119,7 +119,7 @@ public class MessageSerializerTest {
         String output = serializer.visit(alignment);
 
         String expected = getExpectedSerialization(alignment,
-                "src/test/resources/message_serialization/alignment/alignment.json");
+                "src/test/resources/serialization//message/alignment/alignment.json");
 
         assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
     }
