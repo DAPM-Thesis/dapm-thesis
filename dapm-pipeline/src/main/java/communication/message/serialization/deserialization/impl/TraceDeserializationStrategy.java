@@ -13,6 +13,7 @@ public class TraceDeserializationStrategy implements DeserializationStrategy {
     public Message deserialize(String payload) {
         Map<String, Object> jxesMap = (new JXESParser()).parse(payload);
         assert jxesMap.containsKey("traces") : "incorrect payload format: can't find the \"traces\" key.";
+
         List<Trace> traces = (List<Trace>) jxesMap.get("traces");
         assert traces.size() == 1 : "Expected exactly 1 trace during trace deserialization, but received: " + traces.size();
 

@@ -1,7 +1,6 @@
 package pipeline.processingelement;
 
 import communication.Consumer;
-import communication.Subscriber;
 import communication.message.Message;
 
 import java.util.Collection;

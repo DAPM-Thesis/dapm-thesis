@@ -23,9 +23,9 @@ public class JXESParser extends JSONParser {
         }
 
         Map<String, Object> jxesMap = new HashMap<>();
-        setObjectFromKey("log-properties", outermostProperties, jxesMap);
-        setObjectFromKey("log-attrs", outermostProperties, jxesMap);
-        setObjectFromKey("classifiers", outermostProperties, jxesMap);
+        setPropertyFromKey("log-properties", outermostProperties, jxesMap);
+        setPropertyFromKey("log-attrs", outermostProperties, jxesMap);
+        setPropertyFromKey("classifiers", outermostProperties, jxesMap);
 
         setExtensions(outermostProperties, jxesMap);
         setGlobalAttributes(outermostProperties, jxesMap);
@@ -91,25 +91,32 @@ public class JXESParser extends JSONParser {
 
         String caseID = (String) traceAttributes.get("concept:name");
 
-        // make a copy of traceAttributes so we can remove the "concept:name" (representing caseID) key from trace.
-        // This way we ensure that the "concept:name" key in the combinedAttributes represents the event activity.
-        Map<String, Object> traceAttributesCopy = new HashMap<>(traceAttributes);
-        traceAttributesCopy.remove("concept:name");
-
-        // combine all attributes, with decreasing priority: event local > event global > trace local > trace global
-        Map<String, Object> combinedAttributes = new HashMap<>(traceAttributesCopy);
-        combinedAttributes.putAll(globalEventAttributes);
-        combinedAttributes.putAll(parseJSONObject(eventObject));
-
-        if (!combinedAttributes.containsKey("date") || !combinedAttributes.containsKey("concept:name")) {
-            throw new InvalidJXES("An event must have a timestamp and an activity set, in the keys \"date\" and \"concept:name\", respectively.");
-        }
+        Map<String, Object> combinedAttributes
+                = getCombinedAttributes(traceAttributes,globalEventAttributes, parseJSONObject(eventObject));
 
         String activity = (String) combinedAttributes.remove("concept:name");
         String timestamp = (String) combinedAttributes.remove("date");
         Set<Attribute<?>> nonEssentialEventAttributes = parseNonEssentialEventAttributes(combinedAttributes);
 
         return new Event(caseID, activity, timestamp, nonEssentialEventAttributes);
+    }
+
+    /** Combines all the given attributes. When attribute names clash, the following decreasing priority is used:
+     *  event local > event global > trace local > trace global. Throws an error if the "concept:name" key
+     *  (representing an activity, not a caseID!) is not present. */
+    private Map<String, Object> getCombinedAttributes(final Map<String, Object> traceAttributes,
+                                                      final Map<String, Object> globalEventAttributes,
+                                                      final Map<String, Object> eventProperties) {
+        Map<String, Object> combinedAttributes = new HashMap<>(traceAttributes);
+        combinedAttributes.remove("concept:name");
+        combinedAttributes.putAll(globalEventAttributes);
+        combinedAttributes.putAll(eventProperties);
+
+        if (!combinedAttributes.containsKey("date") || !combinedAttributes.containsKey("concept:name")) {
+            throw new InvalidJXES("An event must have a timestamp and an activity set, in the keys \"date\" and \"concept:name\", respectively.");
+        }
+
+        return combinedAttributes;
     }
 
     private Set<Attribute<?>> parseNonEssentialEventAttributes(Map<String, Object> combinedNonEssentialEventAttributes) {
@@ -152,7 +159,7 @@ public class JXESParser extends JSONParser {
         return traceAttributes;
     }
 
-    private void setObjectFromKey(String key, Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
+    private void setPropertyFromKey(String key, Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
         String value = outermostProperties.get(key);
         if (value == null)
             { return; }
@@ -189,8 +196,8 @@ public class JXESParser extends JSONParser {
         List<String> keyValuePairs = commaSplitObject(object);
         for (String pair : keyValuePairs) {
             Pair<String, String> nameAndValue = splitAndStripKeyAndValue(pair);
-            String name = unwrap(nameAndValue.getFirst(), '\"', '\"');
-            singlyIteratedObject.put(name, nameAndValue.getSecond());
+            String name = unwrap(nameAndValue.first(), '\"', '\"');
+            singlyIteratedObject.put(name, nameAndValue.second());
         }
         return singlyIteratedObject;
     }

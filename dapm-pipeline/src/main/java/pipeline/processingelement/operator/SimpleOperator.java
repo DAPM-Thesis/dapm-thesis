@@ -12,7 +12,7 @@ public abstract class SimpleOperator<O extends Message> extends Operator<O, O> {
     protected O convertAlgorithmOutput(O algorithmOutput) { return algorithmOutput; }
 
     @Override
-    protected boolean publishCondition(O algorithmOutput) { return true; };
+    protected boolean publishCondition(O algorithmOutput) { return true; }
 
 }
 

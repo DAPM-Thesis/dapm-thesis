@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MessageTypeRegistry {
-    private static Map<String, Class<? extends Message>> nameToClass = new HashMap<>();
+    private static final Map<String, Class<? extends Message>> nameToClass = new HashMap<>();
 
     public static Class<? extends Message> getMessageType(String simpleClassName) {
         return nameToClass.get(simpleClassName);

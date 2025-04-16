@@ -12,9 +12,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PetriNet extends Message {
-    private Set<Place> places;
-    private Set<Transition> transitions;
-    private Set<Arc> flowRelation;
+    private final Set<Place> places;
+    private final Set<Transition> transitions;
+    private final Set<Arc> flowRelation;
 
     public PetriNet() {
         super(new PetriNetDeserializationStrategy());

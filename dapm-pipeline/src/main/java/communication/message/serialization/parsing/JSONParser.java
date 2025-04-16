@@ -40,8 +40,8 @@ public class JSONParser {
         Map<String, Object> objectMap = new HashMap<>();
         for (String pair : nameValuePairs) {
             Pair<String, String> nameAndValue = splitAndStripKeyAndValue(pair);
-            String name = unwrap(nameAndValue.getFirst(), '\"', '\"');
-            Object value = parseValue(nameAndValue.getSecond());
+            String name = unwrap(nameAndValue.first(), '\"', '\"');
+            Object value = parseValue(nameAndValue.second());
             objectMap.put(name, value);
         }
 

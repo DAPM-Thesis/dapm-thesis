@@ -3,8 +3,8 @@ package draft_validation;
 import java.util.Objects;
 
 public class MetadataConsumer {
-    private MetadataProcessingElement consumer;
-    private int portNumber; // 0-indexed internally, but 1-indexed in API
+    private final MetadataProcessingElement consumer;
+    private final int portNumber; // 0-indexed internally, but 1-indexed in API
 
     public MetadataConsumer(MetadataProcessingElement consumer, int portNumber) {
         assert consumer != null : "Consumer should not be null";

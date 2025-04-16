@@ -2,11 +2,7 @@ package pipeline.processingelement;
 
 import communication.Producer;
 import communication.Publisher;
-import communication.Subscriber;
 import communication.message.Message;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;

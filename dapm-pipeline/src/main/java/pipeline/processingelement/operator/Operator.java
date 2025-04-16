@@ -4,12 +4,7 @@ import communication.Producer;
 import communication.message.Message;
 import pipeline.processingelement.ConsumingProcessingElement;
 import algorithm.Algorithm;
-import communication.Consumer;
 import communication.Publisher;
-import communication.Subscriber;
-
-import java.util.Collection;
-import java.util.HashSet;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
                                                       implements Publisher<O> {

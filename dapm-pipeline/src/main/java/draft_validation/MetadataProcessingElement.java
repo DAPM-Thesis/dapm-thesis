@@ -61,7 +61,7 @@ public class MetadataProcessingElement {
         return orgID.equals(otherMPE.orgID)
                 && templateID.equals(otherMPE.templateID)
                 && inputs.equals(otherMPE.inputs)
-                && (output == null ? otherMPE.output == null : output.equals(otherMPE.output))
+                && (Objects.equals(output, otherMPE.output))
                 && instanceID == otherMPE.instanceID;
     }
 
