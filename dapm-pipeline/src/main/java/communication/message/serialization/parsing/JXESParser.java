@@ -7,9 +7,10 @@ import utils.Pair;
 
 import java.util.*;
 
-public class JXESParser extends JSONParser { // TODO: make it throw errors instead of assertions when given incorrect JXES. Test errors.
+public class JXESParser extends JSONParser {
 
     /** returns a JXES map. It must contain the */
+    @Override
     public Map<String, Object> parse(String jxes) {
         if (!(isJSONObject(jxes))) {
             throw new InvalidJXES("JXES string must start with an object, but received: " + jxes);

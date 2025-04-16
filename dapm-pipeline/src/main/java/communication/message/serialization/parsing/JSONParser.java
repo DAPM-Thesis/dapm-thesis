@@ -13,7 +13,9 @@ public class JSONParser {
     }
 
     List<Object> parseJSONArray(String array) {
-        assert isJSONArray(array) : "Expected an array but received: " + array;
+        if (!isJSONArray(array)) {
+            throw new InvalidJSON("Expected an array but received: " + array);
+        }
 
         List<String> stringItems = commaSplitArray(array);
 
@@ -29,7 +31,9 @@ public class JSONParser {
     }
 
     Map<String, Object> parseJSONObject(String object) {
-        assert isJSONObject(object): "Expected an object but received: " + object;
+        if (!isJSONObject(object)){
+            throw new InvalidJSON("Expected an object but received: " + object);
+        }
 
         List<String> nameValuePairs = commaSplitObject(object);
 
@@ -47,7 +51,9 @@ public class JSONParser {
     /** Strips away all leading and trailing whitespace characters. */
     Object parseSimpleType(String item) {
         item = item.strip();
-        assert !item.isEmpty() : "string may not be empty [but is allowed to contain empty quotation marks, i.e. '\"\"']";
+        if (item.isEmpty()) {
+            throw new InvalidJSON("string may not be empty [but is allowed to contain empty quotation marks, i.e. '\"\"']");
+        }
         if (isString(item)) { return unwrap(item, '"', '"'); }
         else if (isBoolean(item)) {return Boolean.parseBoolean(item); }
         else if (isInteger(item)) { return Integer.parseInt(item); }
@@ -68,10 +74,10 @@ public class JSONParser {
     }
 
     String unwrap(String str, char startWrapper, int endWrapper) {
-        assert str.length() >= 2;
+        assert str.length() >= 2 : "unwrap can only be called when it can actually unwrap the string. Received" + str;
         int startIndex = str.indexOf(startWrapper);
         int endIndex = str.lastIndexOf(endWrapper);
-        assert startIndex != -1 && endIndex != -1;
+        assert startIndex != -1 && endIndex != -1 : "wrapper missing for unwrap; unwrap should only be called when it casn actually unwrap the string. Received "+str;
         return str.substring(startIndex+1, endIndex);
     }
 
