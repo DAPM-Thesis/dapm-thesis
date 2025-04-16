@@ -12,6 +12,8 @@ public abstract class ProcessingElement {
         return isAvailable;
     }
 
+    public int getID() { return ID; }
+
     public void setAvailable(boolean available) {
         isAvailable = available;
     }

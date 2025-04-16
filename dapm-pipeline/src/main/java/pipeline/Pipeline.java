@@ -1,37 +1,24 @@
 package pipeline;
 
-import communication.Producer;
-import pipeline.processingelement.ProcessingElement;
-import pipeline.processingelement.Source;
+import pipeline.processingelement.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.*;
 
 public class Pipeline {
-    private Set<ProcessingElement> processingElements;
-    private Set<Producer> channels;
-    private Map<ProcessingElement, Producer> receivingChannels;
+    private String organizationOwnerID;
+    private Set<ProcessingElementReference> processingElements;
+    private Set<ProcessingElementReference> sources;
+    private Map<ProcessingElementReference, ProcessingElementReference> connections;
 
-    public Pipeline() {
+    public Pipeline(String organizationOwnerID) {
         processingElements = new HashSet<>();
-        channels = new HashSet<>();
-        receivingChannels = new HashMap<>();
+        connections = new HashMap<>();
+        sources = new HashSet<>();
+        this.organizationOwnerID = organizationOwnerID;
     }
 
-    public Set<ProcessingElement> getProcessingElements() { return processingElements; }
-    public Map<ProcessingElement, Producer> getReceivingChannels() { return receivingChannels; }
-    public Set<Producer> getChannels() { return channels; }
-
-    public void start() {
-        for(ProcessingElement pe : processingElements) {
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-            if(pe instanceof Source<?> source) {
-                executor.submit(() -> source.start());
-            }
-        }
-    }
+    public Set<ProcessingElementReference> getSources() {return sources;}
+    public String getOrganizationOwnerID() {return organizationOwnerID;}
+    public Set<ProcessingElementReference> getProcessingElements() { return processingElements; }
+    public Map<ProcessingElementReference, ProcessingElementReference> getConnections() { return connections; }
 }

@@ -12,9 +12,8 @@ import java.util.Collection;
 import java.util.HashSet;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
-                                                      implements Subscriber<Message>, Publisher<O> {
+                                                      implements Publisher<O> {
     private final Algorithm<Message, AO> algorithm;
-    private final Collection<Consumer> consumers = new HashSet<>();
     private Producer producer;
 
     public Operator(Algorithm<Message, AO> algorithm) { this.algorithm = algorithm; }
@@ -36,12 +35,7 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public void publish(O output) { producer.publish(output); }
 
     @Override
-    public void registerProducer(Producer producer) {
-        this.producer = producer;
-    }
-
-    @Override
-    public void registerConsumer(Consumer consumer) {
-        consumers.add(consumer);
+    public void registerProducer(String connectionTopic, String brokerURL) {
+        this.producer = new Producer(connectionTopic, brokerURL);
     }
 }

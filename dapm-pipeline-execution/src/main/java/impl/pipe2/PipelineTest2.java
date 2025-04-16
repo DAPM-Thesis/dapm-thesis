@@ -37,23 +37,23 @@ public class PipelineTest2 {
         Sink sink = new DualInputSink();
 
         // Create pipeline using pipeline builder
-        PipelineBuilder builder = new PipelineBuilder();
+//        PipelineBuilder builder = new PipelineBuilder();
 
         // petri net put in first
-        Pipeline pipeline = builder.createPipeline()
-            .addProcessingElement(petriNetSource)
-            .addProcessingElement(petriNetOperator)
-            .addProcessingElement(sink)
-            .connect(petriNetSource, petriNetOperator)
-            .connect(petriNetOperator, sink)
-
-            .addProcessingElement(eventSource)
-            .addProcessingElement(eventOperator)
-            .connect(eventSource, eventOperator)
-            .connect(eventOperator, sink)
-            .getCurrentPipeline();
-
-        pipeline.start();
+//        Pipeline pipeline = builder.createPipeline()
+//            .addProcessingElement(petriNetSource)
+//            .addProcessingElement(petriNetOperator)
+//            .addProcessingElement(sink)
+//            .connect(petriNetSource, petriNetOperator)
+//            .connect(petriNetOperator, sink)
+//
+//            .addProcessingElement(eventSource)
+//            .addProcessingElement(eventOperator)
+//            .connect(eventSource, eventOperator)
+//            .connect(eventOperator, sink)
+//            .getCurrentPipeline();
+//
+//        pipeline.start();
 
         /*
         // Event first

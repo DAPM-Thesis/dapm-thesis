@@ -2,6 +2,6 @@ package communication;
 
 public interface Publisher<T> {
     void publish(T message);
-    void registerProducer(Producer producer);
+    void registerProducer(String connectionTopic, String brokerURL);
 }
 
