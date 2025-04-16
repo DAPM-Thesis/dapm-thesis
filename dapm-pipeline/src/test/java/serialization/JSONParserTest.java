@@ -1,5 +1,6 @@
 package serialization;
 
+import communication.message.serialization.parsing.InvalidJSON;
 import communication.message.serialization.parsing.JSONParser;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class JSONParserTest {
 
@@ -21,7 +23,7 @@ public class JSONParserTest {
     }
 
     @Test
-    public void testJSONParsing() throws IOException {
+    public void validJSON() throws IOException {
         Object output = getJSONMap("src/test/resources/serialization/example.json");
 
         Map<String, Object> expected = new HashMap<>();
@@ -51,4 +53,18 @@ public class JSONParserTest {
 
         assertEquals(output, expected);
     }
+
+    @Test
+    public void noObject() {
+        assertThrows(InvalidJSON.class, () -> getJSONMap(
+                "src/test/resources/serialization/JSONParser/no_object.json"
+        ));
+    }
+
+    @Test
+    public void emptyItem() {
+        assertThrows(InvalidJSON.class, () -> getJSONMap(
+                "src/test/resources/serialization/JSONParser/empty_array_item.json"));
+    }
+
 }

@@ -113,26 +113,6 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void eventCommaActivityNameTest() throws IOException {
-        String JXESPathString = "src/test/resources/serialization/message/event/comma_activity_name.json";
-        String JXESContents = Files.readString(Paths.get(JXESPathString));
-        Event e = new Event("","","",new HashSet<>());
-        e.getDeserializationStrategy().deserialize(JXESContents);
-
-        // TODO: update (expected and output)
-    }
-
-    @Test
-    void eventQuotationActivityNameTest() throws IOException {
-        String JXESPathString = "src/test/resources/serialization/message/event/quotation_activity_name.json";
-        String JXESContents = Files.readString(Paths.get(JXESPathString));
-        Event e = new Event("random instance to call getDeserializationStrategy() on the above JXES.","","",new HashSet<>());
-        e.getDeserializationStrategy().deserialize(JXESContents);
-
-        // TODO: update (expected and output)
-    }
-
-    @Test
     void traceSingleInverseTest() {
         // create trace
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
