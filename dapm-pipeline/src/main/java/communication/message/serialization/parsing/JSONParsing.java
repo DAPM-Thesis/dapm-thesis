@@ -12,13 +12,12 @@ public class JSONParsing {
         throw new InvalidJSON("A JSON string must either start with an array or an object.");
     }
 
-    private static List<Object> parseJSONArray(String array) {
-        assert isWrapped(array, '[', ']') : "Expected an array but received: " + array;
+    static List<Object> parseJSONArray(String array) {
+        assert isJSONArray(array) : "Expected an array but received: " + array;
+
+        List<String> stringItems = commaSplitArray(array);
 
         List<Object> items = new ArrayList<>();
-        String contents = unwrap(array, '[', ']');
-        List<String> stringItems = commaSplit(contents);
-
         for (String item : stringItems) { items.add(parseValue(item)); }
         return items;
     }
@@ -30,11 +29,11 @@ public class JSONParsing {
     }
 
     static Map<String, Object> parseJSONObject(String object) {
-        assert isWrapped(object, '{', '}') : "Expected an object but received: " + object;
-        Map<String, Object> objectMap = new HashMap<>();
-        String contents = unwrap(object, '{', '}');
+        assert isJSONObject(object): "Expected an object but received: " + object;
 
-        List<String> nameValuePairs = commaSplit(contents);
+        List<String> nameValuePairs = commaSplitObject(object);
+
+        Map<String, Object> objectMap = new HashMap<>();
         for (String pair : nameValuePairs) {
             Pair<String, String> nameAndValue = splitAndStripKeyAndValue(pair);
             String name = unwrap(nameAndValue.getFirst(), '\"', '\"');
@@ -80,8 +79,18 @@ public class JSONParsing {
         return isWrapped(str, '{', '}');
     }
 
-    private static boolean isJSONArray(String str) {
+    static boolean isJSONArray(String str) {
         return isWrapped(str, '[', ']');
+    }
+
+    static List<String> commaSplitArray(String array) {
+        assert isJSONArray(array) : "Expected an array but received: " + array;
+        return commaSplit(unwrap(array, '[', ']'));
+    }
+
+    static List<String> commaSplitObject(String object) {
+        assert isJSONObject(object) : "Expected an object but received: " + object;
+        return commaSplit(unwrap(object, '{', '}'));
     }
 
     /** @param contents An unwrapped array/container.
@@ -127,7 +136,7 @@ public class JSONParsing {
         return backslashCount % 2 == 0;
     }
 
-    private static Pair<String, String> splitAndStripKeyAndValue(String pair) {
+    static Pair<String, String> splitAndStripKeyAndValue(String pair) {
         /* the pair is always of the form key:pair, where the key is a quotation-wrapped character sequence which may
          * contain its own ':' (colon). */
         // find the closing quotation mark
