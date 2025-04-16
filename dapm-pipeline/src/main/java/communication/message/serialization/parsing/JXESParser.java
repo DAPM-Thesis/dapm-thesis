@@ -7,10 +7,10 @@ import utils.Pair;
 
 import java.util.*;
 
-public class JXESParsing extends JSONParsing { // TODO: make it throw errors instead of assertions when given incorrect JXES. Test errors.
+public class JXESParser extends JSONParser { // TODO: make it throw errors instead of assertions when given incorrect JXES. Test errors.
 
     /** returns a JXES map. It must contain the */
-    public static Map<String, Object> parse(String jxes) {
+    public Map<String, Object> parse(String jxes) {
         if (!(isJSONObject(jxes))) {
             throw new InvalidJXES("JXES string must start with an object, but received: " + jxes);
         }
@@ -32,7 +32,7 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
         return jxesMap;
     }
 
-    private static void setTraces(Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
+    private void setTraces(Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
         String rawTraces = outermostProperties.get("traces");
         if (rawTraces == null | !isJSONArray(rawTraces)) {
             throw new InvalidJXES("Provided traces is empty or improperly formatted. Should be a list, received: " + rawTraces);
@@ -48,7 +48,7 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
         jxesMap.put("traces", traces);
     }
 
-    private static Trace parseTrace(String traceStr, Map<String, Object> jxesMap) {
+    private Trace parseTrace(String traceStr, Map<String, Object> jxesMap) {
         if (!isJSONObject(traceStr)) {
             throw new InvalidJXES("Expected a trace, but received: " + traceStr);
         }
@@ -70,7 +70,7 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
         return new Trace(parseEvents(eventsValue, jxesMap, traceAttributes));
     }
 
-    private static List<Event> parseEvents(String eventsStr, Map<String, Object> jxesMap, Map<String, Object> traceAttributes) {
+    private List<Event> parseEvents(String eventsStr, Map<String, Object> jxesMap, Map<String, Object> traceAttributes) {
         if (!isJSONArray(eventsStr)) {
             throw new InvalidJXES("Expected a JSON array of events but received: " + eventsStr);
         }
@@ -82,7 +82,7 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
         return events;
     }
 
-    private static Event parseEvent(String eventObject, Map<String, Object> globalEventAttributes, Map<String, Object> traceAttributes) {
+    private Event parseEvent(String eventObject, Map<String, Object> globalEventAttributes, Map<String, Object> traceAttributes) {
         if (!isJSONObject(eventObject)) {
             throw new InvalidJXES("Expected an event JSON object but received: " + eventObject);
         }
@@ -110,7 +110,7 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
         return new Event(caseID, activity, timestamp, nonEssentialEventAttributes);
     }
 
-    private static Set<Attribute<?>> parseNonEssentialEventAttributes(Map<String, Object> combinedNonEssentialEventAttributes) {
+    private Set<Attribute<?>> parseNonEssentialEventAttributes(Map<String, Object> combinedNonEssentialEventAttributes) {
         if (!Collections.disjoint(combinedNonEssentialEventAttributes.keySet(),
                                   new HashSet<>(Set.of("concept:name", "date")))) {
             throw new InvalidJXES("expected non-essential attributes only, but received either concept:name or date");
@@ -124,7 +124,7 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
         return attributes;
     }
 
-    private static Map<String, Object> getGlobalEventAttributes(Map<String, Object> jxesMap) {
+    private Map<String, Object> getGlobalEventAttributes(Map<String, Object> jxesMap) {
         if (jxesMap.containsKey("global-attrs")) {
             Map<String, Map<String, Object>> globalAttributes = (Map<String, Map<String, Object>>) jxesMap.get("global-attrs");
             if (globalAttributes.containsKey("event")) {
@@ -136,7 +136,7 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
     }
 
     /** This method collects both local and global attributes of the input trace string. When  */
-    private static Map<String, Object> getTraceAttributes(Map<String, Object> jxesMap, Map<String, String> singlyParsedTrace) {
+    private Map<String, Object> getTraceAttributes(Map<String, Object> jxesMap, Map<String, String> singlyParsedTrace) {
 
         Map<String, Object> traceAttributes = new HashMap<>();
         Map<String, Map<String, Object>> globalTraceAttributes = (Map<String, Map<String, Object>>) jxesMap.get("global-attrs");
@@ -150,21 +150,21 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
         return traceAttributes;
     }
 
-    private static void setObjectFromKey(String key, Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
+    private void setObjectFromKey(String key, Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
         String value = outermostProperties.get(key);
         if (value == null)
             { return; }
         jxesMap.put(key, parseJSONObject(value));
     }
 
-    private static void setExtensions(Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
+    private void setExtensions(Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
         String value = outermostProperties.get("extensions");
         if (value == null)
             { return; }
         jxesMap.put("extensions", parseJSONArray(value));
     }
 
-    private static void setGlobalAttributes(Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
+    private void setGlobalAttributes(Map<String, String> outermostProperties, Map<String, Object> jxesMap) {
         String value = outermostProperties.get("global-attrs");
         if (value == null)
             { return; }
@@ -180,7 +180,7 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
 
     /** takes as input a JSON object string and returns a map with the object's keys as its keys. The values
      *  are the (unparsed) string values of the input JSON object. */
-    private static Map<String, String> singleIterationObjectParse(String object) {
+    private Map<String, String> singleIterationObjectParse(String object) {
         assert isJSONObject(object) : "Expected a JSON object but received " + object;
 
         Map<String, String> singlyIteratedObject = new HashMap<>();
@@ -193,70 +193,22 @@ public class JXESParsing extends JSONParsing { // TODO: make it throw errors ins
         return singlyIteratedObject;
     }
 
-    // TODO: remove the divide
-    // ___________________ THE DIVIDE ___________________
-    // TODO: refactor
-    private static Attribute<?> parseAttribute(String name, Object value) { return null; }
-    private static String maybeRemoveOuterQuotes(String caseID) { return null; }
-
-    /** Parses attributes that are not the case ID, activity, and time stamp */
-    public static Set<Attribute<?>> parseNonEssentialEventAttributes(Map<String, Object> traceGlobalAttributes,
-                                                                     Map<String, Object> eventGlobalAttributes,
-                                                                     Map<String, Object> traceAttributes,
-                                                                     Map<String, Object> eventMap) {
-        Map<String, Object> allAttributes = new HashMap<>(traceGlobalAttributes);
-        allAttributes.putAll(eventGlobalAttributes);
-        allAttributes.putAll(traceAttributes);
-        allAttributes.putAll(eventMap);
-
-        Set<Attribute<?>> attributes = new HashSet<>();
-        for (Map.Entry<String, Object> keyValuePair : allAttributes.entrySet()) {
-            String name = keyValuePair.getKey();
-            if (isEssentialAttributeKey(name)) { continue; }
-            Attribute<?> attr = parseAttribute(name, keyValuePair.getValue());
-            attributes.add(attr);
-        }
-        return attributes;
+    @Override
+    Object parseValue(String item) {
+        if (isJSONObject(item)) { return parseJSONObject(item); }
+        if (isJSONArray(item)) { return parseJSONArray(item); }
+        if (isNestedAttribute(item)) { return parseNestedAttribute(item); }
+        else { return parseSimpleType(item); }
     }
 
-    public static Event getEvent(Map<String, Object> traceGlobalAttrs, Map<String, Object> eventGlobalAttrs, Map<String, Object> traceAttributes, Map<String, Object> eventMap) {
-        assert eventMap.containsKey("\"date\"") : "No \"date\" (timestamp) in the given event. Timestamp must be in event - and not trace or global attributes; events are atomic and therefore must have distinct timestamps";
-        assert eventMap.containsKey("\"concept:name\"") : "No \"concept:name\" (activity) in the given event. Activity must be in event - and not in trace or global attributes; this would be ambiguous since caseID is also called \"concept:name\"";
-
-        String caseID = maybeRemoveOuterQuotes(getCaseID(traceGlobalAttrs, traceAttributes));
-        String activity = maybeRemoveOuterQuotes((String) eventMap.get("\"concept:name\""));
-        String timestamp = maybeRemoveOuterQuotes((String) eventMap.get("\"date\""));
-        Set<Attribute<?>> attributes = parseNonEssentialEventAttributes(traceGlobalAttrs, eventGlobalAttrs, traceAttributes, eventMap); // TODO: can be optimized; combine global and trace attributes in the loop, rather than in this method.
-        return new Event(caseID, activity, timestamp, attributes);
+    private Object parseNestedAttribute(String item) {
+        return null;
     }
 
-    private static boolean isEssentialAttributeKey(String key) {
-        return key.equals("\"date\"") || key.equals("\"concept:name\"");
+    private boolean isNestedAttribute(String item) {
+        if (!isJSONObject(item))
+            { return false; }
+        Map<String, Object> maybeNestedAttribute = parseJSONObject(item);
+        return maybeNestedAttribute.keySet().equals(Set.of("value", "nested-attrs"));
     }
-
-    public static String getCaseID(Map<String, Object> globalAttributes, Map<String, Object> traceAttributes) {
-        String caseID;
-        String identifier = "\"concept:name\"";
-        // fetch caseID from trace attributes before global attributes.
-        caseID = (String) traceAttributes.get(identifier);
-        if (caseID == null) { caseID = (String) globalAttributes.get(identifier); }
-        assert caseID != null : "no caseID found";
-
-        return caseID;
-    }
-
-    public static Pair<Map<String, Object>, Map<String, Object>> getTraceAndEventGlobalAttributes(Map<String, Object> jsonMap) {
-        Map<String, HashMap<String, Object>> globalAttributes
-                = (HashMap<String, HashMap<String, Object>>) jsonMap.get("\"global-attrs\"");
-        if (globalAttributes == null) { return new Pair<>(new HashMap<>(), new HashMap<>()); }
-
-        Map<String, Object> traceAttributes = globalAttributes.get("\"trace\"");
-        if (traceAttributes == null) { traceAttributes = new HashMap<>(); }
-
-        Map<String, Object> eventAttributes = globalAttributes.get("\"event\"");
-        if (eventAttributes == null) { eventAttributes = new HashMap<>(); }
-
-        return new Pair<>(traceAttributes, eventAttributes);
-    }
-
 }

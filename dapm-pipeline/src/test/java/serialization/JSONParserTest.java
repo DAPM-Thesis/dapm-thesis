@@ -1,6 +1,6 @@
 package serialization;
 
-import communication.message.serialization.parsing.JSONParsing;
+import communication.message.serialization.parsing.JSONParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -13,11 +13,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class JSONParsingTest {
+public class JSONParserTest {
 
     public Object getJSONMap(String path) throws IOException {
         String contents = Files.readString(Paths.get(path));
-        return JSONParsing.parse(contents);
+        return (new JSONParser()).parse(contents);
     }
 
     @Test

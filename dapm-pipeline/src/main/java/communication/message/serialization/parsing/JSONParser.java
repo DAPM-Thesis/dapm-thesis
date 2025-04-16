@@ -4,15 +4,15 @@ import utils.Pair;
 
 import java.util.*;
 
-public class JSONParsing {
-    public static Object parse(String json) {
+public class JSONParser {
+    public Object parse(String json) {
         if (isJSONArray(json)) { return parseJSONArray(json); }
         else if (isJSONObject(json)) { return parseJSONObject(json); }
 
         throw new InvalidJSON("A JSON string must either start with an array or an object.");
     }
 
-    static List<Object> parseJSONArray(String array) {
+    List<Object> parseJSONArray(String array) {
         assert isJSONArray(array) : "Expected an array but received: " + array;
 
         List<String> stringItems = commaSplitArray(array);
@@ -22,13 +22,13 @@ public class JSONParsing {
         return items;
     }
 
-    private static Object parseValue(String item) {
+    Object parseValue(String item) {
         if (isJSONObject(item)) { return parseJSONObject(item); }
         if (isJSONArray(item)) { return parseJSONArray(item); }
         else { return parseSimpleType(item); }
     }
 
-    static Map<String, Object> parseJSONObject(String object) {
+    Map<String, Object> parseJSONObject(String object) {
         assert isJSONObject(object): "Expected an object but received: " + object;
 
         List<String> nameValuePairs = commaSplitObject(object);
@@ -45,7 +45,7 @@ public class JSONParsing {
     }
 
     /** Strips away all leading and trailing whitespace characters. */
-    private static Object parseSimpleType(String item) {
+    Object parseSimpleType(String item) {
         item = item.strip();
         assert !item.isEmpty() : "string may not be empty [but is allowed to contain empty quotation marks, i.e. '\"\"']";
         if (isString(item)) { return unwrap(item, '"', '"'); }
@@ -59,7 +59,7 @@ public class JSONParsing {
 
     /** A string is wrapped iff the first non-whitespace character is start and the last non-whitespace character is
      *  end. */
-    public static boolean isWrapped(String str, char start, char end) {
+    boolean isWrapped(String str, char start, char end) {
         int first = findNonWhitespaceIndex(str, 0, 1, start);
         if (first == -1) return false; // Start wrapper not found
 
@@ -67,7 +67,7 @@ public class JSONParsing {
         return last != -1; // End wrapper found
     }
 
-    public static String unwrap(String str, char startWrapper, int endWrapper) {
+    String unwrap(String str, char startWrapper, int endWrapper) {
         assert str.length() >= 2;
         int startIndex = str.indexOf(startWrapper);
         int endIndex = str.lastIndexOf(endWrapper);
@@ -75,20 +75,20 @@ public class JSONParsing {
         return str.substring(startIndex+1, endIndex);
     }
 
-    static boolean isJSONObject(String str) {
+    boolean isJSONObject(String str) {
         return isWrapped(str, '{', '}');
     }
 
-    static boolean isJSONArray(String str) {
+    boolean isJSONArray(String str) {
         return isWrapped(str, '[', ']');
     }
 
-    static List<String> commaSplitArray(String array) {
+    List<String> commaSplitArray(String array) {
         assert isJSONArray(array) : "Expected an array but received: " + array;
         return commaSplit(unwrap(array, '[', ']'));
     }
 
-    static List<String> commaSplitObject(String object) {
+    List<String> commaSplitObject(String object) {
         assert isJSONObject(object) : "Expected an object but received: " + object;
         return commaSplit(unwrap(object, '{', '}'));
     }
@@ -96,7 +96,7 @@ public class JSONParsing {
     /** @param contents An unwrapped array/container.
      *  @return The strings between outermost commas of the contents input. The strings will be stripped of whitespace, \n, \t,
      *  and \r in both ends. Outermost commas are commas that are not inside a string, object, or array inside the current object/array. */
-    private static List<String> commaSplit(String contents) {
+    private List<String> commaSplit(String contents) {
         List<String> commaSeparatedStrings = new ArrayList<>();
         if (contents.isEmpty()) { return commaSeparatedStrings; }
         // since contents can be nested [they can contain lists/containers/quotes], we must only split at the current level
@@ -128,7 +128,7 @@ public class JSONParsing {
         return commaSeparatedStrings;
     }
 
-    private static boolean shouldFlipQuote(String str, int quoteIndex) {
+    private boolean shouldFlipQuote(String str, int quoteIndex) {
         // the quotes should only be flipped if there are no quotes in the given string, or if the quotes in the given
         // string are closed. Both cases only happen if the number of backslashes in the string is even.
         int backslashCount = 0;
@@ -136,7 +136,7 @@ public class JSONParsing {
         return backslashCount % 2 == 0;
     }
 
-    static Pair<String, String> splitAndStripKeyAndValue(String pair) {
+    Pair<String, String> splitAndStripKeyAndValue(String pair) {
         /* the pair is always of the form key:pair, where the key is a quotation-wrapped character sequence which may
          * contain its own ':' (colon). */
         // find the closing quotation mark
@@ -158,7 +158,7 @@ public class JSONParsing {
      *  @return returns the index in str that matches the first occurrence of target. If the search finds a
      *          non-whitespace character from start with step size 'step' before finding target, or if no target char
      *          is found, then it returns -1. */
-    private static int findNonWhitespaceIndex(String str, int start, int step, char target) {
+    private int findNonWhitespaceIndex(String str, int start, int step, char target) {
         for (int i = start; i >= 0 && i < str.length(); i += step) {
             char ch = str.charAt(i);
             if (ch == target) return i;
@@ -167,11 +167,11 @@ public class JSONParsing {
         return -1;
     }
 
-    private static boolean isString(String value) {
-        return JXESParsing.isWrapped(value, '"', '"');
+    boolean isString(String value) {
+        return isWrapped(value, '"', '"');
     }
 
-    private static boolean isInteger(String value) {
+    private boolean isInteger(String value) {
         try {
             Integer.parseInt(value);
             return true;
@@ -180,7 +180,7 @@ public class JSONParsing {
         }
     }
 
-    private static boolean isDouble(String value) {
+    private boolean isDouble(String value) {
         try {
             Double.parseDouble(value);
             return true;
@@ -189,100 +189,11 @@ public class JSONParsing {
         }
     }
 
-    private static boolean isBoolean(String value) {
+    private boolean isBoolean(String value) {
         return value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false");
     }
 
-    private static boolean isNull(String value) {
+    private boolean isNull(String value) {
         return value.equals("null");
     }
-
-    // TODO: delete the divide [peace through extinction <3]
-    // ____________________________ THE DIVIDE ___________________________________-
-
-    /*
-    public static String maybeRemoveOuterQuotes(String str) { // TODO: remove this - and actually analyze when removing outer quotes is necessary or not; this is too lazy+unsafe
-        if (JXESParsing.isWrapped(str, '\"', '\"')) {
-            return JXESParsing.unwrap(str, '\"', '\"');
-        }
-        return str;
-    }
-
-    protected static Attribute<?> parseAttribute(String name, Object value) {
-        name = unwrap(name, '\"', '\"');
-
-        if (value instanceof Map<?, ?>) {
-            if (!isNestedAttribute((Map<String, Object>) value)) {
-                // TODO: remove this (and potentially move it to JXESParsing); it is not conceptually part of JSONParsing
-                // TODO: potentially by overriding this method in JXESParsing
-                throw new IllegalStateException("I don't think we should ever have this?");
-            }
-            Map<String, Object> map = (Map<String, Object>) value;
-            Object nestedAttrValue = parseAttrValue(map.get("\"value\""));
-            Map<String, Attribute<?>> nestedAttrs = getNestedAttributes((Map<String, Object>) map.get("\"nested-attrs\""));
-            return new Attribute<>(name, nestedAttrValue, nestedAttrs);
-        } else if (value instanceof List<?>){
-            List<Attribute<?>> listItems = new ArrayList<>();
-            for (Object item  : (List<Object>) value) {
-            }
-            return new Attribute<>(name, listItems);
-        }else {
-            return new Attribute<>(name, parseAttrValue(value));
-        }
-    }
-
-    private static Object parseAttrValue(Object value) {
-        switch (value) {
-            case String valueStr -> {
-                return getSimpleAttributeValue(valueStr);
-            }
-            case Map<?, ?> map -> {
-                Map<String, Object> container = (Map<String, Object>) value;
-                return getNestedAttributes(container);
-            }
-            case List<?> list -> {
-                List<Object> resultingList = new ArrayList<>();
-                for (Object elem : list) {
-                    resultingList.add(parseAttrValue(elem));
-                }
-                return resultingList;
-            }
-            case null, default -> throw new IllegalStateException("Unsupported type: " + value);
-        }
-    }
-
-    private static Map<String, Attribute<?>> getNestedAttributes(Map<String, Object> container) {
-        Map<String, Attribute<?>> nestedAttributes = new HashMap<>();
-        for (Map.Entry<String, Object> entry : container.entrySet()) {
-            String name = entry.getKey();
-            Object value = entry.getValue();
-            nestedAttributes.put(name, parseAttribute(name, value));
-        }
-        return nestedAttributes;
-    }
-
-    private static boolean isNestedAttribute(Map<String, Object> map) {
-        // "value" and "nested-attrs" are keywords reserved for nested attributes.
-        return map.containsKey("\"value\"") && map.containsKey("\"nested-attrs\"");
-    }
-
-    public static Pair<Map<String, Object>, Map<String, Object>> getTraceAndEventGlobalAttributes(Map<String, Object> jsonMap) {
-        Map<String, HashMap<String, Object>> globalAttributes
-                = (HashMap<String, HashMap<String, Object>>) jsonMap.get("\"global-attrs\"");
-        if (globalAttributes == null) { return new Pair<>(new HashMap<>(), new HashMap<>()); }
-
-        Map<String, Object> traceAttributes = globalAttributes.get("\"trace\"");
-        if (traceAttributes == null) { traceAttributes = new HashMap<>(); }
-
-        Map<String, Object> eventAttributes = globalAttributes.get("\"event\"");
-        if (eventAttributes == null) { eventAttributes = new HashMap<>(); }
-
-        return new Pair<>(traceAttributes, eventAttributes);
-    }
-
-    private static Object getStringValue(String valueStr) {
-        return valueStr.strip();
-    }
-    */
-
 }

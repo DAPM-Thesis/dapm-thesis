@@ -1,11 +1,10 @@
 package communication.message.serialization.deserialization.impl;
 
-import communication.message.serialization.parsing.JXESParsing;
+import communication.message.impl.Trace;
+import communication.message.serialization.parsing.JXESParser;
 import communication.message.Message;
 import communication.message.serialization.deserialization.DeserializationStrategy;
-import utils.Pair;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,28 +17,24 @@ public class EventDeserializationStrategy implements DeserializationStrategy {
      *  returned event's attributes. */
     @Override
     public Message deserialize(String payload) {
-        Map<String, Object> jsonMap = JXESParsing.parse(payload);
+        Map<String, Object> jxesMap = (new JXESParser()).parse(payload);
+        printUnusedAttributes(jxesMap);
+        assert jxesMap.containsKey("traces") : "Incorrect payload format: an event must have the \"traces\" key set";
 
-        // since we assume only a single event can be deserialized at a time, all global attributes can be combined
-        // and so can the trace "attrs" key:value pairs.
-        Pair<Map<String, Object>, Map<String, Object>> traceAndEventGlobalAttributes = JXESParsing.getTraceAndEventGlobalAttributes(jsonMap);
-        Map<String, Object> traceGlobalAttrs = traceAndEventGlobalAttributes.getFirst();
-        Map<String, Object> eventGlobalAttrs = traceAndEventGlobalAttributes.getSecond();
+        List<Trace> traces = (List<Trace>) jxesMap.get("traces");
+        assert traces.size() == 1 : "An event is assumed to have exactly one trace";
 
-        assert jsonMap.containsKey("\"traces\"") : "incorrect payload format.";
-        List<Map<String, Object>> traces = (List<Map<String, Object>>) jsonMap.get("\"traces\"");
-        assert traces != null && traces.size() == 1 : "event deserialization assumes exactly 1 trace";
+        Trace trace = traces.getFirst();
+        assert trace.size() == 1 : "Exactly 1 event was expected, but the trace contained: " + trace.size();
+        return trace.iterator().next();
+    }
 
-        // get current trace and its attributes
-        Map<String, Object> traceMap = traces.getFirst();
-        Map<String, Object> traceAttributes = (traceMap.containsKey("\"attrs\"")) ? (Map<String, Object>) traceMap.get("\"attrs\"")
-                : new HashMap<>();
-        assert traceMap.containsKey("\"events\"") && ((List<Map<String, Object>>)traceMap.get("\"events\"")).size() == 1 : "trace must contain exactly 1 event.";
-        List<Map<String, Object>> events = ((List<Map<String, Object>>) traceMap.get("\"events\""));
-        assert events != null && events.size() == 1: "Assumes there is only 1 event!";
-        Map<String, Object> eventMap = events.getFirst();
-
-        return JXESParsing.getEvent(traceGlobalAttrs, eventGlobalAttrs, traceAttributes, eventMap);
+    private void printUnusedAttributes(Map<String, Object> jxesMap) {
+        for (String key : List.of("log-properties", "log-attrs", "extensions", "classifiers")) {
+            if (jxesMap.containsKey(key)) {
+                System.out.println('\"' + key + "\" JXES key not currently used for event deserialization.");
+            }
+        }
     }
 
 }

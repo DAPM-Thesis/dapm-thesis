@@ -43,7 +43,7 @@ class MessageDeserializerTest {
     @Test
     void petriNetTest() throws IOException {
         Message output = getMessage(PetriNet.class,
-                "src/test/resources/serialization/petrinet/kindler_article.xml");
+                "src/test/resources/serialization/message/petrinet/kindler_article.xml");
 
         PetriNet expected = new PetriNet();
         Place p1 = new Place("p1", 3);
@@ -68,7 +68,7 @@ class MessageDeserializerTest {
 
         MessageSerializer serializer = new MessageSerializer();
         String JXES = serializer.visit(event);
-        Event event_2 = (Event) MessageFactory.deserialize(JXES);
+        Message event_2 = MessageFactory.deserialize(JXES);
 
         assertEquals(event, event_2);
 
@@ -77,7 +77,7 @@ class MessageDeserializerTest {
     @Test
     void articleEventTest() throws IOException {
         Message output = getMessage(Event.class,
-                "src/test/resources/serialization/event/example.json");
+                "src/test/resources/serialization/message/event/example.json");
 
         Set<Attribute<?>> nonEssentialAttributes = new HashSet<>();
         // global attributes
@@ -104,6 +104,7 @@ class MessageDeserializerTest {
         Map<String, Object> nestedAttributeValue = new HashMap<>();
         nestedAttributeValue.put("value", 1);
         nestedAttributeValue.put("nested-attrs", new HashMap<>());
+        nonEssentialAttributes.add(new Attribute<>("nested-attribute", nestedAttributeValue));
 
         nonEssentialAttributes.add(new Attribute<>("org:resource", "Resource A"));
 
@@ -113,18 +114,22 @@ class MessageDeserializerTest {
 
     @Test
     void eventCommaActivityNameTest() throws IOException {
-        String JXESPathString = "src/test/resources/event/jxes_event_comma_activity_name.json";
+        String JXESPathString = "src/test/resources/serialization/message/event/comma_activity_name.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         Event e = new Event("","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
+
+        // TODO: update (expected and output)
     }
 
     @Test
     void eventQuotationActivityNameTest() throws IOException {
-        String JXESPathString = "src/test/resources/event/jxes_event_quotation_activity_name.json";
+        String JXESPathString = "src/test/resources/serialization/message/event/quotation_activity_name.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         Event e = new Event("random instance to call getDeserializationStrategy() on the above JXES.","","",new HashSet<>());
         e.getDeserializationStrategy().deserialize(JXESContents);
+
+        // TODO: update (expected and output)
     }
 
     @Test
@@ -169,7 +174,7 @@ class MessageDeserializerTest {
         Trace modelTrace = new Trace(new ArrayList<>(List.of(em1, em2)));
         Alignment expected = new Alignment(logTrace, modelTrace);
 
-        String JXESPathString = "src/test/resources/alignment/alignment.json";
+        String JXESPathString = "src/test/resources/serialization/message/alignment/alignment.json";
         String JXESContents = Files.readString(Paths.get(JXESPathString));
         String serialization = Alignment.class.getName() + ":" + JXESContents;
         Message output = MessageFactory.deserialize(serialization);

@@ -21,7 +21,7 @@ public class MessageSerializer implements MessageVisitor<String> {
 
     @Override
     public String visit(Event event) {
-        this.serialization = "event:" + "{\"traces\": [{" +
+        this.serialization = event.getName() + ":" + "{\"traces\": [{" +
                                             "\"attrs\": {\"concept:name\": \"" + event.getCaseID() + "\"}, " +
                                             "\"events\": [" + toJXES(event) + "]}]}";
         return getSerialization();

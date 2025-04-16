@@ -14,7 +14,7 @@ public class Alignment extends Message {
         super(new AlignmentDeserializationStrategy());
         assert logTrace != null && modelTrace != null;
         assert !logTrace.isEmpty() && !modelTrace.isEmpty();
-        assert logTrace.length() == modelTrace.length();
+        assert logTrace.size() == modelTrace.size();
 
         this.logTrace = logTrace;
         this.modelTrace = modelTrace;

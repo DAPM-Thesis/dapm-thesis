@@ -9,6 +9,7 @@ import communication.message.serialization.deserialization.impl.TraceDeserializa
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class Trace extends Message implements Iterable<Event> {
 
@@ -41,19 +42,27 @@ public class Trace extends Message implements Iterable<Event> {
         return trace.add(event);
     }
 
-    public int length() { return trace.size(); }
+    public int size() { return trace.size(); }
 
     public boolean isEmpty() { return trace.isEmpty(); }
 
     @Override
-    public Iterator<Event> iterator() {
-        return trace.iterator();
+    public String toString() {
+        return "T[" + caseID + ':' + trace.toString() + "]";
     }
+
+    @Override
+    public Iterator<Event> iterator() { return trace.iterator(); }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Trace otherTrace)) return false;
         return trace.equals(otherTrace.trace);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(caseID, trace);
     }
 }
