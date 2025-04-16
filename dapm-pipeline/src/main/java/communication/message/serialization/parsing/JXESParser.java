@@ -8,8 +8,9 @@ import utils.Pair;
 import java.util.*;
 
 public class JXESParser extends JSONParser {
+    // Note that nested attributed are not handled any differently than any other JSON object in this implementation.
 
-    /** returns a JXES map. It must contain the */
+    /** returns a JXES map. Its key "traces" contains a list of (Message type) Trace's. */
     @Override
     public Map<String, Object> parse(String jxes) {
         if (!(isJSONObject(jxes))) {
@@ -194,22 +195,4 @@ public class JXESParser extends JSONParser {
         return singlyIteratedObject;
     }
 
-    @Override
-    Object parseValue(String item) {
-        if (isJSONObject(item)) { return parseJSONObject(item); }
-        if (isJSONArray(item)) { return parseJSONArray(item); }
-        if (isNestedAttribute(item)) { return parseNestedAttribute(item); }
-        else { return parseSimpleType(item); }
-    }
-
-    private Object parseNestedAttribute(String item) {
-        return null;
-    }
-
-    private boolean isNestedAttribute(String item) {
-        if (!isJSONObject(item))
-            { return false; }
-        Map<String, Object> maybeNestedAttribute = parseJSONObject(item);
-        return maybeNestedAttribute.keySet().equals(Set.of("value", "nested-attrs"));
-    }
 }

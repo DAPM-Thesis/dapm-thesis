@@ -55,23 +55,13 @@ public class JSONParser {
             throw new InvalidJSON("string may not be empty [but is allowed to contain empty quotation marks, i.e. '\"\"']");
         }
         if (isString(item))
-            { return unescaped(unwrap(item, '"', '"')); }
+            { return toString(item); }
         else if (isBoolean(item)) {return Boolean.parseBoolean(item); }
         else if (isInteger(item)) { return Integer.parseInt(item); }
         else if (isDouble(item)) { return Double.parseDouble(item); }
         else if (isNull(item)) { return null; }
 
         throw new InvalidJSON("Unsupported item type: " + item);
-    }
-
-    private Object unescaped(String stringValue) {
-        return stringValue.replace("\\\"", "\"")
-                .replace("\\\\", "\\")
-                .replace("\\n", "\n")
-                .replace("\\t", "\t")
-                .replace("\\r", "\r")
-                .replace("\\b", "\b")
-                .replace("\\f", "\f");
     }
 
     /** A string is wrapped iff the first non-whitespace character is start and the last non-whitespace character is
@@ -88,7 +78,7 @@ public class JSONParser {
         assert str.length() >= 2 : "unwrap can only be called when it can actually unwrap the string. Received" + str;
         int startIndex = str.indexOf(startWrapper);
         int endIndex = str.lastIndexOf(endWrapper);
-        assert startIndex != -1 && endIndex != -1 : "wrapper missing for unwrap; unwrap should only be called when it casn actually unwrap the string. Received "+str;
+        assert startIndex != -1 && endIndex != -1 : "wrapper missing for unwrap; unwrap should only be called when it can actually unwrap the string. Received "+str;
         return str.substring(startIndex+1, endIndex);
     }
 
@@ -212,5 +202,15 @@ public class JSONParser {
 
     private boolean isNull(String value) {
         return value.equals("null");
+    }
+
+    private Object toString(String item) {
+        return unwrap(item, '"', '"').replace("\\\"", "\"")
+                .replace("\\\\", "\\")
+                .replace("\\n", "\n")
+                .replace("\\t", "\t")
+                .replace("\\r", "\r")
+                .replace("\\b", "\b")
+                .replace("\\f", "\f");
     }
 }
