@@ -15,23 +15,18 @@ import java.util.Map;
 public class PipelineExecutionService {
     private final HTTPClient webClient;
 
-    private final Map<String, String> organizations = new HashMap<>();
-
     @Autowired
     public PipelineExecutionService(HTTPClient webClient) {
-        // Organizations are hard-coded
-        organizations.put("orgA", "http://localhost:8082/");
-        organizations.put("orgB", "http://localhost:8083/");
         this.webClient = webClient;
     }
 
     public void start(Pipeline pipeline) {
         if(pipeline.getSources().isEmpty()) throw new IllegalArgumentException("No sources found in pipeline");
-        for(ProcessingElementReference pe : pipeline.getSources()) {
+        for(Map.Entry<String, ProcessingElementReference> entry : pipeline.getSources().entrySet()) {
             try {
-                String url = "/pipelineBuilder/start";
+                String url = "/pipelineBuilder/start/instance/" + entry.getKey();
 
-                webClient.post(pe.organizationHostURL() + url);
+                webClient.post(entry.getValue().organizationHostURL() + url);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
