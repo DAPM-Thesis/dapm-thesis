@@ -5,6 +5,8 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.Properties;
 import java.util.UUID;
@@ -27,7 +29,7 @@ public class KafkaConfiguration {
         return props;
     }
 
-    public static Properties getConsumerProperties(String brokerURL, String topic) {
+    public static Properties getConsumerProperties(String brokerURL) {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerURL);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "Consumer-" + UUID.randomUUID());

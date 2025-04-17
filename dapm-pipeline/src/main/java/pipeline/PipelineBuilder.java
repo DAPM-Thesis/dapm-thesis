@@ -78,7 +78,7 @@ public class PipelineBuilder {
                 }
 
                 if(pe.processingElementType() == ProcessingElementType.OPERATOR) {
-                    Set<String> operatorInstanceMetaDataIDS = new HashSet<>();
+                    List<String> operatorInstanceMetaDataIDS = new ArrayList<>();
                     List<ProcessingElementReference> parents = dag.getNodes().stream()
                             .filter(parent -> dag.getNeighbors(parent).contains(pe))
                             .toList();
@@ -107,7 +107,7 @@ public class PipelineBuilder {
                 }
 
                 if(pe.processingElementType() == ProcessingElementType.SINK) {
-                    Set<String> sinkInstanceMetaDataIDS = new HashSet<>();
+                    List<String> sinkInstanceMetaDataIDS = new ArrayList<>();
                     List<ProcessingElementReference> parents = dag.getNodes().stream()
                             .filter(parent -> dag.getNeighbors(parent).contains(pe))
                             .toList();
@@ -214,8 +214,7 @@ public class PipelineBuilder {
                     encodedTemplateID, encodedMetaIds
             );
 
-            String response = webClient.post(hostURL + url);
-            objectMapper.readValue(response, PEInstanceResponse.class);
+            webClient.post(hostURL + url);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -250,8 +249,7 @@ public class PipelineBuilder {
                     encodedTemplateID, encodedMetaIds
             );
 
-            String response = webClient.post(hostURL + url);
-            objectMapper.readValue(response, PEInstanceResponse.class);
+            webClient.post(hostURL + url);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

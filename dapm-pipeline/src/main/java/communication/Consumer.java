@@ -23,7 +23,7 @@ public class Consumer {
     private final String brokerURL;
 
     public Consumer(Subscriber<Message> subscriber, String brokerURL, String topic) {
-        Properties props = KafkaConfiguration.getConsumerProperties(brokerURL, topic);
+        Properties props = KafkaConfiguration.getConsumerProperties(brokerURL);
         this.kafkaConsumer = new KafkaConsumer<>(props);
         this.subscriber = subscriber;
         this.topic = topic;
