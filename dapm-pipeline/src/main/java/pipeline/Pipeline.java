@@ -17,8 +17,19 @@ public class Pipeline {
         this.organizationOwnerID = organizationOwnerID;
     }
 
-    public Map<String, ProcessingElementReference> getSources() {return sources;}
-    public String getOrganizationOwnerID() {return organizationOwnerID;}
-    public Set<ProcessingElementReference> getProcessingElements() { return processingElements; }
-    public Map<ProcessingElementReference, ProcessingElementReference> getConnections() { return connections; }
+    public Map<String, ProcessingElementReference> getSources() {
+        return sources;
+    }
+
+    public String getOrganizationOwnerID() {
+        return organizationOwnerID;
+    }
+
+    public Set<ProcessingElementReference> getProcessingElements() {
+        return processingElements;
+    }
+
+    public Map<ProcessingElementReference, ProcessingElementReference> getConnections() {
+        return connections;
+    }
 }

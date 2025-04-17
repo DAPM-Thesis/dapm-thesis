@@ -21,8 +21,8 @@ public class PipelineExecutionService {
     }
 
     public void start(Pipeline pipeline) {
-        if(pipeline.getSources().isEmpty()) throw new IllegalArgumentException("No sources found in pipeline");
-        for(Map.Entry<String, ProcessingElementReference> entry : pipeline.getSources().entrySet()) {
+        if (pipeline.getSources().isEmpty()) throw new IllegalArgumentException("No sources found in pipeline");
+        for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getSources().entrySet()) {
             try {
                 String url = "/pipelineBuilder/start/instance/" + entry.getKey();
 
