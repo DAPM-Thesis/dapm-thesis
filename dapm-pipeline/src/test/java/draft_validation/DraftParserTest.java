@@ -54,8 +54,8 @@ public class DraftParserTest {
 
         Set<MetadataProcessingElement> expectedElements = Set.of(source, operator, sink);
 
-        MetadataConsumer operatorPort1 = new MetadataConsumer(operator, 1);
-        MetadataConsumer sinkPort1 = new MetadataConsumer(sink, 1);
+        MetadataSubscriber operatorPort1 = new MetadataSubscriber(operator, 1);
+        MetadataSubscriber sinkPort1 = new MetadataSubscriber(sink, 1);
         MetadataChannel c1 = new MetadataChannel(source, operatorPort1);
         MetadataChannel c2 = new MetadataChannel(operator, sinkPort1);
         Set<MetadataChannel> expectedChannels = Set.of(c1, c2);
@@ -83,34 +83,32 @@ public class DraftParserTest {
     }
 
     @Test
-    public void duplicateInvariance() {
+    public void duplicate() {
         // It should not matter whether a channel or element exists twice [with same instanceID] in the given json
         String outputPath = "src/test/resources/draft_validation/parser/duplicate_invariance.json";
-        PipelineDraft output = getPipelineDraft(outputPath);
-        PipelineDraft expected = getSimpleValid();
-        assertEquals(output, expected);
+        assertThrows(RuntimeException.class, () -> getPipelineDraft(outputPath));
     }
 
     @Test
     public void empty() {
         String path = "src/test/resources/draft_validation/parser/empty.json";
-        assertThrows(InvalidDraft.class, () -> {
-            PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        assertThrows(RuntimeException.class, () -> {
+            DraftParserTest.getPipelineDraft(path);
         });
     }
 
     @Test
     public void singleElement() {
         String path = "src/test/resources/draft_validation/parser/single_element.json";
-        assertThrows(InvalidDraft.class, () -> {
-            PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        assertThrows(RuntimeException.class, () -> {
+            DraftParserTest.getPipelineDraft(path);
         });
     }
 
     @Test
     public void noChannels() {
         String path = "src/test/resources/draft_validation/parser/no_channels.json";
-        assertThrows(InvalidDraft.class, () -> {
+        assertThrows(RuntimeException.class, () -> {
             PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         });
     }

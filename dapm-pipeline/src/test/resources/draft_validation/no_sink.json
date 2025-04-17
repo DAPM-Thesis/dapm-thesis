@@ -1,14 +1,17 @@
 {
   "processing elements": [
-    { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
-    { "orgID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceID": 1 }
+    { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceNumber": 1 }
   ],
   "channels": [
-    [
-      { "orgID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceID": 1 },
-      [
-        [{ "orgID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceID": 1 }, 1]
+    {
+      "publisher": { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+      "subscribers": [
+        {
+          "processing element": { "organizationID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceNumber": 1 },
+          "portNumber": 1
+        }
       ]
-    ]
+    }
   ]
 }

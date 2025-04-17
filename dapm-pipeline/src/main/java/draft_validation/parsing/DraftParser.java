@@ -4,114 +4,92 @@ import communication.message.Message;
 import communication.message.MessageTypeRegistry;
 import communication.message.serialization.parsing.JSONParser;
 import draft_validation.MetadataChannel;
-import draft_validation.MetadataConsumer;
+import draft_validation.MetadataSubscriber;
 import draft_validation.MetadataProcessingElement;
 import draft_validation.PipelineDraft;
-
 import java.util.*;
 
 public class DraftParser implements Parser<PipelineDraft> {
 
     @Override
-    public PipelineDraft deserialize(String str) throws InvalidDraft {
-        Map<String, Object> jsonMap = (Map<String, Object>) (new JSONParser()).parse(str);
-        if (!(jsonMap.containsKey("processing elements") && jsonMap.containsKey("channels")))
-            { throw new InvalidDraft("\"processing elements\" and/or \"channels\" keys missing from draft"); }
+    public PipelineDraft deserialize(String json) {
+        // The JSON schema validator below will take care of throwing errors if the json is not correctly formatted
+        // according to the pipeline_draft_json_schema.json. We can therefore omit throwing those errors afterwards.
+        JsonSchemaValidator.validatePipelineDraft(json);
 
-        // extract processing elements
-        List<Map<String, Object>> elements = (List<Map<String, Object>>) jsonMap.get("processing elements");
-        if (elements.size() < 2)
-            { throw new InvalidDraft("A minimal pipeline contains 2 elements: a source and a sink. " + elements.size() + " provided in draft."); }
+        Map<String, Object> jsonMap = (Map<String, Object>) (new JSONParser()).parse(json);
 
-        Set<MetadataProcessingElement> processingElements = new HashSet<>();
-        for (Map<String, Object> elementMap : elements) {
-            processingElements.add(getMetaDataProcessingElement(elementMap));
-        }
 
-        // extract channels
-        List<List<Object>> rawChannels = (List<List<Object>>) jsonMap.get("channels");
+        List<Map<String, Object>> rawElements = (List<Map<String, Object>>) jsonMap.get("processing elements");
+        Set<MetadataProcessingElement> elements = getMetaDataProcessingElements(rawElements);
 
-        if (rawChannels.isEmpty())
-            { throw new InvalidDraft("A minimal pipeline contains 1 channel (between a source and a sink). No channels founds."); }
+        List<Map<String, Object>> rawChannels = (List<Map<String, Object>>) jsonMap.get("channels");
+        Set<MetadataChannel> channels = getMetaDataChannels(rawChannels);
 
+        return new PipelineDraft(elements, channels);
+    }
+
+    private Set<MetadataChannel> getMetaDataChannels(List<Map<String, Object>> rawChannels) {
         Set<MetadataChannel> channels = new HashSet<>();
-        for (List<Object> producerAndConsumers : rawChannels) {
-            if (producerAndConsumers.size() != 2)
-                { throw new InvalidDraft("Invalid channel found. It should contain 1 producer and 1 list of consumers. Provided: " + producerAndConsumers); }
-
-            MetadataProcessingElement producer = getMetaDataProcessingElement((Map<String, Object>) producerAndConsumers.getFirst());
-            Set<MetadataConsumer> consumers = extractConsumers((List<List<Object>>) producerAndConsumers.get(1));
-            channels.add(new MetadataChannel(producer, consumers));
+        for (Map<String, Object> rawChannel : rawChannels) {
+            channels.add(getMetaDataChannel(rawChannel));
         }
-
-        return new PipelineDraft(processingElements, channels);
+        return channels;
     }
 
-    private Set<MetadataConsumer> extractConsumers(List<List<Object>> rawConsumers) throws InvalidDraft {
-        Set<MetadataConsumer> consumers = new HashSet<>();
-        for (List<Object> rawConsumer : rawConsumers) {
-            if (rawConsumer.size() != 2)
-                { throw new InvalidDraft("Consumer should consist of exactly 1 processing element and 1 port, but given: " + rawConsumer); }
-
-            MetadataProcessingElement element = getMetaDataProcessingElement((Map<String, Object>) rawConsumer.getFirst());
-
-            int port = (int) rawConsumer.get(1);
-            consumers.add(new MetadataConsumer(element, port));
-        }
-
-        return consumers;
+    private MetadataChannel getMetaDataChannel(Map<String, Object> rawChannel) {
+        MetadataProcessingElement publisher = getMetaDataProcessingElement((Map<String, Object>) rawChannel.get("publisher"));
+        List<Map<String, Object>> subscribersList = (List<Map<String, Object>>) rawChannel.get("subscribers");
+        Set<MetadataSubscriber> subscribers = getMetaDataSubscribers(subscribersList);
+        return new MetadataChannel(publisher, subscribers);
     }
+
+    private Set<MetadataSubscriber> getMetaDataSubscribers(List<Map<String, Object>> subscribersList) {
+        Set<MetadataSubscriber> subscribers = new HashSet<>();
+        for (Map<String, Object> rawSubscriber : subscribersList) {
+            subscribers.add(getMetaDataSubscriber(rawSubscriber));
+        }
+        return subscribers;
+    }
+
+    private MetadataSubscriber getMetaDataSubscriber(Map<String, Object> rawSubscriber) {
+        MetadataProcessingElement element = getMetaDataProcessingElement((Map<String, Object>) rawSubscriber.get("processing element"));
+        int portNumber = (int) rawSubscriber.get("portNumber");
+        return new MetadataSubscriber(element, portNumber);
+    }
+
+    private Set<MetadataProcessingElement> getMetaDataProcessingElements(List<Map<String, Object>> rawElements) {
+        Set<MetadataProcessingElement> elements = new HashSet<>();
+        for (Map<String, Object> elementMap : rawElements) {
+            elements.add(getMetaDataProcessingElement(elementMap));
+        }
+        return elements;
+    }
+
 
     private MetadataProcessingElement getMetaDataProcessingElement(Map<String, Object> elementMap) throws InvalidDraft {
-        List<String> attributeNames = List.of("orgID", "templateID", "inputs", "output", "instanceID");
-        if (!(attributeNames.stream().allMatch(elementMap::containsKey)))
-            { throw new InvalidDraft("All attributes must be present in the processing element."); }
-
-        String orgID = extractOrgID(elementMap);
-        String templateID = extractTemplateID(elementMap);
+        String orgID = (String) elementMap.get("organizationID");
+        String templateID = (String) elementMap.get("templateID");
         List<Class<? extends Message>> inputs = parseClassList((List<String>) elementMap.get("inputs"));
         Class<? extends Message> output = extractOutput(elementMap);
-        int instanceID = extractInstanceID(elementMap);
+        int instanceNumber = (int) elementMap.get("instanceNumber");
 
-        return new MetadataProcessingElement(orgID, templateID, inputs, output, instanceID);
+        return new MetadataProcessingElement(orgID, templateID, inputs, output, instanceNumber);
     }
 
-    private String extractTemplateID(Map<String, Object> elementMap) throws InvalidDraft {
-        String templateID = (String) elementMap.get("templateID");
-        if (templateID.isEmpty())
-            { throw new InvalidDraft("templateID must be present and non-empty."); }
-        return templateID;
-    }
-
-    private String extractOrgID(Map<String, Object> elementMap) throws InvalidDraft {
-        String orgID = (String) elementMap.get("orgID");
-        if (orgID.isEmpty())
-            { throw new InvalidDraft("orgID must be present and non-empty in the processing element."); }
-        return orgID;
-    }
-
-    private int extractInstanceID(Map<String, Object> elementMap) throws InvalidDraft {
-        return (int) elementMap.get("instanceID");
-    }
 
     private Class<? extends Message> extractOutput(Map<String, Object> elementMap) throws InvalidDraft {
         String outputClassString = (String) elementMap.get("output");
         if (outputClassString == null)
             { return null; }
-
-        if (MessageTypeRegistry.getMessageType(outputClassString) == null)
-            { throw new InvalidDraft("Invalid output class: " + outputClassString); }
         return MessageTypeRegistry.getMessageType(outputClassString);
     }
 
     private List<Class<? extends Message>> parseClassList(List<String> messageClassList) throws InvalidDraft {
         List<Class<? extends Message>> messageClasses = new ArrayList<>();
         for (String classString : messageClassList) {
-            if (MessageTypeRegistry.getMessageType(classString) == null)
-                { throw new  InvalidDraft("Invalid message class: " + classString); }
             messageClasses.add(MessageTypeRegistry.getMessageType(classString));
         }
-
         return messageClasses;
     }
 }

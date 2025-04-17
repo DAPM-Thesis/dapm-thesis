@@ -46,7 +46,7 @@ public class PipelineValidator {
         Map<MetadataProcessingElement, List<Class<? extends Message>>> inferredInputs = new HashMap<>();
         for (MetadataChannel channel : channels) {
             Class<? extends Message> producerOutput = channel.output();
-            for (MetadataConsumer consumer : channel.getConsumers()) {
+            for (MetadataSubscriber consumer : channel.getSubscribers()) {
                 int port = consumer.getPortNumber();
                 MetadataProcessingElement consumerElement = consumer.getElement();
                 if (!inferredInputs.containsKey(consumerElement)) {
@@ -74,7 +74,7 @@ public class PipelineValidator {
 
     private static boolean hasConsistentTypeAtPort(Set<MetadataChannel> channels) {
         for (MetadataChannel channel : channels) {
-            for (MetadataConsumer consumer : channel.getConsumers()) {
+            for (MetadataSubscriber consumer : channel.getSubscribers()) {
                 MetadataProcessingElement consumerElement = consumer.getElement();
                 int port = consumer.getPortNumber();
                 assert !consumerElement.isSource() : "Consumer must have at least one input.";
@@ -179,7 +179,7 @@ public class PipelineValidator {
     }
 
     private static Set<MetadataProcessingElement> extractConsumerElements(MetadataChannel channel) {
-        return channel.getConsumers().stream().map(MetadataConsumer::getElement).collect(Collectors.toSet());
+        return channel.getSubscribers().stream().map(MetadataSubscriber::getElement).collect(Collectors.toSet());
     }
 
     private static Map<MetadataProcessingElement, Set<MetadataProcessingElement>> getUndirectedSuccessors(Set<MetadataChannel> channels) {
@@ -202,8 +202,8 @@ public class PipelineValidator {
 
     private static Set<MetadataProcessingElement> extractConsumerElements(Collection<MetadataChannel> channels) {
         return channels.stream()
-                .flatMap(channel -> channel.getConsumers().stream())
-                .map(MetadataConsumer::getElement)
+                .flatMap(channel -> channel.getSubscribers().stream())
+                .map(MetadataSubscriber::getElement)
                 .collect(Collectors.toSet());
     }
 
@@ -218,7 +218,7 @@ public class PipelineValidator {
         Set<MetadataProcessingElement> channelElements =  new HashSet<>();
         for (MetadataChannel channel : draft.channels()) {
             channelElements.add(channel.getProducer());
-            for (MetadataConsumer consumer : channel.getConsumers()) {
+            for (MetadataSubscriber consumer : channel.getSubscribers()) {
                 channelElements.add(consumer.getElement());
             }
         }
