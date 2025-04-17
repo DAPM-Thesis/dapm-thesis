@@ -7,18 +7,18 @@ import communication.API.PEInstanceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pipeline.processingelement.ProcessingElementReference;
-import pipeline.processingelement.ProcessingElementType;
 import utils.DAG;
 import utils.JsonUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static pipeline.processingelement.ProcessingElementType.*;
+
 // TODO: should be able to input a Json assembly file and set up the connections
 // TODO: one PipelineBuilder per org - figure out storing pipelines?
 @Component
 public class PipelineBuilder {
-
     private Pipeline currentPipeline;
     private final HTTPClient webClient;
     private final ObjectMapper objectMapper;
@@ -55,77 +55,26 @@ public class PipelineBuilder {
     }
 
     public PipelineBuilder configure() {
-        // A PE is configuredPublisher if producer has been set for source and operators
-        Map<ProcessingElementReference, PEInstanceResponse> configuredPublisher = new HashMap<>();
+        // A PE is configuredPublishers if producer has been set for source and operators
+        Map<ProcessingElementReference, PEInstanceResponse> configuredPublishers = new HashMap<>();
         Set<ProcessingElementReference> currentLevel = findSources();
 
         while (!currentLevel.isEmpty()) {
             Set<ProcessingElementReference> nextLevel = new HashSet<>();
             for (ProcessingElementReference pe : currentLevel) {
-                if (configuredPublisher.containsKey(pe)) continue;
-                // Check if all upstream connections are configuredPublisher yet
-                if (!allInputsReady(configuredPublisher, pe)) {
+                if (configuredPublishers.containsKey(pe)) continue;
+                // Check if all upstream connections are configuredPublishers yet
+                if (!allInputsReady(configuredPublishers, pe)) {
                     // Defer to next level if waiting for inputs
                     nextLevel.add(pe);
                     continue;
                 }
-                if (pe.processingElementType() == ProcessingElementType.SOURCE) {
-                    // Set one producer and creates the source instance
-                    PEInstanceResponse sourceResponse = postToSource(pe.organizationHostURL(), pe.templateID(), pe.instanceNumber());
 
-                    // Store source instanceIDS for starting the pipeline
-                    currentPipeline.getSources().put(sourceResponse.getInstanceID(), pe);
-                    configuredPublisher.put(pe, sourceResponse);
-                }
-
-                if (pe.processingElementType() == ProcessingElementType.OPERATOR) {
-                    List<String> operatorInstanceMetaDataIDS = new ArrayList<>();
-                    Set<ProcessingElementReference> publishers = findPublishers(pe);
-
-                    // Set all consumers
-                    for (ProcessingElementReference publisher : publishers) {
-                        String broker = configuredPublisher.get(publisher).getBroker();
-                        String topic = configuredPublisher.get(publisher).getTopic();
-
-                        PEInstanceResponse operatorConsumerResponse = postToOperatorConsumer(
-                                pe.organizationHostURL(),
-                                pe.templateID(),
-                                pe.instanceNumber(),
-                                broker,
-                                topic
-                        );
-                        operatorInstanceMetaDataIDS.add(operatorConsumerResponse.getInstanceMetaDataID());
-                    }
-                    // Set one producer
-                    PEInstanceResponse operatorProducerResponse = postToOperatorProducer(pe.organizationHostURL(), pe.templateID(), pe.instanceNumber());
-                    operatorInstanceMetaDataIDS.add(operatorProducerResponse.getInstanceMetaDataID());
-                    configuredPublisher.put(pe, operatorProducerResponse);
-
-                    // Create operator instance
-                    postToOperatorCreate(pe.organizationHostURL(), pe.templateID(), operatorInstanceMetaDataIDS.toArray(new String[0]));
-                }
-
-                if (pe.processingElementType() == ProcessingElementType.SINK) {
-                    List<String> sinkInstanceMetaDataIDS = new ArrayList<>();
-                    Set<ProcessingElementReference> publishers = findPublishers(pe);
-
-                    // Set all consumers
-                    for (ProcessingElementReference publisher : publishers) {
-                        String broker = configuredPublisher.get(publisher).getBroker();
-                        String topic = configuredPublisher.get(publisher).getTopic();
-
-                        PEInstanceResponse operatorConsumerResponse = postToSinkConsumer(
-                                pe.organizationHostURL(),
-                                pe.templateID(),
-                                pe.instanceNumber(),
-                                broker,
-                                topic
-                        );
-
-                        sinkInstanceMetaDataIDS.add(operatorConsumerResponse.getInstanceMetaDataID());
-                    }
-                    // Create sink instance
-                    postToSinkCreate(pe.organizationHostURL(), pe.templateID(), sinkInstanceMetaDataIDS.toArray(new String[0]));
+                switch (pe.processingElementType()) {
+                    case SOURCE -> configureSource(configuredPublishers, pe);
+                    case OPERATOR -> configureOperator(configuredPublishers, pe);
+                    case SINK -> configureSink(configuredPublishers, pe);
+                    default -> throw new IllegalArgumentException("could not configure processing element");
                 }
                 // Add all downstream nodes for the next level
                 nextLevel.addAll(dag.getNeighbors(pe));
@@ -142,7 +91,7 @@ public class PipelineBuilder {
     private Set<ProcessingElementReference> findSources() {
         return dag.getNodes()
                 .stream()
-                .filter(pe -> pe.processingElementType() == ProcessingElementType.SOURCE)
+                .filter(pe -> pe.processingElementType() == SOURCE)
                 .collect(Collectors.toSet());
     }
 
@@ -152,27 +101,66 @@ public class PipelineBuilder {
                 .collect(Collectors.toSet());
     }
 
-    private boolean allInputsReady(Map<ProcessingElementReference, PEInstanceResponse> configuredParent, ProcessingElementReference pe) {
+    private boolean allInputsReady(Map<ProcessingElementReference, PEInstanceResponse> configuredPublishers, ProcessingElementReference pe) {
         return dag.getNodes().stream()
                 .filter(parent -> dag.getNeighbors(parent).contains(pe))
-                .allMatch(configuredParent::containsKey);
+                .allMatch(configuredPublishers::containsKey);
     }
 
-    private PEInstanceResponse postWithPEInstanceResponse(String url) {
-        try {
-            String response = webClient.post(url);
-            return objectMapper.readValue(response, PEInstanceResponse.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    private void configureSource(Map<ProcessingElementReference, PEInstanceResponse> configuredPublishers, ProcessingElementReference pe) {
+        // Set one producer and creates the source instance
+        PEInstanceResponse sourceResponse = postToSource(pe.organizationHostURL(), pe.templateID(), pe.instanceNumber());
+
+        // Store source instanceIDS for starting the pipeline
+        currentPipeline.getSources().put(sourceResponse.getInstanceID(), pe);
+        configuredPublishers.put(pe, sourceResponse);
     }
 
-    private void post(String url) {
-        try {
-            webClient.post(url);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    private void configureOperator(Map<ProcessingElementReference, PEInstanceResponse> configuredPublishers, ProcessingElementReference pe) {
+        List<String> operatorInstanceMetaDataIDS = new ArrayList<>();
+
+        // Set all consumers
+        for (ProcessingElementReference publisher : findPublishers(pe)) {
+            String broker = configuredPublishers.get(publisher).getBroker();
+            String topic = configuredPublishers.get(publisher).getTopic();
+
+            PEInstanceResponse operatorConsumerResponse = postToOperatorConsumer(
+                    pe.organizationHostURL(),
+                    pe.templateID(),
+                    pe.instanceNumber(),
+                    broker,
+                    topic
+            );
+            operatorInstanceMetaDataIDS.add(operatorConsumerResponse.getInstanceMetaDataID());
         }
+        // Set one producer
+        PEInstanceResponse operatorProducerResponse = postToOperatorProducer(pe.organizationHostURL(), pe.templateID(), pe.instanceNumber());
+        operatorInstanceMetaDataIDS.add(operatorProducerResponse.getInstanceMetaDataID());
+        configuredPublishers.put(pe, operatorProducerResponse);
+
+        // Create operator instance
+        postToOperatorCreate(pe.organizationHostURL(), pe.templateID(), operatorInstanceMetaDataIDS.toArray(new String[0]));
+    }
+
+    private void configureSink(Map<ProcessingElementReference, PEInstanceResponse> configuredPublishers, ProcessingElementReference pe) {
+        List<String> sinkInstanceMetaDataIDS = new ArrayList<>();
+
+        // Set all consumers
+        for (ProcessingElementReference publisher : findPublishers(pe)) {
+            String broker = configuredPublishers.get(publisher).getBroker();
+            String topic = configuredPublishers.get(publisher).getTopic();
+
+            PEInstanceResponse operatorConsumerResponse = postToSinkConsumer(
+                    pe.organizationHostURL(),
+                    pe.templateID(),
+                    pe.instanceNumber(),
+                    broker,
+                    topic
+            );
+            sinkInstanceMetaDataIDS.add(operatorConsumerResponse.getInstanceMetaDataID());
+        }
+        // Create sink instance
+        postToSinkCreate(pe.organizationHostURL(), pe.templateID(), sinkInstanceMetaDataIDS.toArray(new String[0]));
     }
 
     private PEInstanceResponse postToSource(String hostURL, String templateID, int instanceNumber) {
@@ -241,5 +229,22 @@ public class PipelineBuilder {
                 encodedTemplateID, encodedMetaIds
         );
         post(hostURL + url);
+    }
+
+    private PEInstanceResponse postWithPEInstanceResponse(String url) {
+        try {
+            String response = webClient.postSync(url);
+            return objectMapper.readValue(response, PEInstanceResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void post(String url) {
+        try {
+            webClient.postSync(url);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

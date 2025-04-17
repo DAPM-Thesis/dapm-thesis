@@ -13,7 +13,7 @@ public class HTTPClient {
         this.webClient = webClient;
     }
 
-    public String post(String url) {
+    public String postSync(String url) {
         try {
        return webClient.post().uri(url)
                 .retrieve()

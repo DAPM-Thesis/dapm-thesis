@@ -6,9 +6,6 @@ import org.springframework.stereotype.Service;
 import pipeline.Pipeline;
 import pipeline.processingelement.ProcessingElementReference;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -26,7 +23,7 @@ public class PipelineExecutionService {
             try {
                 String url = "/pipelineBuilder/start/instance/" + entry.getKey();
 
-                webClient.post(entry.getValue().organizationHostURL() + url);
+                webClient.postSync(entry.getValue().organizationHostURL() + url);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
