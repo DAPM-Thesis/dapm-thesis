@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dapm.com/schemas/pipeline.draft.schema.json",
+  "title": "Pipeline Draft",
+  "type": "object",
+  "properties": {
+    "processing elements":
+    {
+      "type": "array",
+      "items": { "$ref": "https://dapm.com/schemas/processing.element.reference.schema.json"},
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "channels":
+    {
+      "type": "array",
+      "items": { "$ref": "https://dapm.com/schemas/channel.reference.schema.json"},
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": ["processing elements", "channels"],
+  "additionalProperties": false
+}

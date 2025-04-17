@@ -31,7 +31,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void PNMLInverseTest() {
+    void PNMLInverse() {
         MessageSerializer serializer = new MessageSerializer();
         PetriNet pn = getPetriNetExample();
         String pnml = serializer.visit(pn);
@@ -41,7 +41,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void petriNetTest() throws IOException {
+    void petriNetExample() throws IOException {
         Message output = getMessage(PetriNet.class,
                 "src/test/resources/serialization/message/petrinet/kindler_article.xml");
 
@@ -56,7 +56,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void eventJXESInverseTest() {
+    void eventJXESInverse() {
         // make event
         String caseID = "id1";
         String activity = "a1";
@@ -75,7 +75,9 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void articleEventTest() throws IOException {
+    void articleEvent() throws IOException {
+        System.out.println("The following messages come from MessageDeserializerTest.articleEvent().\n" +
+                "They illustrate that the JXES deserialization currently does not use certain attributes.");
         Message output = getMessage(Event.class,
                 "src/test/resources/serialization/message/event/example.json");
 
@@ -113,7 +115,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void traceSingleInverseTest() {
+    void traceSingleInverse() {
         // create trace
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
         List<Event> events = new ArrayList<>(List.of(e1));
@@ -128,7 +130,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void traceMultipleInverseTest() {
+    void traceMultipleInverse() {
         // create trace
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
         Event e2 = new Event("c1", "a2", "t2", new HashSet<>());
@@ -145,7 +147,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void alignmentTest() throws IOException {
+    void alignmentExample() throws IOException {
         Event el1 = new Event("C1", "A1", "1", new HashSet<>());
         Event el2 = new Event("C1", "A2", "2", new HashSet<>());
         Trace logTrace = new Trace(new ArrayList<>(List.of(el1, el2)));
@@ -163,7 +165,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void alignmentInverseTest() {
+    void alignmentInverse() {
         Event el1 = new Event("C1", "A1", "1", new HashSet<>());
         Event el2 = new Event("C1", "A2", "2", new HashSet<>());
         Trace logTrace = new Trace(new ArrayList<>(List.of(el1, el2)));
@@ -179,7 +181,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void alignmentTraceSwapInverseTest() {
+    void alignmentTraceSwapInverse() {
         // Serialization and deserialization is currently dependent on ordering of traces in a JXES string. Therefore,
         // they are only valid if alignments are given in the correct order
         Event el1 = new Event("C1", "A1", "1", new HashSet<>());

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dapm.com/schemas/channel.reference.schema.json",
+  "title": "Channel Reference",
+  "type": "object",
+  "properties": {
+    "publisher": { "$ref": "https://dapm.com/schemas/processing.element.reference.schema.json" },
+    "subscribers":
+    {
+      "type": "array",
+      "items":
+      {
+        "type": "object",
+        "properties":
+        {
+          "subscriber": { "$ref":  "https://dapm.com/schemas/processing.element.reference.schema.json" },
+          "portNumber": { "type": "integer", "minimum": 1 }
+        },
+        "required": ["subscriber", "portNumber"],
+        "additionalProperties": false
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": ["publisher", "subscribers"],
+  "additionalProperties": false
+}
