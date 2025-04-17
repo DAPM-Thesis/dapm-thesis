@@ -1,9 +1,12 @@
 package pipeline;
 
+import communication.Consumer;
 import communication.HTTPClient;
+import communication.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pipeline.accesscontrolled.processingelement.AccessControlledProcessingElement;
+import pipeline.accesscontrolled.processingelement.ChannelConfiguration;
 import pipeline.processingelement.ProcessingElementReference;
 import pipeline.processingelement.ProcessingElementType;
 
@@ -50,21 +53,35 @@ public class PipelineBuilder {
         currentPipeline.addACPE(acpe);
         return this;
     }
-    public PipelineBuilder connec(AccessControlledProcessingElement<?> from, AccessControlledProcessingElement<?>to){
+    public PipelineBuilder connect(AccessControlledProcessingElement<?> from, AccessControlledProcessingElement<?>to){
         nullCheck(from);
         nullCheck(to);
 
-        to.setUpstream(from);
-        from.addDownstream(to);
-        String connectionTopic = "Topic-" + UUID.randomUUID();
+        String dataTopic = "data-" + UUID.randomUUID();
+        String hbUpTopic = "hbUp-" + UUID.randomUUID();
+        String hbDownTopic = "hbDown-" + UUID.randomUUID();
 
         // TODO: CONFIRM (should the orgId be in the Token class or ACPE)
-        String brokerFrom = organizationBrokers.get(from.getToken().getOrganizationID());
+        String brokerUrl = organizationBrokers.get(from.getToken().getOrganizationID());
         String hostFrom = organizations.get(from.getToken().getOrganizationID());
-        postToOrganization(from, connectionTopic, brokerFrom, hostFrom, true);
-
         String hostTo = organizations.get(to.getToken().getOrganizationID());
-        postToOrganization(to, connectionTopic, brokerFrom, hostTo, false);
+
+        //postToOrganization(from, connectionTopic, brokerFrom, hostFrom, true);
+        //postToOrganization(to, connectionTopic, brokerFrom, hostTo, false);
+
+        postToOrganization(from, dataTopic, brokerUrl, hostFrom, true);
+        postToOrganization(from, hbDownTopic, brokerUrl, hostFrom, true);
+        postToOrganization(from, hbUpTopic, brokerUrl, hostFrom, false);
+
+        postToOrganization(to, dataTopic, brokerUrl, hostTo, false);
+        postToOrganization(to, hbDownTopic, brokerUrl, hostTo, false);
+        postToOrganization(to, hbUpTopic, brokerUrl, hostTo, true);
+
+        ChannelConfiguration config = new ChannelConfiguration(dataTopic, null, hbDownTopic, brokerUrl);
+        from.addChannelConfiguration(config);
+        to.addChannelConfiguration(config);
+
+        currentPipeline.addConnection(from, to);
 
         return this;
     }
@@ -76,6 +93,8 @@ public class PipelineBuilder {
     }
 
     /*
+
+    // Before implementing ACPE wrapper
     public PipelineBuilder connect(ProcessingElementReference from, ProcessingElementReference to) {
         if (!currentPipeline.getProcessingElements().contains(from) || !currentPipeline.getProcessingElements().contains(to))
         { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }

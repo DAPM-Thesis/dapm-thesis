@@ -27,10 +27,12 @@ public class Pipeline {
 
     private String organizationOwnerID;
     private Set<AccessControlledProcessingElement<?>> acpeSet; // All ACPEs in the pipeline
+    private Map<AccessControlledProcessingElement<?>, AccessControlledProcessingElement<?>> connections;
 
     public Pipeline(String organizationOwnerID) {
         this.organizationOwnerID = organizationOwnerID;
         this.acpeSet = new HashSet<>();
+        this.connections = new HashMap<>();
     }
 
     public String getOrganizationOwnerID() {
@@ -47,7 +49,7 @@ public class Pipeline {
     public Set<AccessControlledProcessingElement<?>> getSources() {
         Set<AccessControlledProcessingElement<?>> sources = new HashSet<>();
         for (AccessControlledProcessingElement<?> acpe : acpeSet) {
-            if (acpe.getUpstream() == null) {
+            if (!connections.containsValue(acpe)) {
                 sources.add(acpe);
             }
         }
@@ -61,5 +63,8 @@ public class Pipeline {
         if (acpe != null) {
             acpeSet.add(acpe);
         }
+    }
+    public void addConnection(AccessControlledProcessingElement<?> from, AccessControlledProcessingElement<?> to) {
+        connections.put(from, to);
     }
 }
