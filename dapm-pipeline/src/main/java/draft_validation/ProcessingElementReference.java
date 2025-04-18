@@ -8,14 +8,14 @@ import java.util.Objects;
 
 public class ProcessingElementReference {
     private final String organizationID;
-    private final String hostURL;
+    private final String organizationHostURL;
     private final String templateID;
     private final List<Class<? extends Message>> inputs;
     private final Class<? extends Message> output;
     private final int instanceNumber;
 
     public ProcessingElementReference(String organizationID,
-                                      String hostURL,
+                                      String organizationHostURL,
                                       String templateID,
                                       List<Class<? extends Message>> inputs,
                                       Class<? extends Message> output,
@@ -25,7 +25,7 @@ public class ProcessingElementReference {
         assert instanceNumber > 0 : "instanceID must be positive integer by convention (CFG definition).";
 
         this.organizationID = organizationID;
-        this.hostURL = hostURL;
+        this.organizationHostURL = organizationHostURL;
         this.templateID = templateID;
         this.inputs = inputs;
         this.output = output;
@@ -34,7 +34,9 @@ public class ProcessingElementReference {
         assert !(isSource() && isSink()) : "Processing elements must either have inputs or output or both.";
     }
 
-    public String getHostURL() { return this.hostURL; }
+    public String getOrganizationHostURL() { return this.organizationHostURL; }
+    public String getTemplateID() { return this.templateID; }
+    public int getInstanceNumber() { return this.instanceNumber; }
 
     /** returns a copy of the inputs */
     public List<Class<? extends Message>> getInputs() { return new ArrayList<>(inputs); }
@@ -57,12 +59,7 @@ public class ProcessingElementReference {
 
     @Override
     public String toString() {
-        return "MPE[" + organizationID + ","
-                + hostURL + ','
-                + templateID + ","
-                + inputs.size() + ","
-                + output + ','
-                + instanceNumber + "]";
+        return "MPE[" + organizationID + "," + templateID + "," + inputs.size() + "," + output + "]";
     }
 
     @Override
@@ -70,8 +67,8 @@ public class ProcessingElementReference {
         if (other == this) { return true; }
         if (!(other instanceof ProcessingElementReference otherMPE)) { return false; }
         return organizationID.equals(otherMPE.organizationID)
-                && hostURL.equals(otherMPE.hostURL)
                 && templateID.equals(otherMPE.templateID)
+                && organizationHostURL.equals(otherMPE.organizationHostURL)
                 && inputs.equals(otherMPE.inputs)
                 && (Objects.equals(output, otherMPE.output))
                 && instanceNumber == otherMPE.instanceNumber;
@@ -79,6 +76,6 @@ public class ProcessingElementReference {
 
     @Override
     public int hashCode() {
-        return Objects.hash(organizationID, hostURL, templateID, inputs, output, instanceNumber);
+        return Objects.hash(organizationID, organizationHostURL, templateID, inputs, output);
     }
 }

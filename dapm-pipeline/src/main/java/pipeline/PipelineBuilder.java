@@ -4,22 +4,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import communication.API.HTTPClient;
 import communication.API.PEInstanceResponse;
+import draft_validation.ChannelReference;
+import draft_validation.ProcessingElementReference;
+import draft_validation.SubscriberReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pipeline.processingelement.ProcessingElementReference;
 import utils.DAG;
 import utils.JsonUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static pipeline.processingelement.ProcessingElementType.*;
-
-// TODO: should be able to input a Json assembly file and set up the connections
 // TODO: one PipelineBuilder per org - figure out storing pipelines?
 @Component
 public class PipelineBuilder {
-    private Pipeline currentPipeline;
     private final HTTPClient webClient;
     private final ObjectMapper objectMapper;
     private DAG<ProcessingElementReference> dag;
@@ -30,31 +28,15 @@ public class PipelineBuilder {
         this.objectMapper = new ObjectMapper();
     }
 
-    public PipelineBuilder createPipeline(String organizationOwnerID) {
-        currentPipeline = new Pipeline(organizationOwnerID);
+    public Pipeline buildPipeline(String organizationOwnerID, Set<ChannelReference> channelReferences) {
+        Pipeline pipeline = new Pipeline(organizationOwnerID);
         this.dag = new DAG<>();
-        return this;
+        build(pipeline, channelReferences);
+        return pipeline;
     }
 
-    public PipelineBuilder addProcessingElement(ProcessingElementReference pe) {
-        if (pe == null) {
-            throw new IllegalArgumentException("processingElement cannot be null");
-        }
-        currentPipeline.getProcessingElements().add(pe);
-        return this;
-    }
-
-    public PipelineBuilder connect(ProcessingElementReference from, ProcessingElementReference to) {
-        if (!currentPipeline.getProcessingElements().contains(from) || !currentPipeline.getProcessingElements().contains(to)) {
-            throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline.");
-        }
-
-        currentPipeline.getConnections().put(from, to);
-        dag.addEdge(from, to);
-        return this;
-    }
-
-    public PipelineBuilder configure() {
+    private void build(Pipeline pipeline, Set<ChannelReference> channelReferences) {
+        connect(pipeline, channelReferences);
         // A PE is configuredPublishers if producer has been set for source and operators
         Map<ProcessingElementReference, PEInstanceResponse> configuredPublishers = new HashMap<>();
         Set<ProcessingElementReference> currentLevel = findSources();
@@ -70,28 +52,39 @@ public class PipelineBuilder {
                     continue;
                 }
 
-                switch (pe.processingElementType()) {
-                    case SOURCE -> configureSource(configuredPublishers, pe);
-                    case OPERATOR -> configureOperator(configuredPublishers, pe);
-                    case SINK -> configureSink(configuredPublishers, pe);
-                    default -> throw new IllegalArgumentException("could not configure processing element");
+                if (pe.isSource()) {
+                    configureSource(pipeline, configuredPublishers, pe);
+                } else if (pe.isOperator()) {
+                    configureOperator(configuredPublishers, pe);
+                } else if (pe.isSink()) {
+                    configureSink(configuredPublishers, pe);
                 }
+
                 // Add all downstream nodes for the next level
                 nextLevel.addAll(dag.getNeighbors(pe));
             }
             currentLevel = nextLevel;
         }
-        return this;
     }
 
-    public Pipeline getCurrentPipeline() {
-        return currentPipeline;
+    private void connect(Pipeline pipeline, Set<ChannelReference> channelReferences) {
+        for (ChannelReference cr : channelReferences) {
+            ProcessingElementReference producer = cr.getProducer();
+            pipeline.getProcessingElements().add(producer);
+
+            for (SubscriberReference sr : cr.getSubscribers()) {
+                ProcessingElementReference consumer = sr.getElement();
+                pipeline.getProcessingElements().add(consumer);
+                pipeline.getConnections().put(producer, consumer);
+                dag.addEdge(producer, consumer);
+            }
+        }
     }
 
     private Set<ProcessingElementReference> findSources() {
         return dag.getNodes()
                 .stream()
-                .filter(pe -> pe.processingElementType() == SOURCE)
+                .filter(ProcessingElementReference::isSource)
                 .collect(Collectors.toSet());
     }
 
@@ -107,12 +100,12 @@ public class PipelineBuilder {
                 .allMatch(configuredPublishers::containsKey);
     }
 
-    private void configureSource(Map<ProcessingElementReference, PEInstanceResponse> configuredPublishers, ProcessingElementReference pe) {
+    private void configureSource(Pipeline pipeline, Map<ProcessingElementReference, PEInstanceResponse> configuredPublishers, ProcessingElementReference pe) {
         // Set one producer and creates the source instance
-        PEInstanceResponse sourceResponse = postToSource(pe.organizationHostURL(), pe.templateID(), pe.instanceNumber());
+        PEInstanceResponse sourceResponse = postToSource(pe.getOrganizationHostURL(), pe.getTemplateID(), pe.getInstanceNumber());
 
         // Store source instanceIDS for starting the pipeline
-        currentPipeline.getSources().put(sourceResponse.getInstanceID(), pe);
+        pipeline.getSources().put(sourceResponse.getInstanceID(), pe);
         configuredPublishers.put(pe, sourceResponse);
     }
 
@@ -125,21 +118,21 @@ public class PipelineBuilder {
             String topic = configuredPublishers.get(publisher).getTopic();
 
             PEInstanceResponse operatorConsumerResponse = postToOperatorConsumer(
-                    pe.organizationHostURL(),
-                    pe.templateID(),
-                    pe.instanceNumber(),
+                    pe.getOrganizationHostURL(),
+                    pe.getTemplateID(),
+                    pe.getInstanceNumber(),
                     broker,
                     topic
             );
             operatorInstanceMetaDataIDS.add(operatorConsumerResponse.getInstanceMetaDataID());
         }
         // Set one producer
-        PEInstanceResponse operatorProducerResponse = postToOperatorProducer(pe.organizationHostURL(), pe.templateID(), pe.instanceNumber());
+        PEInstanceResponse operatorProducerResponse = postToOperatorProducer(pe.getOrganizationHostURL(), pe.getTemplateID(), pe.getInstanceNumber());
         operatorInstanceMetaDataIDS.add(operatorProducerResponse.getInstanceMetaDataID());
         configuredPublishers.put(pe, operatorProducerResponse);
 
         // Create operator instance
-        postToOperatorCreate(pe.organizationHostURL(), pe.templateID(), operatorInstanceMetaDataIDS.toArray(new String[0]));
+        postToOperatorCreate(pe.getOrganizationHostURL(), pe.getTemplateID(), operatorInstanceMetaDataIDS.toArray(new String[0]));
     }
 
     private void configureSink(Map<ProcessingElementReference, PEInstanceResponse> configuredPublishers, ProcessingElementReference pe) {
@@ -151,16 +144,16 @@ public class PipelineBuilder {
             String topic = configuredPublishers.get(publisher).getTopic();
 
             PEInstanceResponse operatorConsumerResponse = postToSinkConsumer(
-                    pe.organizationHostURL(),
-                    pe.templateID(),
-                    pe.instanceNumber(),
+                    pe.getOrganizationHostURL(),
+                    pe.getTemplateID(),
+                    pe.getInstanceNumber(),
                     broker,
                     topic
             );
             sinkInstanceMetaDataIDS.add(operatorConsumerResponse.getInstanceMetaDataID());
         }
         // Create sink instance
-        postToSinkCreate(pe.organizationHostURL(), pe.templateID(), sinkInstanceMetaDataIDS.toArray(new String[0]));
+        postToSinkCreate(pe.getOrganizationHostURL(), pe.getTemplateID(), sinkInstanceMetaDataIDS.toArray(new String[0]));
     }
 
     private PEInstanceResponse postToSource(String hostURL, String templateID, int instanceNumber) {

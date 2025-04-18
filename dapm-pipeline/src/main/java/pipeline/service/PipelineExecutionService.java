@@ -1,10 +1,10 @@
 package pipeline.service;
 
 import communication.API.HTTPClient;
+import draft_validation.ProcessingElementReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pipeline.Pipeline;
-import pipeline.processingelement.ProcessingElementReference;
 
 import java.util.Map;
 
@@ -23,7 +23,7 @@ public class PipelineExecutionService {
             try {
                 String url = "/pipelineBuilder/start/instance/" + entry.getKey();
 
-                webClient.postSync(entry.getValue().organizationHostURL() + url);
+                webClient.postSync(entry.getValue().getOrganizationHostURL() + url);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

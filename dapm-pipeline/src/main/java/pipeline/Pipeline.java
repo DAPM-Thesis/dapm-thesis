@@ -1,6 +1,6 @@
 package pipeline;
 
-import pipeline.processingelement.*;
+import draft_validation.ProcessingElementReference;
 
 import java.util.*;
 
