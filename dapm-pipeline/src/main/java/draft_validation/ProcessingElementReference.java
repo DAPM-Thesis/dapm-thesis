@@ -6,30 +6,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class MetadataProcessingElement {
-    private final String orgID;
+public class ProcessingElementReference {
+    private final String organizationID;
+    private final String organizationHostURL;
     private final String templateID;
     private final List<Class<? extends Message>> inputs;
     private final Class<? extends Message> output;
-    private final int instanceID;
+    private final int instanceNumber;
 
-    public MetadataProcessingElement(String orgID,
-                                     String templateID,
-                                     List<Class<? extends Message>> inputs,
-                                     Class<? extends Message> output,
-                                     int instanceID) {
-        assert orgID != null && templateID != null && inputs != null: "stop being lazy.";
-        assert !orgID.isEmpty() && !templateID.isEmpty() : "indistinguishable orgID and templateID";
-        assert instanceID > 0 : "instanceID must be positive integer by convention (CFG definition).";
+    public ProcessingElementReference(String organizationID,
+                                      String organizationHostURL,
+                                      String templateID,
+                                      List<Class<? extends Message>> inputs,
+                                      Class<? extends Message> output,
+                                      int instanceNumber) {
+        assert organizationID != null && templateID != null && inputs != null: "stop being lazy.";
+        assert !organizationID.isEmpty() && !templateID.isEmpty() : "indistinguishable orgID and templateID";
+        assert instanceNumber > 0 : "instanceID must be positive integer by convention (CFG definition).";
 
-        this.orgID = orgID;
+        this.organizationID = organizationID;
+        this.organizationHostURL = organizationHostURL;
         this.templateID = templateID;
         this.inputs = inputs;
         this.output = output;
-        this.instanceID = instanceID;
+        this.instanceNumber = instanceNumber;
 
         assert !(isSource() && isSink()) : "Processing elements must either have inputs or output or both.";
     }
+
+    public String getOrganizationHostURL() { return this.organizationHostURL; }
 
     /** returns a copy of the MetaProcessingElement instance's inputs List */
     public List<Class<? extends Message>> getInputs() { return new ArrayList<>(inputs); }
@@ -53,22 +58,22 @@ public class MetadataProcessingElement {
 
     @Override
     public String toString() {
-        return "MPE[" + orgID + "," + templateID + "," + inputs.size() + "," + output + "]";
+        return "MPE[" + organizationID + "," + templateID + "," + inputs.size() + "," + output + "]";
     }
 
     @Override
     public boolean equals(Object other) {
         if (other == this) { return true; }
-        if (!(other instanceof MetadataProcessingElement otherMPE)) { return false; }
-        return orgID.equals(otherMPE.orgID)
+        if (!(other instanceof ProcessingElementReference otherMPE)) { return false; }
+        return organizationID.equals(otherMPE.organizationID)
                 && templateID.equals(otherMPE.templateID)
                 && inputs.equals(otherMPE.inputs)
                 && (Objects.equals(output, otherMPE.output))
-                && instanceID == otherMPE.instanceID;
+                && instanceNumber == otherMPE.instanceNumber;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(orgID, templateID, inputs, output);
+        return Objects.hash(organizationID, templateID, inputs, output);
     }
 }
