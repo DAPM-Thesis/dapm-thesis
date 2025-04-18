@@ -4,7 +4,6 @@ import communication.message.Message;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
 import draft_validation.parsing.DraftParser;
-import draft_validation.parsing.InvalidDraft;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -40,25 +39,25 @@ public class DraftParserTest {
         // make source
         List<Class<? extends Message>> sourceInputs = new ArrayList<>();
         Class<? extends Message> sourceOutput = Event.class;
-        MetadataProcessingElement source = new MetadataProcessingElement("Pepsi", "$$$ Source", sourceInputs, sourceOutput, 1);
+        ProcessingElementReference source = new ProcessingElementReference("Pepsi", "$$$ Source", sourceInputs, sourceOutput, 1);
 
         // make operator
         List<Class<? extends Message>> operatorInputs = List.of(Event.class);
         Class<? extends Message> operatorOutput = PetriNet.class;
-        MetadataProcessingElement operator = new MetadataProcessingElement("Coca Cola", "The Profit Miner", operatorInputs, operatorOutput, 1);
+        ProcessingElementReference operator = new ProcessingElementReference("Coca Cola", "The Profit Miner", operatorInputs, operatorOutput, 1);
 
         // make sink
         List<Class<? extends Message>> sinkInputs = List.of(PetriNet.class);
         Class<? extends Message> sinkOutput = null;
-        MetadataProcessingElement sink = new MetadataProcessingElement("DTU", "Dream Sink", sinkInputs, sinkOutput, 1);
+        ProcessingElementReference sink = new ProcessingElementReference("DTU", "Dream Sink", sinkInputs, sinkOutput, 1);
 
-        Set<MetadataProcessingElement> expectedElements = Set.of(source, operator, sink);
+        Set<ProcessingElementReference> expectedElements = Set.of(source, operator, sink);
 
-        MetadataSubscriber operatorPort1 = new MetadataSubscriber(operator, 1);
-        MetadataSubscriber sinkPort1 = new MetadataSubscriber(sink, 1);
-        MetadataChannel c1 = new MetadataChannel(source, operatorPort1);
-        MetadataChannel c2 = new MetadataChannel(operator, sinkPort1);
-        Set<MetadataChannel> expectedChannels = Set.of(c1, c2);
+        SubscriberReference operatorPort1 = new SubscriberReference(operator, 1);
+        SubscriberReference sinkPort1 = new SubscriberReference(sink, 1);
+        ChannelReference c1 = new ChannelReference(source, operatorPort1);
+        ChannelReference c2 = new ChannelReference(operator, sinkPort1);
+        Set<ChannelReference> expectedChannels = Set.of(c1, c2);
         PipelineDraft expected = new  PipelineDraft(expectedElements, expectedChannels);
 
         PipelineDraft output = getPipelineDraft(path);

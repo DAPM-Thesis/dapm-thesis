@@ -3,9 +3,9 @@ package draft_validation.parsing;
 import communication.message.Message;
 import communication.message.MessageTypeRegistry;
 import communication.message.serialization.parsing.JSONParser;
-import draft_validation.MetadataChannel;
-import draft_validation.MetadataSubscriber;
-import draft_validation.MetadataProcessingElement;
+import draft_validation.ChannelReference;
+import draft_validation.SubscriberReference;
+import draft_validation.ProcessingElementReference;
 import draft_validation.PipelineDraft;
 import java.util.*;
 
@@ -21,45 +21,45 @@ public class DraftParser implements Parser<PipelineDraft> {
 
 
         List<Map<String, Object>> rawElements = (List<Map<String, Object>>) jsonMap.get("processing elements");
-        Set<MetadataProcessingElement> elements = getMetaDataProcessingElements(rawElements);
+        Set<ProcessingElementReference> elements = getMetaDataProcessingElements(rawElements);
 
         List<Map<String, Object>> rawChannels = (List<Map<String, Object>>) jsonMap.get("channels");
-        Set<MetadataChannel> channels = getMetaDataChannels(rawChannels);
+        Set<ChannelReference> channels = getMetaDataChannels(rawChannels);
 
         return new PipelineDraft(elements, channels);
     }
 
-    private Set<MetadataChannel> getMetaDataChannels(List<Map<String, Object>> rawChannels) {
-        Set<MetadataChannel> channels = new HashSet<>();
+    private Set<ChannelReference> getMetaDataChannels(List<Map<String, Object>> rawChannels) {
+        Set<ChannelReference> channels = new HashSet<>();
         for (Map<String, Object> rawChannel : rawChannels) {
             channels.add(getMetaDataChannel(rawChannel));
         }
         return channels;
     }
 
-    private MetadataChannel getMetaDataChannel(Map<String, Object> rawChannel) {
-        MetadataProcessingElement publisher = getMetaDataProcessingElement((Map<String, Object>) rawChannel.get("publisher"));
+    private ChannelReference getMetaDataChannel(Map<String, Object> rawChannel) {
+        ProcessingElementReference publisher = getMetaDataProcessingElement((Map<String, Object>) rawChannel.get("publisher"));
         List<Map<String, Object>> subscribersList = (List<Map<String, Object>>) rawChannel.get("subscribers");
-        Set<MetadataSubscriber> subscribers = getMetaDataSubscribers(subscribersList);
-        return new MetadataChannel(publisher, subscribers);
+        Set<SubscriberReference> subscribers = getMetaDataSubscribers(subscribersList);
+        return new ChannelReference(publisher, subscribers);
     }
 
-    private Set<MetadataSubscriber> getMetaDataSubscribers(List<Map<String, Object>> subscribersList) {
-        Set<MetadataSubscriber> subscribers = new HashSet<>();
+    private Set<SubscriberReference> getMetaDataSubscribers(List<Map<String, Object>> subscribersList) {
+        Set<SubscriberReference> subscribers = new HashSet<>();
         for (Map<String, Object> rawSubscriber : subscribersList) {
             subscribers.add(getMetaDataSubscriber(rawSubscriber));
         }
         return subscribers;
     }
 
-    private MetadataSubscriber getMetaDataSubscriber(Map<String, Object> rawSubscriber) {
-        MetadataProcessingElement element = getMetaDataProcessingElement((Map<String, Object>) rawSubscriber.get("processing element"));
+    private SubscriberReference getMetaDataSubscriber(Map<String, Object> rawSubscriber) {
+        ProcessingElementReference element = getMetaDataProcessingElement((Map<String, Object>) rawSubscriber.get("processing element"));
         int portNumber = (int) rawSubscriber.get("portNumber");
-        return new MetadataSubscriber(element, portNumber);
+        return new SubscriberReference(element, portNumber);
     }
 
-    private Set<MetadataProcessingElement> getMetaDataProcessingElements(List<Map<String, Object>> rawElements) {
-        Set<MetadataProcessingElement> elements = new HashSet<>();
+    private Set<ProcessingElementReference> getMetaDataProcessingElements(List<Map<String, Object>> rawElements) {
+        Set<ProcessingElementReference> elements = new HashSet<>();
         for (Map<String, Object> elementMap : rawElements) {
             elements.add(getMetaDataProcessingElement(elementMap));
         }
@@ -67,14 +67,14 @@ public class DraftParser implements Parser<PipelineDraft> {
     }
 
 
-    private MetadataProcessingElement getMetaDataProcessingElement(Map<String, Object> elementMap) throws InvalidDraft {
+    private ProcessingElementReference getMetaDataProcessingElement(Map<String, Object> elementMap) throws InvalidDraft {
         String orgID = (String) elementMap.get("organizationID");
         String templateID = (String) elementMap.get("templateID");
         List<Class<? extends Message>> inputs = parseClassList((List<String>) elementMap.get("inputs"));
         Class<? extends Message> output = extractOutput(elementMap);
         int instanceNumber = (int) elementMap.get("instanceNumber");
 
-        return new MetadataProcessingElement(orgID, templateID, inputs, output, instanceNumber);
+        return new ProcessingElementReference(orgID, templateID, inputs, output, instanceNumber);
     }
 
 
