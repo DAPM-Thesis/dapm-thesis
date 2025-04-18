@@ -25,7 +25,7 @@ public class PipelineValidator {
 
     /** returns true iff the elements in draft all have all their inputs filled. */
     private static boolean consumerInputsMatchElementInputs(PipelineDraft draft) {
-        // method: reverse engineer inputs from draft channels and validate that they match the inputs of the draft elements
+        // method: reverse engineer inputs from draft channels and validate that they match the inputs of the draft (subscriber) elements
         if (!hasConsistentElements(draft)) { throw new InvalidDraft("The processing elements in \"channels\" must match those in \"processing elements\"."); }
 
         Map<ProcessingElementReference, List<Class<? extends Message>>> inferredInputs = getInferredInputs(draft.channels());
@@ -235,6 +235,5 @@ public class PipelineValidator {
         return !elements.isEmpty()
                 && elements.stream().anyMatch(ProcessingElementReference::isSink);
     }
-
 
 }

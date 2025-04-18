@@ -1,14 +1,14 @@
 {
   "processing elements": [
-    { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
-    { "organizationID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceNumber": 1 }
+    { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "Coca Cola", "hostURL": "http://localhost:8092", "templateID": "The Profit Miner", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceNumber": 1 }
   ],
   "channels": [
     {
-      "publisher": { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+      "publisher": { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
       "subscribers": [
         {
-          "processing element": { "organizationID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceNumber": 1 },
+          "processing element": { "organizationID": "Coca Cola", "hostURL": "http://localhost:8092", "templateID": "The Profit Miner", "inputs": ["Event", "PetriNet"], "output": "PetriNet", "instanceNumber": 1 },
           "portNumber": 1
         }
       ]

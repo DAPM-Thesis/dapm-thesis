@@ -1,15 +1,15 @@
 {
   "processing elements":[
-    { "orgID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event"], "output1": "PetriNet", "instanceNumber": 1 },
-    { "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output1": null, "instanceNumber": 1 }
+    { "orgID": "Coca Cola", "hostURL": "http://localhost:8082", "templateID": "The Profit Miner", "inputs": ["Event"], "output1": "PetriNet", "instanceNumber": 1 },
+    { "orgID": "DTU", "hostURL": "http://localhost:8092", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output1": null, "instanceNumber": 1 }
   ],
 
   "channels": [
     {
-      "publisher": { "orgID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event"], "output1": "PetriNet", "instanceNumber": 1 },
+      "publisher": { "orgID": "Coca Cola", "hostURL": "http://localhost:8082", "templateID": "The Profit Miner", "inputs": ["Event"], "output1": "PetriNet", "instanceNumber": 1 },
       "subscribers": [
         {
-          "processing element": { "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output1": null, "instanceNumber": 1 },
+          "processing element": { "orgID": "DTU", "hostURL": "http://localhost:8092", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output1": null, "instanceNumber": 1 },
           "portNumber": 1
         }
       ]

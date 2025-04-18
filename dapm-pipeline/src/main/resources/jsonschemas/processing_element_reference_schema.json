@@ -10,6 +10,7 @@
       "minLength": 1,
       "pattern": "^(?!\\s*$)[^\\t\\n\\r]*$"
     },
+    "hostURL": { "type": "string", "minLength": 1 },
     "templateID":
     {
       "type": "string",
@@ -30,6 +31,6 @@
     "instanceNumber": { "type":  "integer", "minimum": 1},
     "parameterValues": { "type":  "object"}
   },
-  "required": ["organizationID", "templateID", "inputs", "output", "instanceNumber"],
+  "required": ["organizationID", "hostURL", "templateID", "inputs", "output", "instanceNumber"],
   "additionalProperties": false
 }

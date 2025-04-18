@@ -34,22 +34,21 @@ public class DraftParserTest {
     @Test
     public void validDraft() {
         String path = "src/test/resources/draft_validation/simple_valid.json";
-        System.out.println(path);
 
         // make source
         List<Class<? extends Message>> sourceInputs = new ArrayList<>();
         Class<? extends Message> sourceOutput = Event.class;
-        ProcessingElementReference source = new ProcessingElementReference("Pepsi", "$$$ Source", sourceInputs, sourceOutput, 1);
+        ProcessingElementReference source = new ProcessingElementReference("Pepsi", "http://localhost:8082", "$$$ Source", sourceInputs, sourceOutput, 1);
 
         // make operator
         List<Class<? extends Message>> operatorInputs = List.of(Event.class);
         Class<? extends Message> operatorOutput = PetriNet.class;
-        ProcessingElementReference operator = new ProcessingElementReference("Coca Cola", "The Profit Miner", operatorInputs, operatorOutput, 1);
+        ProcessingElementReference operator = new ProcessingElementReference("Coca Cola", "http://localhost:8092","The Profit Miner", operatorInputs, operatorOutput, 1);
 
         // make sink
         List<Class<? extends Message>> sinkInputs = List.of(PetriNet.class);
         Class<? extends Message> sinkOutput = null;
-        ProcessingElementReference sink = new ProcessingElementReference("DTU", "Dream Sink", sinkInputs, sinkOutput, 1);
+        ProcessingElementReference sink = new ProcessingElementReference("DTU", "http://localhost:8102", "Dream Sink", sinkInputs, sinkOutput, 1);
 
         Set<ProcessingElementReference> expectedElements = Set.of(source, operator, sink);
 
@@ -83,8 +82,9 @@ public class DraftParserTest {
 
     @Test
     public void duplicate() {
+        // TODO: update comment and file name; it should not be "invariant"
         // It should not matter whether a channel or element exists twice [with same instanceID] in the given json
-        String outputPath = "src/test/resources/draft_validation/parser/duplicate_invariance.json";
+        String outputPath = "src/test/resources/draft_validation/parser/duplicate.json";
         assertThrows(RuntimeException.class, () -> getPipelineDraft(outputPath));
     }
 
@@ -108,7 +108,7 @@ public class DraftParserTest {
     public void noChannels() {
         String path = "src/test/resources/draft_validation/parser/no_channels.json";
         assertThrows(RuntimeException.class, () -> {
-            PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+            DraftParserTest.getPipelineDraft(path);
         });
     }
 
