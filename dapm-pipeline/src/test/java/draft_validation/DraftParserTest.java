@@ -113,6 +113,4 @@ public class DraftParserTest {
         });
     }
 
-    // TODO: make error test for every assertion in DraftParser
-
 }

@@ -49,6 +49,8 @@ public class MetadataProcessingElement {
         return output == null;
     }
 
+    public boolean isOperator() { return !isSource() && !isSink(); }
+
     @Override
     public String toString() {
         return "MPE[" + orgID + "," + templateID + "," + inputs.size() + "," + output + "]";

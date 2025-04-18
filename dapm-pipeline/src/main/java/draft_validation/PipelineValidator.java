@@ -1,12 +1,13 @@
 package draft_validation;
 
 import communication.message.Message;
+import draft_validation.parsing.InvalidDraft;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class PipelineValidator {
-    public static boolean isValid(PipelineDraft draft) {
+    public static boolean isValid(PipelineDraft draft) throws InvalidDraft {
         return hasConsistentElements(draft)
                 && hasSource(draft.elements())
                 && hasSink(draft.elements())
@@ -25,7 +26,7 @@ public class PipelineValidator {
     /** returns true iff the elements in draft all have all their inputs filled. */
     private static boolean consumerInputsMatchElementInputs(PipelineDraft draft) {
         // method: reverse engineer inputs from draft channels and validate that they match the inputs of the draft elements
-        assert hasConsistentElements(draft);
+        if (!hasConsistentElements(draft)) { throw new InvalidDraft("The processing elements in \"channels\" must match those in \"processing elements\"."); }
 
         Map<MetadataProcessingElement, List<Class<? extends Message>>> inferredInputs = getInferredInputs(draft.channels());
         if (inferredInputs == null)
@@ -41,7 +42,7 @@ public class PipelineValidator {
      *  inputs for that element. returns null if a consumer's port is invalid or if the same consumer has multiple
      *  producers to the same port. */
     private static Map<MetadataProcessingElement, List<Class<? extends Message>>> getInferredInputs(Set<MetadataChannel> channels) {
-        assert !channels.isEmpty() : "expects the channels of a pipeline draft";
+        if (channels.isEmpty()){ throw new InvalidDraft("Expects the channels of a pipeline draft"); }
 
         Map<MetadataProcessingElement, List<Class<? extends Message>>> inferredInputs = new HashMap<>();
         for (MetadataChannel channel : channels) {
@@ -62,7 +63,7 @@ public class PipelineValidator {
             }
         }
 
-        assert extractConsumerElements(channels).equals(inferredInputs.keySet()) : "inferred inputs not set correctly";
+        if (!extractConsumerElements(channels).equals(inferredInputs.keySet())) {throw new IllegalStateException("inferred inputs not set correctly in this method"); }
         return inferredInputs;
     }
 
@@ -77,7 +78,7 @@ public class PipelineValidator {
             for (MetadataSubscriber consumer : channel.getSubscribers()) {
                 MetadataProcessingElement consumerElement = consumer.getElement();
                 int port = consumer.getPortNumber();
-                assert !consumerElement.isSource() : "Consumer must have at least one input.";
+                if (consumerElement.isSource()) { throw new InvalidDraft("Consumer must have at least one input."); }
 
                 Class<? extends Message> producerOutput = channel.output();
                 if (port >= consumerElement.inputCount() || producerOutput != consumerElement.typeAt(port))
@@ -90,13 +91,13 @@ public class PipelineValidator {
 
     private static boolean isConnected(PipelineDraft draft) {
         if (draft.elements().isEmpty()) {
-            assert draft.channels().isEmpty() : "Channels over non-existing elements.";
+            if (!draft.channels().isEmpty()){ throw new InvalidDraft("Channels over non-existing elements."); }
             return true;
         }
-        assert hasConsistentElements(draft);
+        if (!hasConsistentElements(draft)) { throw new InvalidDraft("The processing elements in \"channels\" must match those in \"processing elements\"."); }
 
         List<MetadataProcessingElement> orderedSources = getSources(draft).stream().toList();
-        assert !orderedSources.isEmpty();
+        if (orderedSources.isEmpty()) { throw new InvalidDraft("Pipeline Draft must contain at least 1 source"); }
 
         HashSet<MetadataProcessingElement> visited =  new HashSet<>();
         Map<MetadataProcessingElement, Set<MetadataProcessingElement>> unDirectedSuccessors = getUndirectedSuccessors(draft.channels());
@@ -117,18 +118,17 @@ public class PipelineValidator {
     }
 
     private static Set<MetadataProcessingElement> getSources(PipelineDraft draft) {
-        assert !hasConsumingSource(draft.channels());
+        if (hasConsumingSource(draft.channels())) { throw new InvalidDraft("The provided draft has a consuming source. All sources must have empty inputs."); }
         return draft.elements().stream().filter(MetadataProcessingElement::isSource).collect(Collectors.toSet());
     }
 
     private static boolean isCyclic(PipelineDraft draft) {
         // isCyclic() makes no assumptions about connectedness
         Set<MetadataChannel> channels = draft.channels();
-        assert hasConsistentElements(draft)
-                : "Assumes all processing elements in channels are in the elements set and vice versa.";
+        if (!hasConsistentElements(draft)) { throw new InvalidDraft("The processing elements in \"channels\" must match those in \"processing elements\"."); }
         Map<MetadataProcessingElement, Set<MetadataProcessingElement>> successors = getSuccessors(channels);
         Set<MetadataProcessingElement> sources = getSources(draft);
-        assert !hasConsumingSource(channels) : "Sources are not consumers";
+        if (hasConsumingSource(channels)) { throw new InvalidDraft("The provided draft has a consuming source. All sources must have empty inputs."); }
 
         Set<MetadataProcessingElement> potentiallyRecurring = new HashSet<>();
         Set<MetadataProcessingElement> visited = new HashSet<>();
@@ -151,11 +151,11 @@ public class PipelineValidator {
         visited.add(current);
 
         if (successors.get(current) == null) {
-            assert current.isSink() : "Any other element than a sink should have successors.";
+            if (!current.isSink()) { throw new InvalidDraft("Any other element than a sink should have successors."); }
             return false;
         }
 
-        assert !successors.get(current).isEmpty() : "Any other element than a sink should have successors.";
+        if (successors.get(current).isEmpty()) { throw new InvalidDraft("Any other element than a sink should have successors."); }
         potentiallyRecurring.add(current);
         for (MetadataProcessingElement successor : successors.get(current)) {
             if (dfsCheckCycle(successor, potentiallyRecurring, visited, successors))

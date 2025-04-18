@@ -1,35 +1,35 @@
 package draft_validation;
 
+import draft_validation.parsing.InvalidDraft;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PipelineValidatorTest {
 
     @Test
-    public void SimpleValid() {
+    public void simpleValid() {
         String path = "src/test/resources/draft_validation/simple_valid.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         assertTrue(PipelineValidator.isValid(draft));
     }
 
     @Test
-    public void NoSink() {
+    public void noSink() {
         String path = "src/test/resources/draft_validation/no_sink.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         assertFalse(PipelineValidator.isValid(draft));
     }
 
     @Test
-    public void NoSource() {
+    public void noSource() {
         String path = "src/test/resources/draft_validation/no_sink.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         assertFalse(PipelineValidator.isValid(draft));
     }
 
     @Test
-    public void ChannelUnknownElement() {
+    public void channelUnknownElement() {
         // The channels contain a channel with a processing element which is not in the processing elements list
         String path = "src/test/resources/draft_validation/channel_unknown_element.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
@@ -37,7 +37,7 @@ public class PipelineValidatorTest {
     }
 
     @Test
-    public void ProcessingElementUnknownElement() {
+    public void processingElementUnknownElement() {
         // The channels contain a channel with a processing element which is not in the processing elements list
         String path = "src/test/resources/draft_validation/channel_unknown_element.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
@@ -45,7 +45,7 @@ public class PipelineValidatorTest {
     }
 
     @Test
-    public void ProducingSink() {
+    public void producingSink() {
         // a sink which is the from element of a channel in the pipeline draft; a sink should always be the to-element
         String path = "src/test/resources/draft_validation/producing_sink.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
@@ -53,7 +53,7 @@ public class PipelineValidatorTest {
     }
 
     @Test
-    public void ConsumingSource() {
+    public void consumingSource() {
         // a sink which is the from element of a channel in the pipeline draft; a sink should always be the to-element
         String path = "src/test/resources/draft_validation/consuming_source.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
@@ -61,21 +61,21 @@ public class PipelineValidatorTest {
     }
 
     @Test
-    public void CyclicReflexive() {
+    public void cyclicReflexive() {
         String path = "src/test/resources/draft_validation/cyclic_reflexive.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         assertFalse(PipelineValidator.isValid(draft));
     }
 
     @Test
-    public void CyclicIndirect() {
+    public void cyclicIndirect() {
         String path = "src/test/resources/draft_validation/cyclic_indirect.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         assertFalse(PipelineValidator.isValid(draft));
     }
 
     @Test
-    public void SameTemplateConsumer() {
+    public void sameTemplateConsumer() {
         // A pipeline should be able to contain two instances of the same template. This test suggests duplicates are handled correctly
         String path = "src/test/resources/draft_validation/same_template_consumer.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
@@ -84,7 +84,7 @@ public class PipelineValidatorTest {
 
 
     @Test
-    public void ChannelMismatchPortType() {
+    public void channelMismatchPortType() {
         // for any channel in the pipeline, the output type of the producer must match the input type for the given port of every consumer
         String path = "src/test/resources/draft_validation/channel_mismatch_port_type.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
@@ -92,26 +92,41 @@ public class PipelineValidatorTest {
     }
 
     @Test
-    public void ElementMissingProducers() {
+    public void elementMissingProducers() {
         // every processing element in the elements of a pipeline must have all of their inputs produced to by channels
         String path = "src/test/resources/draft_validation/element_missing_producers.json";
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         assertFalse(PipelineValidator.isValid(draft));
     }
 
-    // TODO: make tests: channel inputs can mismatch outputs either when
-        // 1) the port expected type does not match the produced type
-        // 2) some element does not have producers for all of its inputs
-        // 3) the same port of a consumer is produced to by more than 1 producer
+    @Test
+    public void samePortMultipleProducers() {
+        String path = "src/test/resources/draft_validation/same_port_multiple_producers.json";
+        PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        assertFalse(PipelineValidator.isValid(draft));
+    }
 
-    // TODO: make negative test for channel inputs match outputs (i.e. where they don't match)
+    @Test
+    public void sameTemplateProducersToConsumer() {
+        // Two instances of the same template produce to the same consumer. Validates instanceID works correctly
+        String path = "src/test/resources/draft_validation/same_template_producers_to_consumer.json";
+        PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        assertTrue(PipelineValidator.isValid(draft));
+    }
 
-    // TODO: test instanceID works correctly
-        // TODO: make SameTypeProducer where two instances of same source template produce to the same sink instance
-        // TODO: make negative test for both SameTemplateConsumer and SameTemplateProducer where the same instance is
-             //  used as consumer producer. Try to make it such that the duplicate instance is not just removed as a
-             // duplicate, e.g. by having some variation in channel; i.e. mismatching channels for the same instance [maybe isolated test?].
+    @Test
+    public void pathEndsWithOperator() {
+        // all complete pipeline paths must end with sinks
+        String path = "src/test/resources/draft_validation/path_ends_with_operator.json";
+        PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        assertThrows(InvalidDraft.class, () -> PipelineValidator.isValid(draft));
+    }
 
-    // TODO: test that all elements are either a sink or a source or on a path from a sink to a source
+    @Test
+    public void pathStartsWithOperator() {
+        String path = "src/test/resources/draft_validation/path_starts_with_operator.json";
+        PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        assertFalse(PipelineValidator.isValid(draft));
+    }
 
 }
