@@ -6,15 +6,15 @@ import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
 import communication.message.serialization.MessageVisitor;
 import communication.message.serialization.deserialization.DeserializationStrategy;
-import communication.message.serialization.deserialization.PetriNetDeserializationStrategy;
+import communication.message.serialization.deserialization.impl.PetriNetDeserializationStrategy;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class PetriNet extends Message {
-    private Set<Place> places;
-    private Set<Transition> transitions;
-    private Set<Arc> flowRelation;
+    private final Set<Place> places;
+    private final Set<Transition> transitions;
+    private final Set<Arc> flowRelation;
 
     public PetriNet() {
         super(new PetriNetDeserializationStrategy());

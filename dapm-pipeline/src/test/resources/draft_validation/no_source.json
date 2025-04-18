@@ -1,0 +1,18 @@
+{
+  "processing elements":[
+    { "orgID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event"], "output1": "PetriNet", "instanceNumber": 1 },
+    { "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output1": null, "instanceNumber": 1 }
+  ],
+
+  "channels": [
+    {
+      "publisher": { "orgID": "Coca Cola", "templateID": "The Profit Miner", "inputs": ["Event"], "output1": "PetriNet", "instanceNumber": 1 },
+      "subscribers": [
+        {
+          "processing element": { "orgID": "DTU", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output1": null, "instanceNumber": 1 },
+          "portNumber": 1
+        }
+      ]
+    }
+  ]
+}

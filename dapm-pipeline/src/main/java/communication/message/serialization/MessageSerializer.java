@@ -21,7 +21,7 @@ public class MessageSerializer implements MessageVisitor<String> {
 
     @Override
     public String visit(Event event) {
-        this.serialization = "event:" + "{\"traces\": [{" +
+        this.serialization = event.getName() + ":" + "{\"traces\": [{" +
                                             "\"attrs\": {\"concept:name\": \"" + event.getCaseID() + "\"}, " +
                                             "\"events\": [" + toJXES(event) + "]}]}";
         return getSerialization();
@@ -69,7 +69,6 @@ public class MessageSerializer implements MessageVisitor<String> {
     }
 
     private String toJXES(Event event) {
-        // TODO: append event attributes, i.e. the collection of additional (non-mining) attributes
         return "{\"concept:name\": \"" + event.getActivity() +
                 "\", \"date\": \"" + event.getTimestamp() +
                 "\"" + commaSeparatedAttributesString(event.getAttributes()) + '}';

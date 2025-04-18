@@ -1,0 +1,32 @@
+{
+  "processing elements":[
+    { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "REFLEXIVE CYCLE", "templateID": "---", "inputs": ["Event", "Event"], "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "DTU", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output": null, "instanceNumber": 1 }
+  ],
+
+  "channels": [
+    {
+      "publisher": { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+      "subscribers": [
+        {
+          "processing element": { "organizationID": "REFLEXIVE CYCLE", "templateID": "---", "inputs": ["Event", "Event"], "output": "Event", "instanceNumber": 1 },
+          "portNumber": 1
+        }
+      ]
+    },
+    {
+      "publisher": { "organizationID": "REFLEXIVE CYCLE", "templateID": "---", "inputs": ["Event", "Event"], "output": "Event", "instanceNumber": 1 },
+      "subscribers": [
+        {
+          "processing element": { "organizationID": "REFLEXIVE CYCLE", "templateID": "---", "inputs": ["Event", "Event"], "output": "Event", "instanceNumber": 1 },
+          "portNumber": 2
+        },
+        {
+          "processing element": { "organizationID": "DTU", "templateID": "Dream Sink", "inputs": ["PetriNet"], "output": null, "instanceNumber": 1 },
+          "portNumber": 1
+        }
+      ]
+    }
+  ]
+}

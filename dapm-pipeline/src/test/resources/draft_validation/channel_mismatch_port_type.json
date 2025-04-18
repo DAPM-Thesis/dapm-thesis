@@ -1,0 +1,18 @@
+{
+  "processing elements":[
+    { "organizationID": "Pepsi", "templateID": "source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "Coca Cola", "templateID": "mismatching port in channel", "inputs": ["PetriNet"], "output": null, "instanceNumber": 1 }
+  ],
+
+  "channels": [
+    {
+      "publisher": { "organizationID": "Pepsi", "templateID": "source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+      "subscribers": [
+        {
+          "processing element": { "organizationID": "Coca Cola", "templateID": "mismatching port in channel", "inputs": ["PetriNet"], "output": null, "instanceNumber": 1 },
+          "portNumber": 1
+        }
+      ]
+    }
+  ]
+}

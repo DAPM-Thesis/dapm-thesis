@@ -13,7 +13,7 @@ public abstract class MiningOperator<O extends Message> extends Operator<Pair<O,
     protected O convertAlgorithmOutput(Pair<O, Boolean> rawOutput) {
         // Extract the O value from the Pair.
         // Optionally, you could also log or use the Boolean flag.
-        return rawOutput.getFirst();
+        return rawOutput.first();
     }
 
 }

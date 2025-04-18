@@ -6,7 +6,9 @@ import communication.message.serialization.deserialization.DeserializationStrate
 public abstract class Message {
     protected DeserializationStrategy deserializationStrategy;
 
-    protected Message(DeserializationStrategy strategy) { this.deserializationStrategy = strategy; }
+    protected Message(DeserializationStrategy strategy) {
+        this.deserializationStrategy = strategy;
+    }
 
     public DeserializationStrategy getDeserializationStrategy() { return deserializationStrategy; }
 

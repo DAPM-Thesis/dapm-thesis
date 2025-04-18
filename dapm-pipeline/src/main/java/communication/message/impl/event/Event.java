@@ -3,7 +3,7 @@ package communication.message.impl.event;
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
 import communication.message.serialization.deserialization.DeserializationStrategy;
-import communication.message.serialization.deserialization.EventDeserializationStrategy;
+import communication.message.serialization.deserialization.impl.EventDeserializationStrategy;
 
 import java.util.Collection;
 import java.util.Set;
@@ -29,11 +29,6 @@ public class Event extends Message {
     public String getActivity() {return activity; }
     public String getTimestamp() {return timestamp; }
     public Collection<Attribute<?>> getAttributes() {return attributes;}
-
-    @Override
-    public String getName() {
-        return "event";
-    }
 
     @Override
     public void acceptVisitor(MessageVisitor<?> v) {

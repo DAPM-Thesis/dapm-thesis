@@ -1,0 +1,18 @@
+{
+  "processing elements":[
+    { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "DTU",  "templateID": "Not all inputs filled in channels",  "inputs": ["Event", "PetriNet"],  "output": null,  "instanceNumber": 1 }
+  ],
+
+  "channels": [
+    {
+      "publisher": { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+      "subscribers": [
+        {
+          "processing element": {"organizationID": "DTU",  "templateID": "Not all inputs filled in channels",  "inputs": ["Event", "PetriNet"],  "output": null,  "instanceNumber": 1},
+          "portNumber": 1
+        }
+      ]
+    }
+  ]
+}

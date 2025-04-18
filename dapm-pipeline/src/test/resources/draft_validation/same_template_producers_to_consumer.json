@@ -1,0 +1,28 @@
+{
+  "processing elements":[
+    { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "Pepsi",  "templateID": "$$$ Source",  "inputs": [],  "output": "Event",  "instanceNumber": 2 },
+    { "organizationID": "DTU",  "templateID": "Dream Sink",  "inputs": ["Event", "Event"],  "output": null,  "instanceNumber": 1 }
+  ],
+
+  "channels": [
+    {
+      "publisher": { "organizationID": "Pepsi", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+      "subscribers": [
+        {
+          "processing element": { "organizationID": "DTU",  "templateID": "Dream Sink",  "inputs": ["Event", "Event"],  "output": null,  "instanceNumber": 1 },
+          "portNumber": 1
+        }
+      ]
+    },
+    {
+      "publisher": { "organizationID": "Pepsi",  "templateID": "$$$ Source",  "inputs": [],  "output": "Event",  "instanceNumber": 2 },
+      "subscribers": [
+        {
+          "processing element": { "organizationID": "DTU",  "templateID": "Dream Sink",  "inputs": ["Event", "Event"],  "output": null,  "instanceNumber": 1 },
+          "portNumber": 2
+        }
+      ]
+    }
+  ]
+}

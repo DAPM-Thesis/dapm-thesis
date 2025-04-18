@@ -1,4 +1,4 @@
-package communication.message.serialization.deserialization;
+package communication.message.serialization.deserialization.impl;
 
 import communication.message.Message;
 import communication.message.impl.petrinet.PetriNet;
@@ -7,6 +7,7 @@ import communication.message.impl.petrinet.Transition;
 import communication.message.impl.petrinet.arc.Arc;
 import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
+import communication.message.serialization.deserialization.DeserializationStrategy;
 import utils.Pair;
 
 import java.util.HashMap;
@@ -38,8 +39,8 @@ public class PetriNetDeserializationStrategy implements DeserializationStrategy 
             if (i == -1) { break; } // String.indexOf() returns -1 if no matches are found
             // extract ID
             Pair<String, Integer> IDAndEnd = getNextQuoteContent(pnml, i+start.length());
-            String ID = IDAndEnd.getFirst();
-            i = IDAndEnd.getSecond();
+            String ID = IDAndEnd.first();
+            i = IDAndEnd.second();
 
             // extract marking if there is one
             int initialMarkingIndex = pnml.indexOf(initialMarkingText, i);
@@ -71,8 +72,8 @@ public class PetriNetDeserializationStrategy implements DeserializationStrategy 
             if (i == -1) { break; }
 
             Pair<String, Integer> IDAndEnd = getNextQuoteContent(pnml, i+start.length());
-            String ID = IDAndEnd.getFirst();
-            i = IDAndEnd.getSecond();
+            String ID = IDAndEnd.first();
+            i = IDAndEnd.second();
 
             transitions.add(new Transition(ID));
         }
@@ -95,12 +96,12 @@ public class PetriNetDeserializationStrategy implements DeserializationStrategy 
             if (i == -1) { break; }
 
             Pair<String, Integer> IDAndEnd = getNextQuoteContent(pnml, i+start.length());
-            String ID = IDAndEnd.getFirst();
-            Pair<String, Integer> sourceAndEnd = getNextQuoteContent(pnml, IDAndEnd.getSecond());
-            String source = sourceAndEnd.getFirst();
-            Pair<String, Integer> targetAndEnd = getNextQuoteContent(pnml, sourceAndEnd.getSecond());
-            String target = targetAndEnd.getFirst();
-            i = targetAndEnd.getSecond();
+            String ID = IDAndEnd.first();
+            Pair<String, Integer> sourceAndEnd = getNextQuoteContent(pnml, IDAndEnd.second());
+            String source = sourceAndEnd.first();
+            Pair<String, Integer> targetAndEnd = getNextQuoteContent(pnml, sourceAndEnd.second());
+            String target = targetAndEnd.first();
+            i = targetAndEnd.second();
 
             if (placeMap.containsKey(source) && transitionMap.containsKey(target))
             { flowRelation.add(new PlaceToTransitionArc(ID, placeMap.get(source), transitionMap.get(target))); }
