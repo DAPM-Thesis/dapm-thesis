@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import communication.API.HTTPClient;
 import communication.API.PEInstanceResponse;
 import draft_validation.ChannelReference;
+import draft_validation.PipelineDraft;
 import draft_validation.ProcessingElementReference;
 import draft_validation.SubscriberReference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +29,10 @@ public class PipelineBuilder {
         this.objectMapper = new ObjectMapper();
     }
 
-    public Pipeline buildPipeline(String organizationOwnerID, Set<ChannelReference> channelReferences) {
+    public Pipeline buildPipeline(String organizationOwnerID, PipelineDraft pipelineDraft) {
         Pipeline pipeline = new Pipeline(organizationOwnerID);
         this.dag = new DAG<>();
-        build(pipeline, channelReferences);
+        build(pipeline, pipelineDraft.channels());
         return pipeline;
     }
 
