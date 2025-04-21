@@ -50,7 +50,8 @@ public class PipelineController {
         p.setCreatedBy(UUID.fromString("11111111-1111-1111-1111-111111111115"));
         p.setCreatedAt(Instant.now());
         p.setUpdatedAt(Instant.now());
-        p.setChannelsJson(pipeline.getChannelsJson());
+        p.setChannels(pipeline.getChannels());
+
 
         Organization organization = organizationRepository.findByName(pipeline.getOwnerOrganization())
                 .orElseThrow(() -> new IllegalArgumentException("Organization not found"));

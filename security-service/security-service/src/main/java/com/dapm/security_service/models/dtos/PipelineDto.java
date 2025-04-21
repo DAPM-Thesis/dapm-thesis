@@ -1,14 +1,11 @@
 package com.dapm.security_service.models.dtos;
 
+import com.dapm.security_service.models.*;
 import lombok.Data;
-import com.dapm.security_service.models.Pipeline;
-import com.dapm.security_service.models.Organization;
-import com.dapm.security_service.models.Role;
-import com.dapm.security_service.models.ProcessingElement;
-import com.dapm.security_service.models.Token;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,9 +20,10 @@ public class PipelineDto {
 
     private String description;
 
-    private String channels;
+    private List<Channel> channels;
 
-//    private UUID pipelineRoleId;
+
+    //    private UUID pipelineRoleId;
     private String pipelineRoleName;
 
     // Changed from nodeIds to processingElementIds
@@ -70,7 +68,7 @@ public class PipelineDto {
         this.createdBy = pipeline.getCreatedBy();
         this.createdAt = pipeline.getCreatedAt();
         this.updatedAt = pipeline.getUpdatedAt();
-        this.channels=pipeline.getChannelsJson();
+        this.channels=pipeline.getChannels();
     }
 
 }

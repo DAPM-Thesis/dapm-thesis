@@ -80,16 +80,15 @@ public class PipelineDesignService {
             }
         }
 
-        List<List<String>> updatedChannels = dto.getChannels().stream()
-                .map(channel -> channel.stream()
-                        .map(tempId -> Optional.ofNullable(idMap.get(tempId)).map(UUID::toString).orElse(tempId))
-                        .collect(Collectors.toList()))
+        List<Channel> updatedChannels = dto.getChannels().stream()
+                .map(pair -> new Channel(
+                        idMap.get(pair.get(0)), // convert temp source
+                        idMap.get(pair.get(1))  // convert temp target
+                ))
                 .collect(Collectors.toList());
 
-        String channelsJson = "";
-        try {
-            channelsJson = objectMapper.writeValueAsString(updatedChannels);
-        } catch (Exception ignored) {}
+
+
 
         Pipeline pipeline = Pipeline.builder()
                 .id(UUID.randomUUID())
@@ -98,7 +97,7 @@ public class PipelineDesignService {
                 .ownerOrganization(getDefaultOwnerOrganization())
                 .pipelineRole(null)
                 .processingElements(elements)
-                .channelsJson(channelsJson)
+                .channels(updatedChannels)
                 .createdBy(getAuthenticatedUserId())
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())

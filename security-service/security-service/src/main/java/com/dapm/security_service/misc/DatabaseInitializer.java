@@ -120,7 +120,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         Organization org;
 
 
-
+//TODO: orgB IS  hardcoded , chnage later to be dynamic
         if (orgName.equals("OrgA")) {
             org = organizationRepository.findByName("OrgA")
                     .orElseGet(() -> organizationRepository.save(
@@ -128,6 +128,13 @@ public class DatabaseInitializer implements CommandLineRunner {
                                     .id(ORG_A_ID)
                                     .name("OrgA")
                                     .build()
+                            ));
+            organizationRepository.findByName("OrgB")
+                                    .orElseGet(() -> organizationRepository.save(
+                                            Organization.builder()
+                                                    .id(ORG_B_ID)
+                                                    .name("OrgB")
+                                                    .build()
                     ));
         } else {
             org = organizationRepository.findByName("OrgB")
@@ -142,9 +149,9 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .id(NODE_B_ID)
                     .templateId("pe_discovery")
                     .ownerOrganization(org)
-                    .inputs(Set.of("Event"))        // Sample input
-                    .outputs(Set.of("Model"))       // Sample output
-                    .visibility(Set.of("OrgA"))     // 👈 Make this visible to OrgA
+                    .inputs(Set.of("Event"))
+                    .outputs(Set.of("Model"))
+                    .visibility(Set.of("OrgA"))
                     .build();
 
             processingElementRepository.save(peB);

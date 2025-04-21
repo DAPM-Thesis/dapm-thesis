@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -22,7 +19,8 @@ public class CreatePipelineDto {
     private String description;
 //    private String pipelineRole;
     private Set<UUID> processingElements = new HashSet<>();
-    private String channelsJson;
+    private List<Channel> channels = new ArrayList<>();
+
 //    private Set<UUID> tokens = new HashSet<>();
 //    private UUID createdBy;
 //    private Instant createdAt;
@@ -33,7 +31,10 @@ public class CreatePipelineDto {
         this.name=pipeline.getName();
         this.ownerOrganization=pipeline.getOwnerOrganization().getName();
         this.description=pipeline.getDescription();
-        this.channelsJson=pipeline.getChannelsJson();
+        this.channels = pipeline.getChannels() != null
+                ? new ArrayList<>(pipeline.getChannels())
+                : new ArrayList<>();
+
 //        this.pipelineRole=pipeline.getPipelineRole().getName();
 
         // Map processing elements instead of nodes

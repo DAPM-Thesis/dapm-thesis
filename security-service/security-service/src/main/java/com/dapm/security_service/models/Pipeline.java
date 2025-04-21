@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -45,11 +46,11 @@ public class Pipeline {
     private Set<ProcessingElement> processingElements = new HashSet<>();
 
 
-    // Channels between processing elements.
-    // For now, we store them as JSON text.
-    @Lob
-    @Column(name = "channels", columnDefinition = "TEXT")
-    private String channelsJson;
+
+    @ElementCollection
+    @CollectionTable(name = "pipeline_channels", joinColumns = @JoinColumn(name = "pipeline_id"))
+    private List<Channel> channels;
+
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

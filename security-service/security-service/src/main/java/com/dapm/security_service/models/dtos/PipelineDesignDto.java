@@ -1,5 +1,6 @@
 package com.dapm.security_service.models.dtos;
 
+import com.dapm.security_service.models.Channel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,8 +13,9 @@ import java.util.List;
 public class PipelineDesignDto {
     private String name;
     private String description;
-    // List of processing element designs.
+
     private List<ProcessingElementDto> processingElements;
-    // Channels defined as lists of processing element IDs.
+
     private List<List<String>> channels;
+
 }

@@ -27,14 +27,14 @@ public class ProcessingElement {
     @Column(name = "template_id", nullable = false)
     private String templateId;
 
-    // A set of input types, e.g., ["Event", "PetriNet"]
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "processing_element_inputs", joinColumns = @JoinColumn(name = "processing_element_id"))
     @Column(name = "input")
     @Builder.Default
     private Set<String> inputs = new HashSet<>();
 
-    // A set of output types, e.g., ["Alignment"]
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "processing_element_outputs", joinColumns = @JoinColumn(name = "processing_element_id"))
     @Column(name = "output")
