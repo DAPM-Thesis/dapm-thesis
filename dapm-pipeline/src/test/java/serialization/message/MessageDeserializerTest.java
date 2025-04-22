@@ -2,6 +2,7 @@ package serialization.message;
 
 import communication.message.Message;
 import communication.message.impl.Alignment;
+import communication.message.impl.Time;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
 import communication.message.impl.event.Event;
@@ -198,6 +199,15 @@ class MessageDeserializerTest {
         String output_2 = serializer.visit(alignment_2);
         assertNotEquals(MessageFactory.deserialize(output_1),
                 MessageFactory.deserialize(output_2));
+    }
+
+    @Test
+    void timeInverse() {
+        Time expected = new Time();
+        MessageSerializer serializer = new MessageSerializer();
+        String timeStr = serializer.visit(expected);
+        Message output = MessageFactory.deserialize(timeStr);
+        assertEquals(expected, output);
     }
 
 

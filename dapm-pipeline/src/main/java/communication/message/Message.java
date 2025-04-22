@@ -5,7 +5,8 @@ import communication.message.serialization.deserialization.DeserializationStrate
 
 public abstract class Message {
     protected DeserializationStrategy deserializationStrategy;
-
+    // TODO: optimize deserializationstrategy such that each new instance does not have to create a DeserializationStrategy
+    // TODO: e.g. by making deserializationStrategy static in the inheritors, by making an annotation, or something else...
     protected Message(DeserializationStrategy strategy) {
         this.deserializationStrategy = strategy;
     }
