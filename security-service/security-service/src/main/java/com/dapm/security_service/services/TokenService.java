@@ -29,6 +29,9 @@ public class TokenService {
     @Value("${org.private-key}")
     private String privateKeyString;
 
+    @Value("${dapm.defaultOrgName}")
+    private String orgId;
+
     @PostConstruct
     public void init() {
         try {
@@ -102,6 +105,17 @@ public class TokenService {
                 //.setIssuer("OrgB")
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusMillis(request.getAllowedDurationHours())))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
+    }
+
+    public String generateHandshakeToken(long ttlSeconds) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .setIssuer(orgId)
+                .setSubject("handshake")
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plusSeconds(ttlSeconds)))
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }

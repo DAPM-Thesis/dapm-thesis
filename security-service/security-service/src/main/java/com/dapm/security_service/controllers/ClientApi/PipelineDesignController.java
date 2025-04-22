@@ -4,6 +4,7 @@ import com.dapm.security_service.models.dtos.PipelineDesignDto;
 import com.dapm.security_service.models.dtos.ProcessingElementDto;
 import com.dapm.security_service.models.Pipeline;
 import com.dapm.security_service.services.PipelineDesignService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,9 @@ import java.util.List;
 public class PipelineDesignController {
 
     private final PipelineDesignService pipelineDesignService;
+
+    @Value("${dapm.defaultOrgName}")
+    private String orgId;
 
     public PipelineDesignController(PipelineDesignService pipelineDesignService) {
         this.pipelineDesignService = pipelineDesignService;
@@ -26,8 +30,8 @@ public class PipelineDesignController {
      * Example call: /api/pipeline/design/available-pe-templates?org=OrgA
      */
     @GetMapping("/available-pe-templates")
-    public ResponseEntity<List<ProcessingElementDto>> getAvailablePeTemplates(@RequestParam String org) {
-        List<ProcessingElementDto> templates = pipelineDesignService.getAvailablePeTemplates(org);
+    public ResponseEntity<List<ProcessingElementDto>> getAvailablePeTemplates() {
+        List<ProcessingElementDto> templates = pipelineDesignService.getAvailablePeTemplates(orgId);
         return ResponseEntity.ok(templates);
     }
 

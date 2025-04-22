@@ -1,10 +1,17 @@
 package com.dapm.security_service.controllers.ClientApi;
 
+import com.dapm.security_service.models.dtos.ProcessingElementDto;
+import com.dapm.security_service.repositories.ProcessingElementRepository;
 import com.dapm.security_service.services.PublicKeysService;
+import com.dapm.security_service.services.TokenService;
+import com.dapm.security_service.services.TokenVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/keys")
@@ -46,4 +53,6 @@ public class PublicKeyTestController {
                     .body("Error testing key pair: " + e.getMessage());
         }
     }
+
+
 }

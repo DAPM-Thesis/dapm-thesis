@@ -129,13 +129,13 @@ public class DatabaseInitializer implements CommandLineRunner {
                                     .name("OrgA")
                                     .build()
                             ));
-            organizationRepository.findByName("OrgB")
-                                    .orElseGet(() -> organizationRepository.save(
-                                            Organization.builder()
-                                                    .id(ORG_B_ID)
-                                                    .name("OrgB")
-                                                    .build()
-                    ));
+//            organizationRepository.findByName("OrgB")
+//                                    .orElseGet(() -> organizationRepository.save(
+//                                            Organization.builder()
+//                                                    .id(ORG_B_ID)
+//                                                    .name("OrgB")
+//                                                    .build()
+//                    ));
         } else {
             org = organizationRepository.findByName("OrgB")
                     .orElseGet(() -> organizationRepository.save(
