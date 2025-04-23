@@ -5,31 +5,21 @@ import draft_validation.ProcessingElementReference;
 import java.util.*;
 
 public class Pipeline {
-    private String organizationOwnerID;
-    private Set<ProcessingElementReference> processingElements;
-    private Map<String, ProcessingElementReference> sources;
-    private Map<ProcessingElementReference, ProcessingElementReference> connections;
+    private final String organizationOwnerID;
+    private Map<String, ProcessingElementReference> processingElements;
 
     public Pipeline(String organizationOwnerID) {
-        processingElements = new HashSet<>();
-        connections = new HashMap<>();
-        sources = new HashMap<>();
+        processingElements = new HashMap<>();
         this.organizationOwnerID = organizationOwnerID;
-    }
-
-    public Map<String, ProcessingElementReference> getSources() {
-        return sources;
     }
 
     public String getOrganizationOwnerID() {
         return organizationOwnerID;
     }
 
-    public Set<ProcessingElementReference> getProcessingElements() {
-        return processingElements;
-    }
+    public Map<String, ProcessingElementReference> getProcessingElements() {return processingElements;}
 
-    public Map<ProcessingElementReference, ProcessingElementReference> getConnections() {
-        return connections;
+    public void addProcessingElement(String instanceID, ProcessingElementReference processingElementReference) {
+        processingElements.put(instanceID, processingElementReference);
     }
 }

@@ -18,14 +18,11 @@ public class PipelineExecutionService {
     }
 
     public void start(Pipeline pipeline) {
-        if (pipeline.getSources().isEmpty()) throw new IllegalArgumentException("No sources found in pipeline");
-        for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getSources().entrySet()) {
-            try {
-                String url = "/pipelineBuilder/start/instance/" + entry.getKey();
-
-                webClient.postSync(entry.getValue().getOrganizationHostURL() + url);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
+            if(entry.getValue().isSource()) {
+                String url = entry.getValue().getOrganizationHostURL() +
+                        "/pipelineBuilder/start/instance/" + entry.getKey();
+                webClient.putSync(url);
             }
         }
     }

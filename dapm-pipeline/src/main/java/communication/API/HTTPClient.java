@@ -14,13 +14,42 @@ public class HTTPClient {
     }
 
     public String postSync(String url) {
+        return postSync(url, null);
+    }
+
+    public String postSync(String url, String body) {
         try {
-       return webClient.post().uri(url)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+            WebClient.RequestBodySpec request = webClient.post()
+                    .uri(url)
+                    .header("Content-Type", "application/json");
+
+            WebClient.ResponseSpec response = (body == null)
+                    ? request.retrieve()
+                    : request.bodyValue(body).retrieve();
+
+            return response.bodyToMono(String.class).block();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Request failed: " + url, e);
+        }
+    }
+
+    public String putSync(String url) {
+        return putSync(url, null);
+    }
+
+    public String putSync(String url, String body) {
+        try {
+            WebClient.RequestBodySpec request = webClient.put()
+                    .uri(url)
+                    .header("Content-Type", "application/json");
+
+            WebClient.ResponseSpec response = (body == null)
+                    ? request.retrieve()
+                    : request.bodyValue(body).retrieve();
+
+            return response.bodyToMono(String.class).block();
+        } catch (Exception e) {
+            throw new RuntimeException("Request failed: " + url, e);
         }
     }
 }
