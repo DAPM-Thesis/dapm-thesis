@@ -7,6 +7,7 @@ import draft_validation.parsing.DraftParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -29,6 +30,12 @@ public class DraftParserTest {
     public static PipelineDraft getSimpleValid() {
         String simpleValidPath = "src/test/resources/draft_validation/simple_valid.json";
         return getPipelineDraft(simpleValidPath);
+    }
+
+    @Test
+    public void schemaLoadable() {
+        InputStream is = getClass().getClassLoader().getResourceAsStream("jsonschemas/pipeline_draft_schema.json");
+        assertNotNull(is); // Should NOT be null
     }
 
     @Test
