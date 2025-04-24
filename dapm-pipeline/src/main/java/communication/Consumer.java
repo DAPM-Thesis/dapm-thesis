@@ -1,5 +1,6 @@
 package communication;
 
+import communication.config.ConsumerConfig;
 import communication.config.KafkaConfiguration;
 import communication.message.Message;
 import communication.message.serialization.deserialization.MessageFactory;
@@ -21,13 +22,15 @@ public class Consumer {
     private final Subscriber<Message> subscriber;
     private final String topic;
     private final String brokerURL;
+    private final int portNumber;
 
-    public Consumer(Subscriber<Message> subscriber, String brokerURL, String topic) {
-        Properties props = KafkaConfiguration.getConsumerProperties(brokerURL);
+    public Consumer(Subscriber<Message> subscriber, ConsumerConfig config) {
+        Properties props = KafkaConfiguration.getConsumerProperties(config.brokerURL());
         this.kafkaConsumer = new KafkaConsumer<>(props);
         this.subscriber = subscriber;
-        this.topic = topic;
-        this.brokerURL = brokerURL;
+        this.topic = config.topic();
+        this.brokerURL = config.brokerURL();
+        this.portNumber = config.portNumber();
     }
 
     public void start() {
@@ -60,7 +63,7 @@ public class Consumer {
                 if (!records.isEmpty()) {
                     for (ConsumerRecord<String, String> record : records) {
                         Message msg =  MessageFactory.deserialize(record.value());
-                        this.subscriber.observe(msg);
+                        this.subscriber.observe(msg, portNumber);
                     }
                 }
             }
