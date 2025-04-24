@@ -2,6 +2,7 @@ package pipeline.processingelement;
 
 import communication.Producer;
 import communication.Publisher;
+import communication.config.ProducerConfig;
 import communication.message.Message;
 
 import java.util.concurrent.Executors;
@@ -26,9 +27,9 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public void publish(O data) { producer.publish(data); }
 
     @Override
-    public void registerProducer(String brokerURL, String topic) {
+    public void registerProducer(ProducerConfig config) {
         if(this.producer == null) {
-            this.producer = new Producer(brokerURL, topic);
+            this.producer = new Producer(config);
         }
     }
 }

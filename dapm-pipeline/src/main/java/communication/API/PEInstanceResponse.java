@@ -2,42 +2,42 @@ package communication.API;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import communication.config.ChannelConfig;
+import communication.config.ProducerConfig;
+
 
 public class PEInstanceResponse {
     private final String templateID;
     private final String instanceID;
-    private final ChannelConfig channelConfig;
+    private final ProducerConfig producerConfig;
 
     @JsonCreator
     public PEInstanceResponse(
             @JsonProperty("templateID") String templateID,
             @JsonProperty("instanceID") String instanceID,
-            @JsonProperty("channelConfig") ChannelConfig channelConfig
-    ) {
+            @JsonProperty("producerConfig") ProducerConfig producerConfig
+            ) {
         this.templateID = templateID;
         this.instanceID = instanceID;
-        this.channelConfig = channelConfig;
+        this.producerConfig = producerConfig;
     }
 
     public static class Builder {
         private final String templateID;
         private final String instanceID;
-        private ChannelConfig channelConfig;
+        private ProducerConfig producerConfig;
 
         public Builder(String templateID, String instanceID) {
             this.templateID = templateID;
             this.instanceID = instanceID;
         }
 
-
-        public Builder channelConfig(ChannelConfig config) {
-            this.channelConfig = config;
+        public Builder producerConfig(ProducerConfig config) {
+            this.producerConfig = config;
             return this;
         }
 
         public PEInstanceResponse build() {
-            return new PEInstanceResponse(templateID, instanceID, channelConfig);
+            return new PEInstanceResponse(templateID, instanceID, producerConfig);
         }
     }
 
@@ -45,7 +45,7 @@ public class PEInstanceResponse {
         return templateID;
     }
 
-    public ChannelConfig getChannelConfig() {return channelConfig;}
+    public ProducerConfig getProducerConfig() {return producerConfig;}
 
     public String getInstanceID() {
         return instanceID;

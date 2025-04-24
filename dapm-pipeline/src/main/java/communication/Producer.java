@@ -1,6 +1,7 @@
 package communication;
 
 import communication.config.KafkaConfiguration;
+import communication.config.ProducerConfig;
 import communication.message.Message;
 import communication.message.serialization.MessageSerializer;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -17,12 +18,12 @@ public class Producer {
     private KafkaProducer<String, String> kafkaProducer;
     private final String topic;
 
-    public Producer(String brokerURL, String topic) {
-        Properties props = KafkaConfiguration.getProducerProperties(brokerURL);
+    public Producer(ProducerConfig config) {
+        Properties props = KafkaConfiguration.getProducerProperties(config.brokerURL());
         this.kafkaProducer = new KafkaProducer<>(props);
-        this.topic = topic;
+        this.topic = config.topic();
 
-        createKafkaTopicIfNotExist(brokerURL);
+        createKafkaTopicIfNotExist(config.brokerURL());
     }
 
     public void publish(Message message) {
