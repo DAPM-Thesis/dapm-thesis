@@ -1,0 +1,18 @@
+{
+  "processing elements":[
+    { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": null, "output": "Event", "instanceNumber": 1, "parameterValues": [0.5, 0.5, true, "string"] },
+    { "organizationID": "DTU", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["PetriNet"],  "output": null,  "instanceNumber": 1 }
+  ],
+
+  "channels": [
+    {
+      "publisher": { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": null, "output": "Event", "instanceNumber": 1, "parameterValues": [0.5, 0.5, true, "string"] },
+      "subscribers": [
+        {
+          "processing element": { "organizationID": "DTU", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["PetriNet"],  "output": null,  "instanceNumber": 1 },
+          "portNumber": 1
+        }
+      ]
+    }
+  ]
+}

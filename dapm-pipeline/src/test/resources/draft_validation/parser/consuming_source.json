@@ -1,0 +1,29 @@
+{
+  "processing elements":[
+    { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": null, "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "other", "hostURL": "http://localhost:8092", "templateID": "source", "inputs": null, "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "other", "hostURL": "http://localhost:8102", "templateID": "sink", "inputs": ["Event"], "output": null, "instanceNumber": 1 }
+
+  ],
+
+  "channels": [
+    {
+      "publisher": { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": null, "output": "Event", "instanceNumber": 1 },
+      "subscribers": [
+        {
+          "processing element": { "organizationID": "other", "hostURL": "http://localhost:8092", "templateID": "source", "inputs": null, "output": "Event", "instanceNumber": 1 },
+          "portNumber": 1
+        }
+      ]
+    },
+    {
+      "publisher": { "organizationID": "other", "hostURL": "http://localhost:8092", "templateID": "source", "inputs": null, "output": "Event", "instanceNumber": 1 },
+      "subscribers": [
+        {
+          "processing element": { "organizationID": "other", "hostURL": "http://localhost:8192", "templateID": "sink", "inputs": ["Event"], "output": null, "instanceNumber": 1 },
+          "portNumber": 1
+        }
+      ]
+    }
+  ]
+}

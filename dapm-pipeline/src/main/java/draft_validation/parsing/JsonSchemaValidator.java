@@ -20,11 +20,10 @@ public class JsonSchemaValidator {
         String pipelineDraftSchemaPath = "https://www.dapm.org/pipeline_draft_schema.json";
 
         JsonSchema schema = factory.getSchema(SchemaLocation.of(pipelineDraftSchemaPath), config);
-        Set<ValidationMessage> assertions = schema.validate(inputJson, InputFormat.JSON, executionContext -> {
-            executionContext.getExecutionConfig().setFormatAssertionsEnabled(true);
-        });
+        Set<ValidationMessage> assertions = schema.validate(inputJson, InputFormat.JSON,
+                executionContext -> executionContext.getExecutionConfig().setFormatAssertionsEnabled(true));
 
-        if (!assertions.isEmpty()) { // the input json does not follow the schema
+        if (!assertions.isEmpty()) {
             StringBuilder sb = new StringBuilder("The provided JSON does not conform to schema:\n");
             for (ValidationMessage error : assertions) {
                 sb.append(" - ").append(error.getMessage()).append("\n");

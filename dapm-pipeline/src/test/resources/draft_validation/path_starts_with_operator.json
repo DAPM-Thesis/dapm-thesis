@@ -1,13 +1,13 @@
 {
   "processing elements":[
-    { "organizationID": "source", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "source", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": null, "output": "Event", "instanceNumber": 1 },
     { "organizationID": "OPERATOR AS SOURCE", "hostURL": "http://localhost:8092", "templateID": "The Profit Miner",  "inputs": ["Event"],  "output": "PetriNet",  "instanceNumber": 1 },
     { "organizationID": "sink", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["Event", "PetriNet"],  "output": null,  "instanceNumber": 1 }
   ],
 
   "channels": [
     {
-      "publisher": { "organizationID": "source", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+      "publisher": { "organizationID": "source", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": null, "output": "Event", "instanceNumber": 1 },
       "subscribers": [
         {
           "processing element": { "organizationID": "sink", "hostURL": "http://localhost:8102",  "templateID": "Dream Sink",  "inputs": ["Event", "PetriNet"],  "output": null,  "instanceNumber": 1 },

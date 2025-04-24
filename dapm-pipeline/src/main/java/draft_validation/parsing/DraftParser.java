@@ -13,7 +13,7 @@ public class DraftParser implements Parser<PipelineDraft> {
 
     @Override
     public PipelineDraft deserialize(String json) {
-        // The JSON schema validator below will take care of throwing errors if the json is not correctly formatted
+        // The JSON schema validator below will take care of throwing errors if the JSON is not correctly formatted
         // according to the pipeline_draft_json_schema.json. We can therefore omit throwing those errors afterward.
         JsonSchemaValidator.validatePipelineDraft(json);
 
@@ -66,17 +66,23 @@ public class DraftParser implements Parser<PipelineDraft> {
         return elements;
     }
 
-
+    // TODO: update parsing such that every property is set
     private ProcessingElementReference getProcessingElementReferences(Map<String, Object> elementMap) throws InvalidDraft {
         String organizationID = (String) elementMap.get("organizationID");
         String organizationHostURL = (String) elementMap.get("hostURL");
         String templateID = (String) elementMap.get("templateID");
-        List<Class<? extends Message>> inputs = parseClassList((List<String>) elementMap.get("inputs"));
+        List<Class<? extends Message>> inputs = extractInputs((List<String>) elementMap.get("inputs"));
         Class<? extends Message> output = extractOutput(elementMap);
         int instanceNumber = (int) elementMap.get("instanceNumber");
+        List<Object> parameterValues = extractParameterValues(elementMap);
 
         return new ProcessingElementReference(
-                organizationID, organizationHostURL, templateID,inputs, output, instanceNumber);
+                organizationID, organizationHostURL, templateID,inputs, output, instanceNumber, parameterValues);
+    }
+
+    private List<Object> extractParameterValues(Map<String, Object> elementMap) {
+        List<Object> parameterValues = (List<Object>) elementMap.get("parameterValues");
+        return (parameterValues == null) ? new ArrayList<>() : parameterValues;
     }
 
 
@@ -87,9 +93,13 @@ public class DraftParser implements Parser<PipelineDraft> {
         return MessageTypeRegistry.getMessageType(outputClassString);
     }
 
-    private List<Class<? extends Message>> parseClassList(List<String> messageClassList) throws InvalidDraft {
+    private List<Class<? extends Message>> extractInputs(List<String> stringInputs) throws InvalidDraft {
+        if (stringInputs == null)
+            { return null; }
         List<Class<? extends Message>> messageClasses = new ArrayList<>();
-        for (String classString : messageClassList) {
+        if (stringInputs == null)
+            { return messageClasses; }
+        for (String classString : stringInputs) {
             messageClasses.add(MessageTypeRegistry.getMessageType(classString));
         }
         return messageClasses;

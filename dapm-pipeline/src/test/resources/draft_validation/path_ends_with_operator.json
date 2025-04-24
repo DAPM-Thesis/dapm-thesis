@@ -1,13 +1,13 @@
 {
   "processing elements":[
-    { "organizationID": "SOURCE", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+    { "organizationID": "SOURCE", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": null, "output": "Event", "instanceNumber": 1 },
     { "organizationID": "OPERATOR AS SINK", "hostURL": "http://localhost:8092", "templateID": "---",  "inputs": ["Event"],  "output": "Event",  "instanceNumber": 1 },
     { "organizationID": "SINK", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["Event"],  "output": null,  "instanceNumber": 1 }
   ],
 
   "channels": [
     {
-      "publisher": { "organizationID": "SOURCE", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1 },
+      "publisher": { "organizationID": "SOURCE", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": null, "output": "Event", "instanceNumber": 1 },
       "subscribers": [
         {
           "processing element": { "organizationID": "OPERATOR AS SINK", "hostURL": "http://localhost:8092",  "templateID": "---",  "inputs": ["Event"],  "output": "Event",  "instanceNumber": 1 },

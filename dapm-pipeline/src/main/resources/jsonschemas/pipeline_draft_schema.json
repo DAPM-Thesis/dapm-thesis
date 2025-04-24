@@ -9,7 +9,17 @@
       "type": "array",
       "items": { "$ref": "https://www.dapm.org/processing_element_reference_schema.json"},
       "minItems": 2,
-      "uniqueItems": true
+      "uniqueItems": true,
+      "allOf": [
+        {
+          "contains": { "type": "object", "properties": { "inputs": { "type":  "null" } }},
+          "required": ["inputs"]
+        },
+        {
+          "contains": { "type": "object", "properties": { "output": { "type": "null"} }},
+          "required": ["output"]
+        }
+      ]
     },
     "channels":
     {

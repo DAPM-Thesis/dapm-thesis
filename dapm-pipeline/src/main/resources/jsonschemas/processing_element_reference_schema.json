@@ -17,10 +17,15 @@
       "minLength": 1,
       "pattern": "^(?!\\s*$)[^\\t\\n\\r]*$"
     },
-    "inputs":
-    {
-      "type": "array",
-      "items": { "$ref": "https://www.dapm.org/message_type_schema.json"}
+    "inputs": {
+      "anyOf": [
+        { "type": "null" },
+        {
+          "type": "array",
+          "items": { "$ref": "https://www.dapm.org/message_type_schema.json" },
+          "minItems": 1
+        }
+      ]
     },
     "output": {
       "anyOf": [
@@ -29,7 +34,7 @@
       ]
     },
     "instanceNumber": { "type":  "integer", "minimum": 1},
-    "parameterValues": { "type":  "object"}
+    "parameterValues": { "type": "array" }
   },
   "required": ["organizationID", "hostURL", "templateID", "inputs", "output", "instanceNumber"],
   "additionalProperties": false

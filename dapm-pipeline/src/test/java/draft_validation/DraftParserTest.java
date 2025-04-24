@@ -43,7 +43,7 @@ public class DraftParserTest {
         String path = "src/test/resources/draft_validation/simple_valid.json";
 
         // make source
-        List<Class<? extends Message>> sourceInputs = new ArrayList<>();
+        List<Class<? extends Message>> sourceInputs = null;
         Class<? extends Message> sourceOutput = Event.class;
         ProcessingElementReference source = new ProcessingElementReference("Pepsi", "http://localhost:8082", "$$$ Source", sourceInputs, sourceOutput, 1);
 
@@ -119,4 +119,60 @@ public class DraftParserTest {
         });
     }
 
+    @Test
+    public void emptyArraySource() {
+        // A source must be represented by null (by convention) - not by an empty array.
+        String path = "src/test/resources/draft_validation/parser/empty_array_source.json";
+        assertThrows(RuntimeException.class, () -> {
+            DraftParserTest.getPipelineDraft(path);
+        });
+    }
+
+    @Test
+    public void parameterValueParsing() {
+        String path = "src/test/resources/draft_validation/parser/parameter_value_parsing.json";
+        PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
+        ProcessingElementReference source = draft.elements().stream()
+                .filter(e -> e.getTemplateID().equals("$$$ Source"))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("parsing of $$$ Source parameter Values failed."));
+
+        List<Object> output = source.getParameterValues();
+        List<Object> expected = List.of(0.5, 0.5, true, "string");
+        assertEquals(expected, output);
+    }
+
+    @Test
+    public void noSource() {
+        String path = "src/test/resources/draft_validation/no_sink.json";
+        assertThrows(RuntimeException.class, () -> {
+            DraftParserTest.getPipelineDraft(path);
+        });
+    }
+
+    @Test
+    public void noSink() {
+        String path = "src/test/resources/draft_validation/parser/no_sink.json";
+        assertThrows(RuntimeException.class, () -> {
+            DraftParserTest.getPipelineDraft(path);
+        });
+    }
+
+    @Test
+    public void producingSink() {
+        // a sink which is the from element of a channel in the pipeline draft; a sink should always be the to-element
+        String path = "src/test/resources/draft_validation/parser/producing_sink.json";
+        assertThrows(RuntimeException.class, () -> {
+            DraftParserTest.getPipelineDraft(path);
+        });
+    }
+
+    @Test
+    public void consumingSource() {
+        // a sink which is the from element of a channel in the pipeline draft; a sink should always be the to-element
+        String path = "src/test/resources/draft_validation/parser/consuming_source.json";
+        assertThrows(RuntimeException.class, () -> {
+            DraftParserTest.getPipelineDraft(path);
+        });
+    }
 }

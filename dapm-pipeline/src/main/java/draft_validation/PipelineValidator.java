@@ -9,10 +9,6 @@ import java.util.stream.Collectors;
 public class PipelineValidator {
     public static boolean isValid(PipelineDraft draft) throws InvalidDraft {
         return hasConsistentElements(draft)
-                && hasSource(draft.elements())
-                && hasSink(draft.elements())
-                && !hasProducingSink(draft.channels())
-                && !hasConsumingSource(draft.channels())
                 && !isCyclic(draft)
                 && isConnected(draft)
                 && channelInputsAndOutputsMatch(draft);
@@ -25,7 +21,7 @@ public class PipelineValidator {
 
     /** returns true iff the elements in draft all have all their inputs filled. */
     private static boolean consumerInputsMatchElementInputs(PipelineDraft draft) {
-        // method: reverse engineer inputs from draft channels and validate that they match the inputs of the draft (subscriber) elements
+        // method: reverse-engineer inputs from draft channels and validate that they match the inputs of the draft (subscriber) elements
         if (!hasConsistentElements(draft)) { throw new InvalidDraft("The processing elements in \"channels\" must match those in \"processing elements\"."); }
 
         Map<ProcessingElementReference, List<Class<? extends Message>>> inferredInputs = getInferredInputs(draft.channels());
@@ -38,8 +34,8 @@ public class PipelineValidator {
                 && draftConsumers.stream().allMatch(element -> inferredInputs.get(element).equals(element.getInputs()));
     }
 
-    /** returns A map with all the input channel's consumers as keys. The corresponding values is the inferred list of
-     *  inputs for that element. returns null if a consumer's port is invalid or if the same consumer has multiple
+    /** Returns a Map with all the input channel's consumers as keys. The corresponding value is the inferred list of
+     *  inputs for that element. Returns null if a consumer's port is invalid or if the same consumer has multiple
      *  producers to the same port. */
     private static Map<ProcessingElementReference, List<Class<? extends Message>>> getInferredInputs(Set<ChannelReference> channels) {
         if (channels.isEmpty()){ throw new InvalidDraft("Expects the channels of a pipeline draft"); }
@@ -118,7 +114,6 @@ public class PipelineValidator {
     }
 
     private static Set<ProcessingElementReference> getSources(PipelineDraft draft) {
-        if (hasConsumingSource(draft.channels())) { throw new InvalidDraft("The provided draft has a consuming source. All sources must have empty inputs."); }
         return draft.elements().stream().filter(ProcessingElementReference::isSource).collect(Collectors.toSet());
     }
 
@@ -128,12 +123,11 @@ public class PipelineValidator {
         if (!hasConsistentElements(draft)) { throw new InvalidDraft("The processing elements in \"channels\" must match those in \"processing elements\"."); }
         Map<ProcessingElementReference, Set<ProcessingElementReference>> successors = getSuccessors(channels);
         Set<ProcessingElementReference> sources = getSources(draft);
-        if (hasConsumingSource(channels)) { throw new InvalidDraft("The provided draft has a consuming source. All sources must have empty inputs."); }
 
         Set<ProcessingElementReference> potentiallyRecurring = new HashSet<>();
         Set<ProcessingElementReference> visited = new HashSet<>();
 
-        // it is crucial for this cyclicity algorithm, that is run in a synchronized way
+        // it is crucial for this cyclicity algorithm that is run in a synchronized way
         for (ProcessingElementReference source : sources) {
             if (dfsCheckCycle(source, potentiallyRecurring, visited, successors))
                 { return true; }
@@ -196,21 +190,11 @@ public class PipelineValidator {
         return successors;
     }
 
-    private static boolean hasConsumingSource(Collection<ChannelReference> channels) {
-        return extractConsumerElements(channels).stream().anyMatch(ProcessingElementReference::isSource);
-    }
-
     private static Set<ProcessingElementReference> extractConsumerElements(Collection<ChannelReference> channels) {
         return channels.stream()
                 .flatMap(channel -> channel.getSubscribers().stream())
                 .map(SubscriberReference::getElement)
                 .collect(Collectors.toSet());
-    }
-
-    private static boolean hasProducingSink(Collection<ChannelReference> channels) {
-        return channels.stream()
-                .map(ChannelReference::getProducer)
-                .anyMatch(ProcessingElementReference::isSink);
     }
 
     /** Ensures that the processing elements in draft.elements() are exactly the same as in draft.channels() */
@@ -224,16 +208,6 @@ public class PipelineValidator {
         }
 
         return channelElements.equals(draft.elements());
-    }
-
-    private static boolean hasSource(Collection<ProcessingElementReference> elements) {
-        return !elements.isEmpty()
-                && elements.stream().anyMatch(ProcessingElementReference::isSource);
-    }
-
-    private static boolean hasSink(Collection<ProcessingElementReference> elements) {
-        return !elements.isEmpty()
-                && elements.stream().anyMatch(ProcessingElementReference::isSink);
     }
 
 }
