@@ -12,7 +12,7 @@
       "uniqueItems": true,
       "allOf": [
         {
-          "contains": { "type": "object", "properties": { "inputs": { "type":  "null" } }},
+          "contains": { "type": "object", "properties": { "inputs": { "type": "array", "maxItems": 0} }},
           "required": ["inputs"]
         },
         {

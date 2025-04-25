@@ -8,25 +8,17 @@
     {
       "type": "string",
       "minLength": 1,
-      "pattern": "^(?!\\s*$)[^\\t\\n\\r]*$"
+      "pattern": "^(?![ .])[^\\\\/:*?\"<>|]{1,100}(?<![ .])$"
     },
     "hostURL": { "type": "string", "minLength": 1 },
     "templateID":
     {
       "type": "string",
       "minLength": 1,
-      "pattern": "^(?!\\s*$)[^\\t\\n\\r]*$"
+      "pattern": "^(?![ .])[^\\\\/:*?\"<>|]{1,100}(?<![ .])$"
     },
-    "inputs": {
-      "anyOf": [
-        { "type": "null" },
-        {
-          "type": "array",
-          "items": { "$ref": "https://www.dapm.org/message_type_schema.json" },
-          "minItems": 1
-        }
-      ]
-    },
+    "inputs": { "type": "array", "items": { "$ref": "https://www.dapm.org/message_type_schema.json" }}
+    ,
     "output": {
       "anyOf": [
         { "type": "null" },
@@ -34,8 +26,8 @@
       ]
     },
     "instanceNumber": { "type":  "integer", "minimum": 1},
-    "parameterValues": { "type": "array" }
+    "configuration": { "type": "object" }
   },
-  "required": ["organizationID", "hostURL", "templateID", "inputs", "output", "instanceNumber"],
+  "required": ["organizationID", "hostURL", "templateID", "inputs", "output", "instanceNumber", "configuration"],
   "additionalProperties": false
 }

@@ -43,19 +43,19 @@ public class DraftParserTest {
         String path = "src/test/resources/draft_validation/simple_valid.json";
 
         // make source
-        List<Class<? extends Message>> sourceInputs = null;
+        List<Class<? extends Message>> sourceInputs = new ArrayList<>();
         Class<? extends Message> sourceOutput = Event.class;
-        ProcessingElementReference source = new ProcessingElementReference("Pepsi", "http://localhost:8082", "$$$ Source", sourceInputs, sourceOutput, 1);
+        ProcessingElementReference source = new ProcessingElementReference("Pepsi", "http://localhost:8082", "$$$ Source", sourceInputs, sourceOutput, 1, new HashMap<>());
 
         // make operator
         List<Class<? extends Message>> operatorInputs = List.of(Event.class);
         Class<? extends Message> operatorOutput = PetriNet.class;
-        ProcessingElementReference operator = new ProcessingElementReference("Coca Cola", "http://localhost:8092","The Profit Miner", operatorInputs, operatorOutput, 1);
+        ProcessingElementReference operator = new ProcessingElementReference("Coca Cola", "http://localhost:8092","The Profit Miner", operatorInputs, operatorOutput, 1, new HashMap<>());
 
         // make sink
         List<Class<? extends Message>> sinkInputs = List.of(PetriNet.class);
         Class<? extends Message> sinkOutput = null;
-        ProcessingElementReference sink = new ProcessingElementReference("DTU", "http://localhost:8102", "Dream Sink", sinkInputs, sinkOutput, 1);
+        ProcessingElementReference sink = new ProcessingElementReference("DTU", "http://localhost:8102", "Dream Sink", sinkInputs, sinkOutput, 1, new HashMap<>() );
 
         Set<ProcessingElementReference> expectedElements = Set.of(source, operator, sink);
 
@@ -120,25 +120,31 @@ public class DraftParserTest {
     }
 
     @Test
-    public void emptyArraySource() {
-        // A source must be represented by null (by convention) - not by an empty array.
-        String path = "src/test/resources/draft_validation/parser/empty_array_source.json";
+    public void nullInputsSource() {
+        // A source must be represented by an empty array (by convention) - not by null.
+        String path = "src/test/resources/draft_validation/parser/null_inputs_source.json";
         assertThrows(RuntimeException.class, () -> {
             DraftParserTest.getPipelineDraft(path);
         });
     }
 
     @Test
-    public void parameterValueParsing() {
-        String path = "src/test/resources/draft_validation/parser/parameter_value_parsing.json";
+    public void configurationParsing() {
+        String path = "src/test/resources/draft_validation/parser/configuration_parsing.json";
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("number", 0.5);
+        expected.put("number duplicate", 0.5);
+        expected.put("boolean", true);
+        expected.put("string", "string");
+
         PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
         ProcessingElementReference source = draft.elements().stream()
                 .filter(e -> e.getTemplateID().equals("$$$ Source"))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("parsing of $$$ Source parameter Values failed."));
+        Map<String, Object> output = source.getConfiguration();
 
-        List<Object> output = source.getParameterValues();
-        List<Object> expected = List.of(0.5, 0.5, true, "string");
         assertEquals(expected, output);
     }
 
@@ -175,4 +181,8 @@ public class DraftParserTest {
             DraftParserTest.getPipelineDraft(path);
         });
     }
+
+    // TODO: make test without configuration/inputs set to null
+    // TODO: make test with inputs missing
+    // TODO: make test with configuration missing
 }

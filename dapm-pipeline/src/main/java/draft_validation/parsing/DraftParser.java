@@ -74,17 +74,11 @@ public class DraftParser implements Parser<PipelineDraft> {
         List<Class<? extends Message>> inputs = extractInputs((List<String>) elementMap.get("inputs"));
         Class<? extends Message> output = extractOutput(elementMap);
         int instanceNumber = (int) elementMap.get("instanceNumber");
-        List<Object> parameterValues = extractParameterValues(elementMap);
+        Map<String, Object> configuration = (Map<String, Object>) elementMap.get("configuration");
 
         return new ProcessingElementReference(
-                organizationID, organizationHostURL, templateID,inputs, output, instanceNumber, parameterValues);
+                organizationID, organizationHostURL, templateID,inputs, output, instanceNumber, configuration);
     }
-
-    private List<Object> extractParameterValues(Map<String, Object> elementMap) {
-        List<Object> parameterValues = (List<Object>) elementMap.get("parameterValues");
-        return (parameterValues == null) ? new ArrayList<>() : parameterValues;
-    }
-
 
     private Class<? extends Message> extractOutput(Map<String, Object> elementMap) throws InvalidDraft {
         String outputClassString = (String) elementMap.get("output");
@@ -94,10 +88,8 @@ public class DraftParser implements Parser<PipelineDraft> {
     }
 
     private List<Class<? extends Message>> extractInputs(List<String> stringInputs) throws InvalidDraft {
-        if (stringInputs == null)
-            { return null; }
         List<Class<? extends Message>> messageClasses = new ArrayList<>();
-        if (stringInputs == null)
+        if (stringInputs.isEmpty())
             { return messageClasses; }
         for (String classString : stringInputs) {
             messageClasses.add(MessageTypeRegistry.getMessageType(classString));
