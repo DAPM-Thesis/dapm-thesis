@@ -7,17 +7,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class PipelineCandidateValidator {
-    public static boolean isValid(PipelineCandidate draft) throws InvalidCandidate {
-        return hasConsistentElements(draft)
-                && !isCyclic(draft)
-                && isConnected(draft)
-                && channelInputsAndOutputsMatch(draft)
-                && allPathsFromSourceToSink(draft);
+    public static boolean isValid(PipelineCandidate candidate) throws InvalidCandidate {
+        return hasConsistentElements(candidate)
+                && !isCyclic(candidate)
+                && isConnected(candidate)
+                && channelInputsAndOutputsMatch(candidate)
+                && allPathsFromSourceToSink(candidate);
     }
 
-    private static boolean allPathsFromSourceToSink(PipelineCandidate draft) {
-        Set<ProcessingElementReference> elements = draft.getElements();
-        Set<ChannelReference> channels = draft.getChannels();
+    private static boolean allPathsFromSourceToSink(PipelineCandidate candidate) {
+        Set<ProcessingElementReference> elements = candidate.getElements();
+        Set<ChannelReference> channels = candidate.getChannels();
         for (ProcessingElementReference element : elements) {
             if (element.isSource() && isSubscriber(element, channels)) { return false; }
             else if (element.isSink() && isPublisher(element, channels)) { return false; }
@@ -40,24 +40,24 @@ public class PipelineCandidateValidator {
         return channels.stream().anyMatch(channel -> channel.getProducer().equals(element));
     }
 
-    private static boolean channelInputsAndOutputsMatch(PipelineCandidate draft) {
-        return hasConsistentTypeAtPort(draft.getChannels())
-                && consumerInputsMatchElementInputs(draft);
+    private static boolean channelInputsAndOutputsMatch(PipelineCandidate candidate) {
+        return hasConsistentTypeAtPort(candidate.getChannels())
+                && consumerInputsMatchElementInputs(candidate);
     }
 
-    /** returns true iff the elements in draft all have all their inputs filled. */
-    private static boolean consumerInputsMatchElementInputs(PipelineCandidate draft) {
-        // method: reverse-engineer inputs from draft channels and validate that they match the inputs of the draft (subscriber) elements
-        if (!hasConsistentElements(draft)) { throw new InvalidCandidate("The processing elements in \"channels\" must match those in \"processing elements\"."); }
+    /** returns true iff the elements in candidate all have all their inputs filled. */
+    private static boolean consumerInputsMatchElementInputs(PipelineCandidate candidate) {
+        // method: reverse-engineer inputs from candidate channels and validate that they match the inputs of the candidate (subscriber) elements
+        if (!hasConsistentElements(candidate)) { throw new InvalidCandidate("The processing elements in \"channels\" must match those in \"processing elements\"."); }
 
-        Map<ProcessingElementReference, List<Class<? extends Message>>> inferredInputs = getInferredInputs(draft.getChannels());
+        Map<ProcessingElementReference, List<Class<? extends Message>>> inferredInputs = getInferredInputs(candidate.getChannels());
         if (inferredInputs == null)
             { return false; }
 
-        Set<ProcessingElementReference> draftConsumers = draft.getElements().stream().filter(element -> !element.isSource()).collect(Collectors.toSet());
+        Set<ProcessingElementReference> candidateConsumers = candidate.getElements().stream().filter(element -> !element.isSource()).collect(Collectors.toSet());
         // inferred inputs match actual inputs for all elements
-        return inferredInputs.keySet().equals(draftConsumers)
-                && draftConsumers.stream().allMatch(element -> inferredInputs.get(element).equals(element.getInputs()));
+        return inferredInputs.keySet().equals(candidateConsumers)
+                && candidateConsumers.stream().allMatch(element -> inferredInputs.get(element).equals(element.getInputs()));
     }
 
     /** Returns a Map with all the input channel's consumers as keys. The corresponding value is the inferred list of
@@ -108,16 +108,16 @@ public class PipelineCandidateValidator {
     }
 
 
-    private static boolean isConnected(PipelineCandidate draft) {
-        if (!hasConsistentElements(draft)) { throw new InvalidCandidate("The processing elements in \"channels\" must match those in \"processing elements\"."); }
+    private static boolean isConnected(PipelineCandidate candidate) {
+        if (!hasConsistentElements(candidate)) { throw new InvalidCandidate("The processing elements in \"channels\" must match those in \"processing elements\"."); }
 
-        List<ProcessingElementReference> orderedSources = getSources(draft).stream().toList();
+        List<ProcessingElementReference> orderedSources = getSources(candidate).stream().toList();
 
         HashSet<ProcessingElementReference> visited =  new HashSet<>();
-        Map<ProcessingElementReference, Set<ProcessingElementReference>> unDirectedSuccessors = getUndirectedSuccessors(draft.getChannels());
+        Map<ProcessingElementReference, Set<ProcessingElementReference>> unDirectedSuccessors = getUndirectedSuccessors(candidate.getChannels());
         depthFirstVisit(orderedSources.getFirst(), visited, unDirectedSuccessors);
 
-        return visited.equals(draft.getElements());
+        return visited.equals(candidate.getElements());
     }
 
     private static void depthFirstVisit(ProcessingElementReference current,
@@ -131,16 +131,16 @@ public class PipelineCandidateValidator {
         }
     }
 
-    private static Set<ProcessingElementReference> getSources(PipelineCandidate draft) {
-        return draft.getElements().stream().filter(ProcessingElementReference::isSource).collect(Collectors.toSet());
+    private static Set<ProcessingElementReference> getSources(PipelineCandidate candidate) {
+        return candidate.getElements().stream().filter(ProcessingElementReference::isSource).collect(Collectors.toSet());
     }
 
-    private static boolean isCyclic(PipelineCandidate draft) {
+    private static boolean isCyclic(PipelineCandidate candidate) {
         // isCyclic() makes no assumptions about connectedness
-        Set<ChannelReference> channels = draft.getChannels();
-        if (!hasConsistentElements(draft)) { throw new InvalidCandidate("The processing elements in \"channels\" must match those in \"processing elements\"."); }
+        Set<ChannelReference> channels = candidate.getChannels();
+        if (!hasConsistentElements(candidate)) { throw new InvalidCandidate("The processing elements in \"channels\" must match those in \"processing elements\"."); }
         Map<ProcessingElementReference, Set<ProcessingElementReference>> successors = getSuccessors(channels);
-        Set<ProcessingElementReference> sources = getSources(draft);
+        Set<ProcessingElementReference> sources = getSources(candidate);
 
         Set<ProcessingElementReference> potentiallyRecurring = new HashSet<>();
         Set<ProcessingElementReference> visited = new HashSet<>();
@@ -212,17 +212,17 @@ public class PipelineCandidateValidator {
                 .collect(Collectors.toSet());
     }
 
-    /** Ensures that the processing elements in draft.elements() are exactly the same as in draft.channels() */
-    private static boolean hasConsistentElements(PipelineCandidate draft) {
+    /** Ensures that the processing elements in candidate.elements() are exactly the same as in candidate.channels() */
+    private static boolean hasConsistentElements(PipelineCandidate candidate) {
         Set<ProcessingElementReference> channelElements =  new HashSet<>();
-        for (ChannelReference channel : draft.getChannels()) {
+        for (ChannelReference channel : candidate.getChannels()) {
             channelElements.add(channel.getProducer());
             for (SubscriberReference consumer : channel.getSubscribers()) {
                 channelElements.add(consumer.getElement());
             }
         }
 
-        return channelElements.equals(draft.getElements());
+        return channelElements.equals(candidate.getElements());
     }
 
 }
