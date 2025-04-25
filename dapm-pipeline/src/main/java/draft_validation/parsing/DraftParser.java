@@ -66,7 +66,6 @@ public class DraftParser implements Parser<PipelineDraft> {
         return elements;
     }
 
-    // TODO: update parsing such that every property is set
     private ProcessingElementReference getProcessingElementReferences(Map<String, Object> elementMap) throws InvalidDraft {
         String organizationID = (String) elementMap.get("organizationID");
         String organizationHostURL = (String) elementMap.get("hostURL");

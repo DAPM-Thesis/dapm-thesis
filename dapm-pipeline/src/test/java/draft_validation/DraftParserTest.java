@@ -89,7 +89,6 @@ public class DraftParserTest {
 
     @Test
     public void duplicate() {
-        // TODO: update comment and file name; it should not be "invariant"
         // It should not matter whether a channel or element exists twice [with same instanceID] in the given json
         String outputPath = "src/test/resources/draft_validation/parser/duplicate.json";
         assertThrows(RuntimeException.class, () -> getPipelineDraft(outputPath));
@@ -120,9 +119,9 @@ public class DraftParserTest {
     }
 
     @Test
-    public void nullInputsSource() {
+    public void nullInputs() {
         // A source must be represented by an empty array (by convention) - not by null.
-        String path = "src/test/resources/draft_validation/parser/null_inputs_source.json";
+        String path = "src/test/resources/draft_validation/parser/null_inputs.json";
         assertThrows(RuntimeException.class, () -> {
             DraftParserTest.getPipelineDraft(path);
         });
@@ -182,7 +181,19 @@ public class DraftParserTest {
         });
     }
 
-    // TODO: make test without configuration/inputs set to null
-    // TODO: make test with inputs missing
-    // TODO: make test with configuration missing
+    @Test
+    public void noConfiguration() {
+        String path = "src/test/resources/draft_validation/no_configuration.json";
+        assertThrows(RuntimeException.class, () -> {
+            DraftParserTest.getPipelineDraft(path);
+        });
+    }
+
+    @Test void nullConfiguration() {
+        String path = "src/test/resources/draft_validation/null_configuration.json";
+        assertThrows(RuntimeException.class, () -> {
+            DraftParserTest.getPipelineDraft(path);
+        });
+    }
+
 }

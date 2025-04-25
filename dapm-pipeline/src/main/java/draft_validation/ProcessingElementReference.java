@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class ProcessingElementReference { // TODO: make sure every property is included, including parameterValues
+public class ProcessingElementReference {
     private final String organizationID;
     private final String organizationHostURL;
     private final String templateID;
@@ -17,7 +17,6 @@ public class ProcessingElementReference { // TODO: make sure every property is i
     private final int instanceNumber;
     private final Map<String, Object> configuration;
 
-    // TODO: should I make a new constructor that sets parameterValues to an empty list by default or should one always supply the parameterValus list?
     public ProcessingElementReference(String organizationID,
                                       String organizationHostURL,
                                       String templateID,
