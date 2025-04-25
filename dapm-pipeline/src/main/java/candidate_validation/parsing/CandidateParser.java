@@ -1,21 +1,22 @@
-package draft_validation.parsing;
+package candidate_validation.parsing;
 
 import communication.message.Message;
 import communication.message.MessageTypeRegistry;
 import communication.message.serialization.parsing.JSONParser;
-import draft_validation.ChannelReference;
-import draft_validation.SubscriberReference;
-import draft_validation.ProcessingElementReference;
-import draft_validation.PipelineDraft;
+import candidate_validation.ChannelReference;
+import candidate_validation.SubscriberReference;
+import candidate_validation.ProcessingElementReference;
+import utils.Pair;
+
 import java.util.*;
 
-public class DraftParser implements Parser<PipelineDraft> {
+public class CandidateParser implements Parser<Pair<Set<ProcessingElementReference>, Set<ChannelReference>>> {
 
     @Override
-    public PipelineDraft deserialize(String json) {
+    public Pair<Set<ProcessingElementReference>, Set<ChannelReference>> deserialize(String json) {
         // The JSON schema validator below will take care of throwing errors if the JSON is not correctly formatted
         // according to the pipeline_draft_json_schema.json. We can therefore omit throwing those errors afterward.
-        JsonSchemaValidator.validatePipelineDraft(json);
+        JsonSchemaValidator.validatePipelineCandidate(json);
 
         Map<String, Object> jsonMap = (Map<String, Object>) (new JSONParser()).parse(json);
 
@@ -26,7 +27,7 @@ public class DraftParser implements Parser<PipelineDraft> {
         List<Map<String, Object>> rawChannels = (List<Map<String, Object>>) jsonMap.get("channels");
         Set<ChannelReference> channels = getChannelReferences(rawChannels);
 
-        return new PipelineDraft(elements, channels);
+        return new Pair<>(elements, channels);
     }
 
     private Set<ChannelReference> getChannelReferences(List<Map<String, Object>> rawChannels) {
@@ -66,7 +67,7 @@ public class DraftParser implements Parser<PipelineDraft> {
         return elements;
     }
 
-    private ProcessingElementReference getProcessingElementReferences(Map<String, Object> elementMap) throws InvalidDraft {
+    private ProcessingElementReference getProcessingElementReferences(Map<String, Object> elementMap) throws InvalidCandidate {
         String organizationID = (String) elementMap.get("organizationID");
         String organizationHostURL = (String) elementMap.get("hostURL");
         String templateID = (String) elementMap.get("templateID");
@@ -79,14 +80,14 @@ public class DraftParser implements Parser<PipelineDraft> {
                 organizationID, organizationHostURL, templateID,inputs, output, instanceNumber, configuration);
     }
 
-    private Class<? extends Message> extractOutput(Map<String, Object> elementMap) throws InvalidDraft {
+    private Class<? extends Message> extractOutput(Map<String, Object> elementMap) throws InvalidCandidate {
         String outputClassString = (String) elementMap.get("output");
         if (outputClassString == null)
             { return null; }
         return MessageTypeRegistry.getMessageType(outputClassString);
     }
 
-    private List<Class<? extends Message>> extractInputs(List<String> stringInputs) throws InvalidDraft {
+    private List<Class<? extends Message>> extractInputs(List<String> stringInputs) throws InvalidCandidate {
         List<Class<? extends Message>> messageClasses = new ArrayList<>();
         if (stringInputs.isEmpty())
             { return messageClasses; }

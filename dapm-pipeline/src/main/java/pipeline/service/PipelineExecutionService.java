@@ -1,7 +1,7 @@
 package pipeline.service;
 
 import communication.API.HTTPClient;
-import draft_validation.ProcessingElementReference;
+import candidate_validation.ProcessingElementReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pipeline.Pipeline;

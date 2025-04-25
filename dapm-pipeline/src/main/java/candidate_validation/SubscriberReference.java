@@ -1,4 +1,4 @@
-package draft_validation;
+package candidate_validation;
 
 import java.util.Objects;
 

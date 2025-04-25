@@ -1,7 +1,6 @@
-package draft_validation;
+package candidate_validation;
 
 import communication.message.Message;
-import pipeline.processingelement.ProcessingElement;
 
 import java.util.ArrayList;
 import java.util.List;

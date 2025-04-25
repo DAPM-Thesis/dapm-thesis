@@ -1,4 +1,4 @@
-package draft_validation.parsing;
+package candidate_validation.parsing;
 
 import com.networknt.schema.*;
 import java.util.Set;
@@ -14,12 +14,12 @@ public class JsonSchemaValidator {
     private static final SchemaValidatorsConfig.Builder builder = SchemaValidatorsConfig.builder();
     private static final SchemaValidatorsConfig config = builder.build();
 
-    /** Throws a RuntimeException if the provided JSON String does not adhere to the pipeline draft JSON schema.
+    /** Throws a RuntimeException if the provided JSON String does not adhere to the pipeline candidate JSON schema.
      *  Succeeds silently otherwise. */
-    public static void validatePipelineDraft(String inputJson) {
-        String pipelineDraftSchemaPath = "https://www.dapm.org/pipeline_draft_schema.json";
+    public static void validatePipelineCandidate(String inputJson) {
+        String pipelineCandidateSchemaPath = "https://www.dapm.org/pipeline_candidate_schema.json";
 
-        JsonSchema schema = factory.getSchema(SchemaLocation.of(pipelineDraftSchemaPath), config);
+        JsonSchema schema = factory.getSchema(SchemaLocation.of(pipelineCandidateSchemaPath), config);
         Set<ValidationMessage> assertions = schema.validate(inputJson, InputFormat.JSON,
                 executionContext -> executionContext.getExecutionConfig().setFormatAssertionsEnabled(true));
 

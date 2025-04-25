@@ -4,10 +4,10 @@ package pipeline;
 import communication.API.HTTPClient;
 import communication.API.PEInstanceResponse;
 import communication.config.ConsumerConfig;
-import draft_validation.ChannelReference;
-import draft_validation.PipelineDraft;
-import draft_validation.ProcessingElementReference;
-import draft_validation.SubscriberReference;
+import candidate_validation.ChannelReference;
+import candidate_validation.PipelineCandidate;
+import candidate_validation.ProcessingElementReference;
+import candidate_validation.SubscriberReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import utils.graph.DG;
@@ -26,10 +26,10 @@ public class PipelineBuilder {
         this.webClient = webClient;
     }
 
-    public Pipeline buildPipeline(String organizationOwnerID, PipelineDraft pipelineDraft) {
+    public Pipeline buildPipeline(String organizationOwnerID, PipelineCandidate pipelineCandidate) {
         Pipeline pipeline = new Pipeline(organizationOwnerID);
         this.DG = new DG<>();
-        initializeDG(pipelineDraft.channels());
+        initializeDG(pipelineCandidate.getChannels());
         buildPipeline(pipeline);
         return pipeline;
     }

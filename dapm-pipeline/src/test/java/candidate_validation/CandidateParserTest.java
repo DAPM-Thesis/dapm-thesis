@@ -1,9 +1,8 @@
-package draft_validation;
+package candidate_validation;
 
 import communication.message.Message;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
-import draft_validation.parsing.DraftParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -14,9 +13,9 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DraftParserTest {
+public class CandidateParserTest {
 
-    public static PipelineDraft getPipelineDraft(String path) {
+    public static PipelineCandidate getPipelineCandidate(String path) {
         String contents;
         try { contents = Files.readString(Paths.get(path)); }
         catch (IOException e) {
@@ -24,23 +23,23 @@ public class DraftParserTest {
             throw new RuntimeException(e);
         }
 
-        return (new DraftParser()).deserialize(contents);
+        return new PipelineCandidate(contents);
     }
 
-    public static PipelineDraft getSimpleValid() {
-        String simpleValidPath = "src/test/resources/draft_validation/simple_valid.json";
-        return getPipelineDraft(simpleValidPath);
+    public static PipelineCandidate getSimpleValid() {
+        String simpleValidPath = "src/test/resources/candidate_validation/simple_valid.json";
+        return getPipelineCandidate(simpleValidPath);
     }
 
     @Test
     public void schemaLoadable() {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("jsonschemas/pipeline_draft_schema.json");
+        InputStream is = getClass().getClassLoader().getResourceAsStream("jsonschemas/pipeline_candidate_schema.json");
         assertNotNull(is); // Should NOT be null
     }
 
     @Test
-    public void validDraft() {
-        String path = "src/test/resources/draft_validation/simple_valid.json";
+    public void validCandidate() {
+        String path = "src/test/resources/candidate_validation/simple_valid.json";
 
         // make source
         List<Class<? extends Message>> sourceInputs = new ArrayList<>();
@@ -64,72 +63,74 @@ public class DraftParserTest {
         ChannelReference c1 = new ChannelReference(source, operatorPort1);
         ChannelReference c2 = new ChannelReference(operator, sinkPort1);
         Set<ChannelReference> expectedChannels = Set.of(c1, c2);
-        PipelineDraft expected = new  PipelineDraft(expectedElements, expectedChannels);
 
-        PipelineDraft output = getPipelineDraft(path);
+        PipelineCandidate outputCandidate = getPipelineCandidate(path);
+        Set<ProcessingElementReference> outputElements = outputCandidate.getElements();
+        Set<ChannelReference> outputChannels = outputCandidate.getChannels();
 
-        assertEquals(expected, output);
+        assertEquals(expectedElements, outputElements);
+        assertEquals(expectedChannels, outputChannels);
     }
 
     @Test
     public void elementOrderInvariance() {
-        String outputPath = "src/test/resources/draft_validation/parser/element_order_invariance.json";
-        PipelineDraft output = getPipelineDraft(outputPath);
-        PipelineDraft expected = getSimpleValid();
+        String outputPath = "src/test/resources/candidate_validation/parser/element_order_invariance.json";
+        PipelineCandidate output = getPipelineCandidate(outputPath);
+        PipelineCandidate expected = getSimpleValid();
         assertEquals(output, expected);
     }
 
     @Test
     public void channelOrderInvariance() {
-        String outputPath = "src/test/resources/draft_validation/parser/channel_order_invariance.json";
-        PipelineDraft output = getPipelineDraft(outputPath);
-        PipelineDraft expected = getSimpleValid();
+        String outputPath = "src/test/resources/candidate_validation/parser/channel_order_invariance.json";
+        PipelineCandidate output = getPipelineCandidate(outputPath);
+        PipelineCandidate expected = getSimpleValid();
         assertEquals(output, expected);
     }
 
     @Test
     public void duplicate() {
         // It should not matter whether a channel or element exists twice [with same instanceID] in the given json
-        String outputPath = "src/test/resources/draft_validation/parser/duplicate.json";
-        assertThrows(RuntimeException.class, () -> getPipelineDraft(outputPath));
+        String outputPath = "src/test/resources/candidate_validation/parser/duplicate.json";
+        assertThrows(RuntimeException.class, () -> getPipelineCandidate(outputPath));
     }
 
     @Test
     public void empty() {
-        String path = "src/test/resources/draft_validation/parser/empty.json";
+        String path = "src/test/resources/candidate_validation/parser/empty.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
     @Test
     public void singleElement() {
-        String path = "src/test/resources/draft_validation/parser/single_element.json";
+        String path = "src/test/resources/candidate_validation/parser/single_element.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
     @Test
     public void noChannels() {
-        String path = "src/test/resources/draft_validation/parser/no_channels.json";
+        String path = "src/test/resources/candidate_validation/parser/no_channels.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
     @Test
     public void nullInputs() {
         // A source must be represented by an empty array (by convention) - not by null.
-        String path = "src/test/resources/draft_validation/parser/null_inputs.json";
+        String path = "src/test/resources/candidate_validation/parser/null_inputs.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
     @Test
     public void configurationParsing() {
-        String path = "src/test/resources/draft_validation/parser/configuration_parsing.json";
+        String path = "src/test/resources/candidate_validation/parser/configuration_parsing.json";
 
         Map<String, Object> expected = new HashMap<>();
         expected.put("number", 0.5);
@@ -137,8 +138,8 @@ public class DraftParserTest {
         expected.put("boolean", true);
         expected.put("string", "string");
 
-        PipelineDraft draft = DraftParserTest.getPipelineDraft(path);
-        ProcessingElementReference source = draft.elements().stream()
+        PipelineCandidate candidate = CandidateParserTest.getPipelineCandidate(path);
+        ProcessingElementReference source = candidate.getElements().stream()
                 .filter(e -> e.getTemplateID().equals("$$$ Source"))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("parsing of $$$ Source parameter Values failed."));
@@ -149,50 +150,50 @@ public class DraftParserTest {
 
     @Test
     public void noSource() {
-        String path = "src/test/resources/draft_validation/no_sink.json";
+        String path = "src/test/resources/candidate_validation/no_sink.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
     @Test
     public void noSink() {
-        String path = "src/test/resources/draft_validation/parser/no_sink.json";
+        String path = "src/test/resources/candidate_validation/parser/no_sink.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
     @Test
     public void producingSink() {
-        // a sink which is the from element of a channel in the pipeline draft; a sink should always be the to-element
-        String path = "src/test/resources/draft_validation/parser/producing_sink.json";
+        // a sink which is the from element of a channel in the pipeline candidate; a sink should always be the to-element
+        String path = "src/test/resources/candidate_validation/parser/producing_sink.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
     @Test
     public void consumingSource() {
-        // a sink which is the from element of a channel in the pipeline draft; a sink should always be the to-element
-        String path = "src/test/resources/draft_validation/parser/consuming_source.json";
+        // a sink which is the from element of a channel in the pipeline candidate; a sink should always be the to-element
+        String path = "src/test/resources/candidate_validation/parser/consuming_source.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
     @Test
     public void noConfiguration() {
-        String path = "src/test/resources/draft_validation/no_configuration.json";
+        String path = "src/test/resources/candidate_validation/no_configuration.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
     @Test void nullConfiguration() {
-        String path = "src/test/resources/draft_validation/null_configuration.json";
+        String path = "src/test/resources/candidate_validation/null_configuration.json";
         assertThrows(RuntimeException.class, () -> {
-            DraftParserTest.getPipelineDraft(path);
+            CandidateParserTest.getPipelineCandidate(path);
         });
     }
 
