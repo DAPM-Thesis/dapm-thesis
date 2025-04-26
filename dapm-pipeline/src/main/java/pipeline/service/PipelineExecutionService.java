@@ -1,9 +1,11 @@
 package pipeline.service;
 
 import communication.API.HTTPClient;
+import communication.API.HTTPResponse;
 import draft_validation.ProcessingElementReference;
 import exceptions.PipelineExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import pipeline.Pipeline;
 
@@ -23,9 +25,9 @@ public class PipelineExecutionService {
             String instanceId = entry.getKey();
             String url = entry.getValue().getOrganizationHostURL() +
                     "/pipelineExecution/start/instance/" + instanceId;
-            String response = webClient.putSync(url);
+            HTTPResponse response = webClient.putSync(url);
 
-            if (isError(response)) {
+            if (!isSuccess(response.status())) {
                 throw new PipelineExecutionException("Failed to start PE " + instanceId);
             }
         }
@@ -36,9 +38,9 @@ public class PipelineExecutionService {
             String instanceId = entry.getKey();
             String url = entry.getValue().getOrganizationHostURL() +
                     "/pipelineExecution/stop/instance/" + instanceId;
-            String response = webClient.putSync(url);
+            HTTPResponse response = webClient.putSync(url);
 
-            if (isError(response)) {
+            if (!isSuccess(response.status())) {
                 throw new PipelineExecutionException("Failed to stop PE " + instanceId);
             }
         }
@@ -49,15 +51,15 @@ public class PipelineExecutionService {
             String instanceId = entry.getKey();
             String url = entry.getValue().getOrganizationHostURL() +
                     "/pipelineExecution/terminate/instance/" + instanceId;
-            String response = webClient.putSync(url);
+            HTTPResponse response = webClient.putSync(url);
 
-            if (isError(response)) {
+            if (!isSuccess(response.status())) {
                 throw new PipelineExecutionException("Failed to terminate PE " + instanceId);
             }
         }
     }
 
-    private boolean isError(String response) {
-        return response == null;
+    private boolean isSuccess(HttpStatusCode status) {
+        return status.is2xxSuccessful();
     }
 }

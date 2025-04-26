@@ -27,7 +27,6 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
                     throw new PipelineExecutionException("Exception in source.", e);
                 }
             });
-            LogUtil.info("Source started successfully.");
         } catch (Exception e) {
             throw new PipelineExecutionException("Failed to start source.", e);
         }
@@ -36,13 +35,19 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public abstract O process();
 
     @Override
-    public void publish(O data) { producer.publish(data); }
+    public void publish(O data) {
+        if (producer == null) {
+            throw new IllegalStateException("Producer not registered for source");
+        }
+        producer.publish(data);
+    }
+
 
     @Override
     public void stop() {
         try {
             executor.shutdown();
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new PipelineExecutionException("Failed to stop source.", e);
         }
     }
@@ -57,10 +62,9 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
 
     @Override
     public void registerProducer(ProducerConfig config) {
-        if(this.producer == null) {
+        if (this.producer == null) {
             this.producer = new Producer(config);
-        }
-        else {
+        } else {
             LogUtil.debug("Producer already registered for source.");
         }
     }

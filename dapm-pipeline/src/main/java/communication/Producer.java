@@ -26,14 +26,13 @@ public class Producer {
         this.kafkaProducer = new KafkaProducer<>(props);
         this.topic = config.topic();
         this.brokerURL = config.brokerURL();
-        createKafkaTopicIfNotExist(config.brokerURL());
+        createKafkaTopic(config.brokerURL());
     }
 
     public void terminate() {
         try {
             deleteKafkaTopic();
             kafkaProducer.close();
-            LogUtil.info("Kafka producer closed for topic {} ", topic);
         } catch (Exception e) {
             throw new KafkaException("Failed to close Kafka producer for topic " + topic, e);
         }
@@ -51,17 +50,16 @@ public class Producer {
         }
     }
 
-    private void createKafkaTopicIfNotExist(String brokerURL) {
+    private void createKafkaTopic(String brokerURL) {
         Properties adminProps = KafkaConfiguration.getAdminProperties(brokerURL);
         try (AdminClient adminClient = AdminClient.create(adminProps)) {
             if (!adminClient.listTopics().names().get().contains(topic)) {
                 NewTopic newTopic = new NewTopic(topic, 1, (short) 1);
                 adminClient.createTopics(Collections.singletonList(newTopic)).all().get();
-                LogUtil.info("Topic created: " + topic);
             } else {
-                LogUtil.debug("Topic already exists: " + topic);
+                LogUtil.debug("Topic {} already exists.", topic);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new KafkaException("Failed to create topic, " + topic, e);
         }
     }
@@ -70,7 +68,6 @@ public class Producer {
         Properties adminProps = KafkaConfiguration.getAdminProperties(brokerURL);
         try (AdminClient adminClient = AdminClient.create(adminProps)) {
             adminClient.deleteTopics(Collections.singletonList(topic)).all().get();
-            LogUtil.info("Topic deleted: " + topic);
         } catch (Exception e) {
             throw new KafkaException("Failed to delete topic, " + topic, e);
         }

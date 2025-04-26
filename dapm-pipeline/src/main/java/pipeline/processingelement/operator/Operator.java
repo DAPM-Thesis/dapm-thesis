@@ -8,7 +8,7 @@ import communication.Publisher;
 import utils.LogUtil;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
-                                                      implements Publisher<O> {
+        implements Publisher<O> {
     private Producer producer;
 
     @Override
@@ -27,7 +27,12 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     protected abstract boolean publishCondition(AO algorithmOutput);
 
     @Override
-    public void publish(O output) { producer.publish(output); }
+    public void publish(O data) {
+        if (producer == null) {
+            throw new IllegalStateException("Producer not registered for source");
+        }
+        producer.publish(data);
+    }
 
     @Override
     public void terminate() {
@@ -41,8 +46,7 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public void registerProducer(ProducerConfig config) {
         if (this.producer == null) {
             this.producer = new Producer(config);
-        }
-        else {
+        } else {
             LogUtil.debug("Producer already registered for operator.");
         }
     }

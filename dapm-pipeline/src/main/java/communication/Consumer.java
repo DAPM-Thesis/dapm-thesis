@@ -44,7 +44,6 @@ public class Consumer {
         running = true;
         try {
             observe();
-            LogUtil.info("Consumer started for topic {} ", topic);
         } catch (Exception e) {
             running = false;
             throw new KafkaException("Failed to start consumer for topic " + topic, e);
@@ -70,7 +69,6 @@ public class Consumer {
         try {
             stop();
             kafkaConsumer.close();
-            LogUtil.info("Kafka consumer closed for topic {} ", topic);
         } catch (Exception e) {
             throw new KafkaException("Failed to close Kafka consumer for topic " + topic, e);
         }
@@ -94,8 +92,6 @@ public class Consumer {
                 }
             } catch (Exception e) {
                 LogUtil.error(e, "Failed to process record in consumer for topic {} ", topic);
-            } finally {
-                LogUtil.info("Kafka consumer closed for for topic {} ", topic);
             }
         }, "KafkaConsumer-" + topic);
         thread.start();
@@ -108,10 +104,8 @@ public class Consumer {
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             if (topicExists()) {
                 kafkaConsumer.subscribe(List.of(topic));
-                LogUtil.info("Subscribed to topic {}", topic);
                 return;
             }
-            LogUtil.info("Attempt {}: Topic '{}' does not exist. Retrying in {} ms...", attempt, topic, retryDelayMillis);
             if (attempt < maxRetries) {
                 try {
                     Thread.sleep(retryDelayMillis);

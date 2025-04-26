@@ -2,6 +2,7 @@ package pipeline;
 
 
 import communication.API.HTTPClient;
+import communication.API.HTTPResponse;
 import communication.API.PEInstanceResponse;
 import communication.config.ConsumerConfig;
 import draft_validation.ChannelReference;
@@ -175,10 +176,10 @@ public class PipelineBuilder {
     }
 
     private PEInstanceResponse sendPostRequest(String url, String body) {
-        String response = (body == null)
+        HTTPResponse response = (body == null)
                 ? webClient.postSync(url)
                 : webClient.postSync(url, body);
 
-        return JsonUtil.fromJson(response, PEInstanceResponse.class);
+        return JsonUtil.fromJson(response.body(), PEInstanceResponse.class);
     }
 }

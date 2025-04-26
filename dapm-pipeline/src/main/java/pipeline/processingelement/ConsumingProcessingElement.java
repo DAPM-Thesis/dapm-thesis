@@ -13,9 +13,11 @@ import java.util.HashSet;
 import java.util.Map;
 
 public abstract class ConsumingProcessingElement extends ProcessingElement implements Subscriber<Message> {
-    /** Holds the input types and their multiplicities. So if processing element consumes Event's from two
-     *  separate Channel's and Petri Net's from one Channel, it will have (key, value) pairs (Event.class, 2) and
-     *  (PetriNet.class, 1).*/
+    /**
+     * Holds the input types and their multiplicities. So if processing element consumes Event's from two
+     * separate Channel's and Petri Net's from one Channel, it will have (key, value) pairs (Event.class, 2) and
+     * (PetriNet.class, 1).
+     */
     protected final Map<Class<? extends Message>, Integer> inputs;
     private Map<Integer, Consumer> consumers = new HashMap<>();
 
@@ -83,14 +85,12 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
         }
     }
 
-
     @Override
     public void registerConsumer(ConsumerConfig config) {
-        if(!consumers.containsKey(config.portNumber())) {
+        if (!consumers.containsKey(config.portNumber())) {
             Consumer consumer = new Consumer(this, config);
             consumers.put(config.portNumber(), consumer);
-        }
-        else {
+        } else {
             LogUtil.debug("Consumer already registered with port number {}.", config.portNumber());
         }
     }
