@@ -19,11 +19,9 @@ public class PipelineExecutionService {
 
     public void start(Pipeline pipeline) {
         for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
-            if(entry.getValue().isSource()) {
                 String url = entry.getValue().getOrganizationHostURL() +
                         "/pipelineBuilder/start/instance/" + entry.getKey();
                 webClient.putSync(url);
-            }
         }
     }
 }

@@ -6,15 +6,13 @@ import communication.message.Message;
 import communication.message.serialization.deserialization.MessageFactory;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListTopicsOptions;
-import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.KafkaFuture;
+import utils.LogUtil;
 
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 public class Consumer {
 
@@ -24,6 +22,9 @@ public class Consumer {
     private final String brokerURL;
     private final int portNumber;
 
+    private volatile boolean running;
+    private Thread thread;
+
     public Consumer(Subscriber<Message> subscriber, ConsumerConfig config) {
         Properties props = KafkaConfiguration.getConsumerProperties(config.brokerURL());
         this.kafkaConsumer = new KafkaConsumer<>(props);
@@ -31,55 +32,105 @@ public class Consumer {
         this.topic = config.topic();
         this.brokerURL = config.brokerURL();
         this.portNumber = config.portNumber();
+        subscribeToTopic();
     }
 
-    public void start() {
+    public boolean start() {
+        if (thread != null && thread.isAlive()) {
+            LogUtil.debug("Consumer already running for topic {} ", topic);
+            return false;
+        }
+        running = true;
+        try {
+            observe();
+            LogUtil.debug("Consumer started for topic {} ", topic);
+            return true;
+        } catch (Exception e) {
+            LogUtil.error(e, "Failed to start consumer for topic {} ", topic);
+            running = false;
+            return false;
+        }
+    }
+
+    public boolean stop() {
+        running = false;
+        kafkaConsumer.wakeup();
+        if (thread != null) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LogUtil.error(e, "Interrupted while stopping consumer for topic {} ", topic);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void observe() {
+        thread = new Thread(() -> {
+            try {
+                while (running) {
+                    var records = kafkaConsumer.poll(java.time.Duration.ofMillis(100));
+                    if (!records.isEmpty()) {
+                        try {
+                            for (ConsumerRecord<String, String> record : records) {
+                                Message msg = MessageFactory.deserialize(record.value());
+                                this.subscriber.observe(msg, portNumber);
+                            }
+                        } catch (Exception e) {
+                            LogUtil.error(e, "Failed to process record in consumer for topic {} ", topic);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LogUtil.error(e, "Failed to process record in consumer for topic {} ", topic);
+            } finally {
+                kafkaConsumer.close();
+                LogUtil.info("Kafka consumer closed for for topic {} ", topic);
+            }
+        }, "KafkaConsumer-" + topic);
+        thread.start();
+    }
+
+    private void subscribeToTopic() {
         final int maxRetries = 10;
         final int retryDelayMillis = 5000;
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             if (topicExists()) {
                 kafkaConsumer.subscribe(List.of(topic));
-                observe();
+                LogUtil.info("Subscribed to topic {}", topic);
                 return;
             }
-            System.out.println("Attempt " + attempt + ": Topic '" + topic + "' does not exist. Retrying...");
+            LogUtil.info("Attempt {}: Topic '{}' does not exist. Retrying in {} ms...", attempt, topic, retryDelayMillis);
             if (attempt < maxRetries) {
                 try {
                     Thread.sleep(retryDelayMillis);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    LogUtil.error(e, "Interrupted during topic subscription retries.");
                     return;
                 }
             }
         }
-        throw new RuntimeException("Failed to find topic '" + topic + "'");
-    }
-
-    private void observe() {
-        new Thread(() -> {
-            while (true) {
-                var records = kafkaConsumer.poll(java.time.Duration.ofMillis(100));
-                if (!records.isEmpty()) {
-                    for (ConsumerRecord<String, String> record : records) {
-                        Message msg =  MessageFactory.deserialize(record.value());
-                        this.subscriber.observe(msg, portNumber);
-                    }
-                }
-            }
-        }).start();
+        throw new IllegalStateException("Failed to find topic '" + topic + "' after " + maxRetries + " attempts.");
     }
 
     private boolean topicExists() {
         Properties props = KafkaConfiguration.getAdminProperties(brokerURL);
         try (AdminClient adminClient = AdminClient.create(props)) {
-            ListTopicsResult listTopicsResult = adminClient.listTopics(new ListTopicsOptions().listInternal(false));
-            KafkaFuture<Set<String>> topicsFuture = listTopicsResult.names();
-
-            Set<String> topics = topicsFuture.get();
+            Set<String> topics = adminClient
+                    .listTopics(new ListTopicsOptions().listInternal(false))
+                    .names()
+                    .get();
             return topics.contains(topic);
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LogUtil.error(e, "Interrupted while checking topic existence {}", topic);
+            return false;
+        } catch (Exception e) {
+            LogUtil.error(e, "Failed to list topics to check existence {} ", topic);
             return false;
         }
     }

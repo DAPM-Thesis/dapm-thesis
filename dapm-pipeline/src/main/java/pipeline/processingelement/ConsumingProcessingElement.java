@@ -26,9 +26,30 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
 
     protected abstract Map<Class<? extends Message>, Integer> setConsumedInputs();
 
+    @Override
+    public boolean start() {
+        boolean allStarted = true;
+        for (Map.Entry<Integer, Consumer> entry : consumers.entrySet()) {
+            allStarted &= entry.getValue().start();
+        }
+        return allStarted;
+    }
+
+    @Override
+    public boolean stop() {
+        boolean allStopped = true;
+        for (Consumer consumer : consumers.values()) {
+            allStopped &= consumer.stop();
+        }
+        return allStopped;
+    }
+
+    public boolean terminate() {
+        return false;
+    }
+
     public void registerConsumer(ConsumerConfig config) {
         Consumer consumer = new Consumer(this, config);
-        consumer.start();
         consumers.put(config.portNumber(), consumer);
     }
 }

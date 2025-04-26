@@ -18,6 +18,12 @@ public abstract class ProcessingElement {
         isAvailable = available;
     }
 
+    public abstract boolean start();
+
+    public abstract boolean stop();
+
+    public abstract boolean terminate();
+
     @Override
     public String toString() { return getClass().getSimpleName() + ' ' + ID; }
 }

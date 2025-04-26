@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.admin.AdminClient;
+import utils.LogUtil;
 
 import java.util.Collections;
 import java.util.Properties;
@@ -17,13 +18,26 @@ public class Producer {
 
     private KafkaProducer<String, String> kafkaProducer;
     private final String topic;
+    private final String brokerURL;
 
     public Producer(ProducerConfig config) {
         Properties props = KafkaConfiguration.getProducerProperties(config.brokerURL());
         this.kafkaProducer = new KafkaProducer<>(props);
         this.topic = config.topic();
-
+        this.brokerURL = config.brokerURL();
         createKafkaTopicIfNotExist(config.brokerURL());
+    }
+
+    public boolean terminate() {
+        try {
+            deleteKafkaTopic();
+            kafkaProducer.close();
+            LogUtil.info("Kafka producer closed for topic {} ", topic);
+            return true;
+        } catch (Exception e) {
+            LogUtil.error(e, "Failed to close Kafka producer for topic {} ", topic);
+            return false;
+        }
     }
 
     public void publish(Message message) {
@@ -37,17 +51,23 @@ public class Producer {
     private void createKafkaTopicIfNotExist(String brokerURL) {
         Properties adminProps = KafkaConfiguration.getAdminProperties(brokerURL);
         try (AdminClient adminClient = AdminClient.create(adminProps)) {
-            // Check if the topic already exists
             if (!adminClient.listTopics().names().get().contains(topic)) {
-                // Create a new topic with a default number of partitions and replication factor
-                NewTopic newTopic = new NewTopic(topic, 1, (short) 1); // 1 partition, replication factor of 1
+                NewTopic newTopic = new NewTopic(topic, 1, (short) 1);
                 adminClient.createTopics(Collections.singletonList(newTopic)).all().get();
-                System.out.println("Topic created: " + topic);
+                LogUtil.info("Topic created: " + topic);
             } else {
-                System.out.println("Topic already exists: " + topic);
+                LogUtil.info("Topic already exists: " + topic);
             }
         }catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.error(e, "Failed to create topic, {}", topic);
+        }
+    }
+
+    private void deleteKafkaTopic() throws Exception {
+        Properties adminProps = KafkaConfiguration.getAdminProperties(brokerURL);
+        try (AdminClient adminClient = AdminClient.create(adminProps)) {
+            adminClient.deleteTopics(Collections.singletonList(topic)).all().get();
+            LogUtil.info("Topic deleted: " + topic);
         }
     }
 }
