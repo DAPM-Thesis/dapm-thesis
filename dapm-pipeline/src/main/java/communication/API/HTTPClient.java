@@ -1,16 +1,9 @@
 package communication.API;
 
 import exceptions.RemoteCallException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import utils.LogUtil;
 
 @Component
 public class HTTPClient {
@@ -46,12 +39,10 @@ public class HTTPClient {
             return (body == null)
                     ? request.exchangeToMono(response ->
                     response.bodyToMono(String.class)
-                            .defaultIfEmpty("")
                             .map(b -> new HTTPResponse(response.statusCode(), b))
             ).block()
                     : request.bodyValue(body).exchangeToMono(response ->
                     response.bodyToMono(String.class)
-                            .defaultIfEmpty("")
                             .map(b -> new HTTPResponse(response.statusCode(), b))
             ).block();
         } catch (Exception e) {

@@ -180,6 +180,9 @@ public class PipelineBuilder {
                 ? webClient.postSync(url)
                 : webClient.postSync(url, body);
 
+        if(response.body() == null) {
+            throw new IllegalStateException("No response received from " + url);
+        }
         return JsonUtil.fromJson(response.body(), PEInstanceResponse.class);
     }
 }
