@@ -1,13 +1,10 @@
 package pipeline;
 
 
+import candidate_validation.*;
 import communication.API.HTTPClient;
 import communication.API.PEInstanceResponse;
 import communication.config.ConsumerConfig;
-import candidate_validation.ChannelReference;
-import candidate_validation.PipelineCandidate;
-import candidate_validation.ProcessingElementReference;
-import candidate_validation.SubscriberReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import utils.graph.DG;
@@ -26,10 +23,10 @@ public class PipelineBuilder {
         this.webClient = webClient;
     }
 
-    public Pipeline buildPipeline(String organizationOwnerID, PipelineCandidate pipelineCandidate) {
+    public Pipeline buildPipeline(String organizationOwnerID, ValidatedPipeline validatedPipeline) {
         Pipeline pipeline = new Pipeline(organizationOwnerID);
         this.DG = new DG<>();
-        initializeDG(pipelineCandidate.getChannels());
+        initializeDG(validatedPipeline.getChannels());
         buildPipeline(pipeline);
         return pipeline;
     }
