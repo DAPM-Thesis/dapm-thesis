@@ -4,6 +4,8 @@ import communication.Consumer;
 import communication.Subscriber;
 import communication.config.ConsumerConfig;
 import communication.message.Message;
+import exceptions.PipelineExecutionException;
+import utils.LogUtil;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,7 +17,7 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
      *  separate Channel's and Petri Net's from one Channel, it will have (key, value) pairs (Event.class, 2) and
      *  (PetriNet.class, 1).*/
     protected final Map<Class<? extends Message>, Integer> inputs;
-    private final Map<Integer, Consumer> consumers = new HashMap<>();
+    private Map<Integer, Consumer> consumers = new HashMap<>();
 
     protected ConsumingProcessingElement() {
         this.inputs = setConsumedInputs();
@@ -27,29 +29,69 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
     protected abstract Map<Class<? extends Message>, Integer> setConsumedInputs();
 
     @Override
-    public boolean start() {
-        boolean allStarted = true;
-        for (Map.Entry<Integer, Consumer> entry : consumers.entrySet()) {
-            allStarted &= entry.getValue().start();
+    public void start() {
+        Exception firstException = null;
+        for (Consumer consumer : consumers.values()) {
+            try {
+                consumer.start();
+            } catch (Exception e) {
+                if (firstException == null) {
+                    firstException = e;
+                }
+                LogUtil.error(e, "Failed to start a consumer.");
+            }
         }
-        return allStarted;
+        if (firstException != null) {
+            throw new PipelineExecutionException("Failed to start one or more consumers.", firstException);
+        }
     }
 
     @Override
-    public boolean stop() {
-        boolean allStopped = true;
+    public void stop() {
+        Exception firstException = null;
         for (Consumer consumer : consumers.values()) {
-            allStopped &= consumer.stop();
+            try {
+                consumer.stop();
+            } catch (Exception e) {
+                if (firstException == null) {
+                    firstException = e;
+                }
+                LogUtil.error(e, "Failed to stop a consumer.");
+            }
         }
-        return allStopped;
+        if (firstException != null) {
+            throw new PipelineExecutionException("Failed to stop one or more consumers.", firstException);
+        }
     }
 
-    public boolean terminate() {
-        return false;
+    @Override
+    public void terminate() {
+        Exception firstException = null;
+        for (Consumer consumer : consumers.values()) {
+            try {
+                consumer.terminate();
+            } catch (Exception e) {
+                if (firstException == null) {
+                    firstException = e;
+                }
+                LogUtil.error(e, "Failed to terminate a consumer.");
+            }
+        }
+        consumers.clear();
+        if (firstException != null) {
+            throw new PipelineExecutionException("Failed to terminate one or more consumers.", firstException);
+        }
     }
 
+
+    @Override
     public void registerConsumer(ConsumerConfig config) {
-        Consumer consumer = new Consumer(this, config);
-        consumers.put(config.portNumber(), consumer);
+        if(!consumers.containsKey(config.portNumber())) {
+            Consumer consumer = new Consumer(this, config);
+            consumers.put(config.portNumber(), consumer);
+        }
+        else {
+            LogUtil.debug("Consumer already registered with port number {}.", config.portNumber());
+        }
     }
 }

@@ -4,6 +4,7 @@ import communication.Producer;
 import communication.Publisher;
 import communication.config.ProducerConfig;
 import communication.message.Message;
+import exceptions.PipelineExecutionException;
 import utils.LogUtil;
 
 import java.util.concurrent.Executors;
@@ -14,7 +15,7 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
     @Override
-    public boolean start() {
+    public void start() {
         try {
             executor.submit(() -> {
                 try {
@@ -23,14 +24,12 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
                         publish(output);
                     }
                 } catch (Exception e) {
-                    LogUtil.error(e, "Exception in source.");
+                    throw new PipelineExecutionException("Exception in source.", e);
                 }
             });
             LogUtil.info("Source started successfully.");
-            return true;
         } catch (Exception e) {
-            LogUtil.error(e, "Failed to start source.");
-            return false;
+            throw new PipelineExecutionException("Failed to start source.", e);
         }
     }
 
@@ -40,25 +39,29 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public void publish(O data) { producer.publish(data); }
 
     @Override
-    public boolean stop() {
+    public void stop() {
         try {
             executor.shutdown();
-            return true;
         }catch (Exception e) {
-            LogUtil.error(e, "Failed to stop source.");
-            return false;
+            throw new PipelineExecutionException("Failed to stop source.", e);
         }
     }
 
     @Override
-    public boolean terminate() {
-        return producer.terminate();
+    public void terminate() {
+        if (producer != null) {
+            producer.terminate();
+            producer = null;
+        }
     }
 
     @Override
     public void registerProducer(ProducerConfig config) {
         if(this.producer == null) {
             this.producer = new Producer(config);
+        }
+        else {
+            LogUtil.debug("Producer already registered for source.");
         }
     }
 }

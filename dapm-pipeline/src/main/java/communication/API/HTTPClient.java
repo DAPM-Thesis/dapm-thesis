@@ -1,5 +1,6 @@
 package communication.API;
 
+import exceptions.RemoteCallException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,7 @@ public class HTTPClient {
 
             return response.bodyToMono(String.class).block();
         } catch (Exception e) {
-            LogUtil.error(e, "Request failed. URL: {}, Body: {}", url, body != null ? body : "N/A");
-            throw new RuntimeException("Request failed: " + url, e);
+            throw new RemoteCallException("Request failed: " + url, e);
         }
     }
 
@@ -54,8 +54,7 @@ public class HTTPClient {
 
             return response.bodyToMono(String.class).block();
         } catch (Exception e) {
-            LogUtil.error(e, "Request failed. URL: {}, Body: {}", url, body != null ? body : "N/A");
-            throw new RuntimeException("Request failed: " + url, e);
+            throw new RemoteCallException("Request failed: " + url, e);
         }
     }
 }

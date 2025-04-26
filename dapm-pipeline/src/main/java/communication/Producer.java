@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.common.KafkaException;
 import utils.LogUtil;
 
 import java.util.Collections;
@@ -16,7 +17,7 @@ import java.util.Properties;
 
 public class Producer {
 
-    private KafkaProducer<String, String> kafkaProducer;
+    private final KafkaProducer<String, String> kafkaProducer;
     private final String topic;
     private final String brokerURL;
 
@@ -28,15 +29,13 @@ public class Producer {
         createKafkaTopicIfNotExist(config.brokerURL());
     }
 
-    public boolean terminate() {
+    public void terminate() {
         try {
             deleteKafkaTopic();
             kafkaProducer.close();
             LogUtil.info("Kafka producer closed for topic {} ", topic);
-            return true;
         } catch (Exception e) {
-            LogUtil.error(e, "Failed to close Kafka producer for topic {} ", topic);
-            return false;
+            throw new KafkaException("Failed to close Kafka producer for topic " + topic, e);
         }
     }
 
@@ -45,7 +44,11 @@ public class Producer {
         message.acceptVisitor(serializer);
         String serialization = serializer.getSerialization();
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, serialization);
-        kafkaProducer.send(record);
+        try {
+            kafkaProducer.send(record);
+        } catch (Exception e) {
+            throw new KafkaException("Failed to send record to topic " + topic, e);
+        }
     }
 
     private void createKafkaTopicIfNotExist(String brokerURL) {
@@ -56,10 +59,10 @@ public class Producer {
                 adminClient.createTopics(Collections.singletonList(newTopic)).all().get();
                 LogUtil.info("Topic created: " + topic);
             } else {
-                LogUtil.info("Topic already exists: " + topic);
+                LogUtil.debug("Topic already exists: " + topic);
             }
         }catch (Exception e) {
-            LogUtil.error(e, "Failed to create topic, {}", topic);
+            throw new KafkaException("Failed to create topic, " + topic, e);
         }
     }
 
@@ -68,6 +71,8 @@ public class Producer {
         try (AdminClient adminClient = AdminClient.create(adminProps)) {
             adminClient.deleteTopics(Collections.singletonList(topic)).all().get();
             LogUtil.info("Topic deleted: " + topic);
+        } catch (Exception e) {
+            throw new KafkaException("Failed to delete topic, " + topic, e);
         }
     }
 }

@@ -5,6 +5,7 @@ import communication.config.ProducerConfig;
 import communication.message.Message;
 import pipeline.processingelement.ConsumingProcessingElement;
 import communication.Publisher;
+import utils.LogUtil;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
                                                       implements Publisher<O> {
@@ -29,7 +30,20 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public void publish(O output) { producer.publish(output); }
 
     @Override
+    public void terminate() {
+        if (producer != null) {
+            producer.terminate();
+            producer = null;
+        }
+    }
+
+    @Override
     public void registerProducer(ProducerConfig config) {
-        this.producer = new Producer(config);
+        if (this.producer == null) {
+            this.producer = new Producer(config);
+        }
+        else {
+            LogUtil.debug("Producer already registered for operator.");
+        }
     }
 }

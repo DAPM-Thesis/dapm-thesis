@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListTopicsOptions;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.KafkaException;
 import utils.LogUtil;
 
 import java.util.List;
@@ -35,24 +36,22 @@ public class Consumer {
         subscribeToTopic();
     }
 
-    public boolean start() {
+    public void start() {
         if (thread != null && thread.isAlive()) {
             LogUtil.debug("Consumer already running for topic {} ", topic);
-            return false;
+            return;
         }
         running = true;
         try {
             observe();
-            LogUtil.debug("Consumer started for topic {} ", topic);
-            return true;
+            LogUtil.info("Consumer started for topic {} ", topic);
         } catch (Exception e) {
-            LogUtil.error(e, "Failed to start consumer for topic {} ", topic);
             running = false;
-            return false;
+            throw new KafkaException("Failed to start consumer for topic " + topic, e);
         }
     }
 
-    public boolean stop() {
+    public void stop() {
         running = false;
         kafkaConsumer.wakeup();
         if (thread != null) {
@@ -60,11 +59,21 @@ public class Consumer {
                 thread.join();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LogUtil.error(e, "Interrupted while stopping consumer for topic {} ", topic);
-                return false;
+                throw new KafkaException("Interrupted while stopping consumer for topic " + topic, e);
+            } finally {
+                thread = null;
             }
         }
-        return true;
+    }
+
+    public void terminate() {
+        try {
+            stop();
+            kafkaConsumer.close();
+            LogUtil.info("Kafka consumer closed for topic {} ", topic);
+        } catch (Exception e) {
+            throw new KafkaException("Failed to close Kafka consumer for topic " + topic, e);
+        }
     }
 
     private void observe() {
@@ -86,7 +95,6 @@ public class Consumer {
             } catch (Exception e) {
                 LogUtil.error(e, "Failed to process record in consumer for topic {} ", topic);
             } finally {
-                kafkaConsumer.close();
                 LogUtil.info("Kafka consumer closed for for topic {} ", topic);
             }
         }, "KafkaConsumer-" + topic);
@@ -109,8 +117,7 @@ public class Consumer {
                     Thread.sleep(retryDelayMillis);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    LogUtil.error(e, "Interrupted during topic subscription retries.");
-                    return;
+                    throw new KafkaException("Interrupted while waiting for topic '" + topic + "' to exist.", e);
                 }
             }
         }
@@ -127,11 +134,9 @@ public class Consumer {
             return topics.contains(topic);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            LogUtil.error(e, "Interrupted while checking topic existence {}", topic);
-            return false;
+            throw new KafkaException("Interrupted while checking topic existence " + topic, e);
         } catch (Exception e) {
-            LogUtil.error(e, "Failed to list topics to check existence {} ", topic);
-            return false;
+            throw new KafkaException("Failed to get list of topics for broker " + brokerURL, e);
         }
     }
 }
