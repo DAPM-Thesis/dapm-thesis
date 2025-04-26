@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -15,15 +17,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CandidateParserTest {
 
-    public static PipelineCandidate getPipelineCandidate(String path) {
+    public static PipelineCandidate getPipelineCandidate(String jsonPath) {
         String contents;
-        try { contents = Files.readString(Paths.get(path)); }
+        try { contents = Files.readString(Paths.get(jsonPath)); }
         catch (IOException e) {
             System.out.println(System.getProperty("user.dir") + "\n\n");
             throw new RuntimeException(e);
         }
-
-        return new PipelineCandidate(contents);
+        URI configURI = Paths.get("src/test/resources/candidate_validation/template_config_schemas/").toAbsolutePath().toUri();
+        return new PipelineCandidate(contents, configURI);
     }
 
     public static PipelineCandidate getSimpleValid() {
@@ -35,6 +37,10 @@ public class CandidateParserTest {
     public void schemaLoadable() {
         InputStream is = getClass().getClassLoader().getResourceAsStream("jsonschemas/pipeline_candidate_schema.json");
         assertNotNull(is); // Should NOT be null
+    }
+
+    public void configSchemaLoadable() {
+        InputStream is = getClass().getClassLoader().getResourceAsStream("jsonschemas/pipeline_candidate_config_schema.json");
     }
 
     @Test
@@ -140,12 +146,28 @@ public class CandidateParserTest {
 
         PipelineCandidate candidate = CandidateParserTest.getPipelineCandidate(path);
         ProcessingElementReference source = candidate.getElements().stream()
-                .filter(e -> e.getTemplateID().equals("$$$ Source"))
+                .filter(e -> e.getOrganizationID().equals("Pepsi"))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("parsing of $$$ Source parameter Values failed."));
+                .orElseThrow(() -> new NoSuchElementException("parsing of Pepsi template failed."));
         Map<String, Object> output = source.getConfiguration();
 
         assertEquals(expected, output);
+    }
+
+    @Test
+    public void missingConfigurationProperty() {
+        String path = "src/test/resources/candidate_validation/parser/missing_configuration_property.json";
+        assertThrows(RuntimeException.class, () -> {
+            CandidateParserTest.getPipelineCandidate(path);
+        });
+    }
+
+    @Test
+    public void undeclaredConfigurationProperty() {
+        String path = "src/test/resources/candidate_validation/parser/undeclared_configuration_property.json";
+        assertThrows(RuntimeException.class, () -> {
+            CandidateParserTest.getPipelineCandidate(path);
+        });
     }
 
     @Test

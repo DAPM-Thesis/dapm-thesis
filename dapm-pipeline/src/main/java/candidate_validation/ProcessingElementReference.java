@@ -65,8 +65,10 @@ public class ProcessingElementReference {
 
     @Override
     public String toString() {
-        String inputsString = inputs == null ? "0" : String.valueOf(inputs.size());
-        return "MPE[" + organizationID + "," + templateID + "," + inputsString + "," + output + "]";
+        String inputsString = String.valueOf(inputs.size());
+        String outputString = output == null ? "null" : output.getSimpleName();
+        List<String> attributes = List.of(organizationID, organizationHostURL, templateID, inputsString, outputString, instanceNumber, configuration).stream().map(Object::toString).toList();
+        return "MPE[" + String.join(", ", attributes) + "]";
     }
 
     @Override

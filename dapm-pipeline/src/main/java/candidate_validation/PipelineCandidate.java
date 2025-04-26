@@ -3,6 +3,7 @@ package candidate_validation;
 import candidate_validation.parsing.CandidateParser;
 import utils.Pair;
 
+import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
 
@@ -13,9 +14,9 @@ public class PipelineCandidate {
 
     /** Creates a PipelineCandidate from a JSON string. Will throw an error if the JSON does not conform to the
      *  pipeline candidate JSON schema in resources/jsonschemas/pipeline_candidate_schema.json. */
-    public PipelineCandidate(String json) throws RuntimeException {
+    public PipelineCandidate(String json, URI configFolderPath) throws RuntimeException {
         Pair<Set<ProcessingElementReference>, Set<ChannelReference>> elementsAndChannels
-                = (new CandidateParser()).deserialize(json);
+                = (new CandidateParser(configFolderPath)).deserialize(json);
         this.elements = elementsAndChannels.first();
         this.channels = elementsAndChannels.second();
     }

@@ -1,7 +1,7 @@
 {
   "processing elements":[
     { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1, "configuration": {} },
-    { "organizationID": "DTU", "hostURL": "http://localhost:8092",  "templateID": "Not all inputs filled in channels",  "inputs": ["Event", "PetriNet"],  "output": null,  "instanceNumber": 1, "configuration": {} }
+    { "organizationID": "DTU", "hostURL": "http://localhost:8092",  "templateID": "Dream sink",  "inputs": ["Event", "PetriNet"],  "output": null,  "instanceNumber": 1, "configuration": {} }
   ],
 
   "channels": [
@@ -9,7 +9,7 @@
       "publisher": { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1, "configuration": {} },
       "subscribers": [
         {
-          "processing element": {"organizationID": "DTU", "hostURL": "http://localhost:8092", "templateID": "Not all inputs filled in channels",  "inputs": ["Event", "PetriNet"],  "output": null,  "instanceNumber": 1, "configuration": {}},
+          "processing element": {"organizationID": "DTU", "hostURL": "http://localhost:8092", "templateID": "Dream Sink",  "inputs": ["Event", "PetriNet"],  "output": null,  "instanceNumber": 1, "configuration": {}},
           "portNumber": 1
         }
       ]

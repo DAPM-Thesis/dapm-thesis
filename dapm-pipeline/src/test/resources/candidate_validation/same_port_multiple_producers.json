@@ -1,7 +1,7 @@
 {
   "processing elements":[
     { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source", "inputs": [], "output": "Event", "instanceNumber": 1, "configuration": {} },
-    { "organizationID": "EXTRA SOURCE TO SAME PORT", "hostURL": "http://localhost:8092", "templateID": "---",  "inputs": [],  "output": "Event",  "instanceNumber": 1, "configuration": {} },
+    { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source",  "inputs": [],  "output": "Event",  "instanceNumber": 2, "configuration": {} },
     { "organizationID": "DTU", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["Event"],  "output": null,  "instanceNumber": 1, "configuration": {} }
   ],
 
@@ -16,7 +16,7 @@
       ]
     },
     {
-      "publisher": { "organizationID": "EXTRA SOURCE TO SAME PORT", "hostURL": "http://localhost:8092", "templateID": "---",  "inputs": [],  "output": "Event",  "instanceNumber": 1, "configuration": {} },
+      "publisher": { "organizationID": "Pepsi", "hostURL": "http://localhost:8082", "templateID": "$$$ Source",  "inputs": [],  "output": "Event",  "instanceNumber": 2, "configuration": {} },
       "subscribers": [
         {
           "processing element": { "organizationID": "DTU", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["Event"],  "output": null,  "instanceNumber": 1, "configuration": {} },

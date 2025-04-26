@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.dapm.org/config/pepsi_configuration_config_schema.json",
+  "title": "Pepsi CONFIGURATION Config",
+  "type": "object",
+  "properties": {
+    "number": { "type": "number" },
+    "number duplicate": { "type": "number" },
+    "string": { "type":  "string" },
+    "boolean": { "type": "boolean" }
+  },
+  "required": ["number", "number duplicate", "string", "boolean"],
+  "additionalProperties": false
+}

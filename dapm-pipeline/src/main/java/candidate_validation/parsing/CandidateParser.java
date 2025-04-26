@@ -8,15 +8,21 @@ import candidate_validation.SubscriberReference;
 import candidate_validation.ProcessingElementReference;
 import utils.Pair;
 
+import java.net.URI;
 import java.util.*;
 
 public class CandidateParser implements Parser<Pair<Set<ProcessingElementReference>, Set<ChannelReference>>> {
+    private final JsonSchemaValidator validator;
+
+    public CandidateParser(URI configFolderPath) {
+        this.validator = new JsonSchemaValidator(configFolderPath);
+    }
 
     @Override
     public Pair<Set<ProcessingElementReference>, Set<ChannelReference>> deserialize(String json) {
         // The JSON schema validator below will take care of throwing errors if the JSON is not correctly formatted
         // according to the pipeline_draft_json_schema.json. We can therefore omit throwing those errors afterward.
-        JsonSchemaValidator.validatePipelineCandidate(json);
+        validator.validatePipelineCandidate(json);
 
         Map<String, Object> jsonMap = (Map<String, Object>) (new JSONParser()).parse(json);
 
@@ -27,13 +33,13 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
         Set<ChannelReference> channels = getChannelReferences(rawChannels);
 
         for (Map<String, Object> elementMap : rawElements) {
-            String filename = toFilenameWithoutExtension(
+            String configFilename = toFilenameWithoutExtension(
                     (String) elementMap.get("organizationID"),
                     (String) elementMap.get("templateID"))
                     + "_config_schema.json";
 
             String configJson = getConfigurationJSONString(elementMap);
-            JsonSchemaValidator.validatePath(configJson, filename);
+            validator.validateConfiguration(configJson, configFilename);
         }
 
         return new Pair<>(elements, channels);
@@ -51,7 +57,7 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
             substrings.add(filename);
         }
 
-        return String.join("_", substrings);
+        return String.join("_", substrings).toLowerCase();
     }
     // TODO: same as above
     private String getConfigurationJSONString(Map<String, Object> elementMap) {
