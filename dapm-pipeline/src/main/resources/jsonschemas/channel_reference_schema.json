@@ -22,7 +22,7 @@
               { "$ref":  "https://www.dapm.org/processing_element_reference_schema.json" },
               {
                 "type": "object",
-                "properties": { "inputs": { "not": { "type": "null" }}},
+                "properties": { "inputs": { "type": "array", "minItems": 1}},
                 "required": ["inputs"]
               }
             ]
