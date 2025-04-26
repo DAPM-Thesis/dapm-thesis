@@ -26,7 +26,6 @@ public class PipelineExecutionService {
             String url = entry.getValue().getOrganizationHostURL() +
                     "/pipelineExecution/start/instance/" + instanceId;
             HTTPResponse response = webClient.putSync(url);
-
             if (!isSuccess(response.status())) {
                 throw new PipelineExecutionException("Failed to start PE " + instanceId);
             }
@@ -39,7 +38,6 @@ public class PipelineExecutionService {
             String url = entry.getValue().getOrganizationHostURL() +
                     "/pipelineExecution/stop/instance/" + instanceId;
             HTTPResponse response = webClient.putSync(url);
-
             if (!isSuccess(response.status())) {
                 throw new PipelineExecutionException("Failed to stop PE " + instanceId);
             }
@@ -52,7 +50,6 @@ public class PipelineExecutionService {
             String url = entry.getValue().getOrganizationHostURL() +
                     "/pipelineExecution/terminate/instance/" + instanceId;
             HTTPResponse response = webClient.putSync(url);
-
             if (!isSuccess(response.status())) {
                 throw new PipelineExecutionException("Failed to terminate PE " + instanceId);
             }

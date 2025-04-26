@@ -5,6 +5,6 @@ public class PipelineExecutionException extends RuntimeException {
         super(message);
     }
     public PipelineExecutionException(String message, Throwable cause) {
-        super(message);
+        super(message, cause);
     }
 }
