@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class TEMP_DELETE {
 }
-
+// TODO: delete this class; just temporary collection of classes that will be defined in isolation.
 class JsonSchemaValidatorTEMP {
 
     private final SchemaProvider schemaProvider;

@@ -20,14 +20,44 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
 
         Map<String, Object> jsonMap = (Map<String, Object>) (new JSONParser()).parse(json);
 
-
         List<Map<String, Object>> rawElements = (List<Map<String, Object>>) jsonMap.get("processing elements");
         Set<ProcessingElementReference> elements = getProcessingElementReferences(rawElements);
 
         List<Map<String, Object>> rawChannels = (List<Map<String, Object>>) jsonMap.get("channels");
         Set<ChannelReference> channels = getChannelReferences(rawChannels);
 
+        for (Map<String, Object> elementMap : rawElements) {
+            String filename = toFilenameWithoutExtension(
+                    (String) elementMap.get("organizationID"),
+                    (String) elementMap.get("templateID"))
+                    + "_config_schema.json";
+
+            String configJson = getConfigurationJSONString(elementMap);
+            JsonSchemaValidator.validatePath(configJson, filename);
+        }
+
         return new Pair<>(elements, channels);
+    }
+
+    // TODO: extract this file parsing stuff into its own class to keep single responsibility principle
+    private String toFilenameWithoutExtension(String... inputs) {
+        String illegalChars = "[\\\\/:*?\"<>|']";
+
+        List<String> substrings = new ArrayList<>();
+        for (String s : inputs) {
+            String filename = s.replaceAll(illegalChars, "_");
+            filename = filename.replaceAll("\\s+", "_");
+            filename = filename.replaceAll("^_+|_+$", ""); // remove underscores from start/end
+            substrings.add(filename);
+        }
+
+        return String.join("_", substrings);
+    }
+    // TODO: same as above
+    private String getConfigurationJSONString(Map<String, Object> elementMap) {
+        Object configuration = elementMap.get("configuration");
+        if (configuration == null) { throw new IllegalStateException("a processing element must have a configuration"); }
+        return new JSONParser().toJSONString(configuration);
     }
 
     private Set<ChannelReference> getChannelReferences(List<Map<String, Object>> rawChannels) {

@@ -39,6 +39,7 @@ public class ProcessingElementReference {
         assert !(isSource() && isSink()) : "Processing elements must either have inputs or output or both.";
     }
 
+    public String getOrganizationID() { return this.organizationID; }
     public String getOrganizationHostURL() { return this.organizationHostURL; }
     public String getTemplateID() { return this.templateID; }
     public int getInstanceNumber() { return this.instanceNumber; }
