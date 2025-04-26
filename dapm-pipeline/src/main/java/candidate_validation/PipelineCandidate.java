@@ -12,8 +12,14 @@ public class PipelineCandidate {
     private final Set<ProcessingElementReference> elements;
     private final Set<ChannelReference> channels;
 
-    /** Creates a PipelineCandidate from a JSON string. Will throw an error if the JSON does not conform to the
-     *  pipeline candidate JSON schema in resources/jsonschemas/pipeline_candidate_schema.json. */
+    /**
+     * @param json              the JSON representation of a pipeline candidate
+     * @param configFolderPath  the path to the configuration schema folder. this folder should contain a schema
+     *                          for each processing element in 'json' which specifies the configurations and allowed
+     *                          values for said processing elements.
+     * @throws RuntimeException if parsing fails or json does not conform to the pipeline candidate and configuration
+     *                          schemas.
+     */
     public PipelineCandidate(String json, URI configFolderPath) throws RuntimeException {
         Pair<Set<ProcessingElementReference>, Set<ChannelReference>> elementsAndChannels
                 = (new CandidateParser(configFolderPath)).deserialize(json);

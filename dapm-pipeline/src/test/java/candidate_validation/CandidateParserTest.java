@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,11 +37,13 @@ public class CandidateParserTest {
     @Test
     public void schemaLoadable() {
         InputStream is = getClass().getClassLoader().getResourceAsStream("jsonschemas/pipeline_candidate_schema.json");
-        assertNotNull(is); // Should NOT be null
+        assertNotNull(is);
     }
 
-    public void configSchemaLoadable() {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("jsonschemas/pipeline_candidate_config_schema.json");
+    @Test
+    public void configSchemaLoadable() throws IOException {
+        InputStream is = Paths.get("src/test/resources/candidate_validation/template_config_schemas/coca_cola_the_profit_miner_config_schema.json").toAbsolutePath().toUri().toURL().openStream();
+        assertNotNull(is);
     }
 
     @Test
