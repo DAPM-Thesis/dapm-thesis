@@ -2,7 +2,6 @@ package pipeline.service;
 
 import communication.API.HTTPClient;
 import communication.API.HTTPResponse;
-import draft_validation.ProcessingElementReference;
 import exceptions.PipelineExecutionException;
 import candidate_validation.ProcessingElementReference;
 import org.springframework.beans.factory.annotation.Autowired;
