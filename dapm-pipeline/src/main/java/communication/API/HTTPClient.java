@@ -36,15 +36,21 @@ public class HTTPClient {
                     .uri(url)
                     .header("Content-Type", "application/json");
 
-            return (body == null)
+            var result = (body == null)
                     ? request.exchangeToMono(response ->
                     response.bodyToMono(String.class)
                             .map(b -> new HTTPResponse(response.statusCode(), b))
+                            .defaultIfEmpty(new HTTPResponse(response.statusCode(), null))
             ).block()
                     : request.bodyValue(body).exchangeToMono(response ->
                     response.bodyToMono(String.class)
                             .map(b -> new HTTPResponse(response.statusCode(), b))
+                            .defaultIfEmpty(new HTTPResponse(response.statusCode(), null))
             ).block();
+            if (result == null) {
+                throw new RemoteCallException("Received no response at " + url);
+            }
+            return result;
         } catch (Exception e) {
             throw new RemoteCallException("Request failed: " + url, e);
         }
