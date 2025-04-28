@@ -213,4 +213,35 @@ public class JSONParser {
                 .replace("\\b", "\b")
                 .replace("\\f", "\f");
     }
+
+    public String toJSONString(Object jsonObject) {
+        if (jsonObject instanceof Map) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{");
+            boolean first = true;
+            for (Map.Entry<?, ?> entry : ((Map<?, ?>) jsonObject).entrySet()) {
+                if (!first) sb.append(",");
+                sb.append("\"").append(entry.getKey()).append("\":");
+                sb.append(toJSONString(entry.getValue()));
+                first = false;
+            }
+            sb.append("}");
+            return sb.toString();
+        } else if (jsonObject instanceof List) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            boolean first = true;
+            for (Object item : (List<?>) jsonObject) {
+                if (!first) sb.append(",");
+                sb.append(toJSONString(item));
+                first = false;
+            }
+            sb.append("]");
+            return sb.toString();
+        }
+        else if (jsonObject instanceof String) { return "\"" + ((String) jsonObject).replace("\"", "\\\"") + "\"";}
+        else if (jsonObject == null) { return "null"; }
+        else { return jsonObject.toString(); }
+    }
+
 }

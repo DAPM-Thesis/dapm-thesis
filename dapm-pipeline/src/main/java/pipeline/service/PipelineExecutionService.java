@@ -1,7 +1,7 @@
 package pipeline.service;
 
 import communication.API.HTTPClient;
-import draft_validation.ProcessingElementReference;
+import candidate_validation.ProcessingElementReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pipeline.Pipeline;
@@ -18,14 +18,11 @@ public class PipelineExecutionService {
     }
 
     public void start(Pipeline pipeline) {
-        if (pipeline.getSources().isEmpty()) throw new IllegalArgumentException("No sources found in pipeline");
-        for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getSources().entrySet()) {
-            try {
-                String url = "/pipelineBuilder/start/instance/" + entry.getKey();
-
-                webClient.postSync(entry.getValue().getOrganizationHostURL() + url);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
+            if(entry.getValue().isSource()) {
+                String url = entry.getValue().getOrganizationHostURL() +
+                        "/pipelineBuilder/start/instance/" + entry.getKey();
+                webClient.putSync(url);
             }
         }
     }

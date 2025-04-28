@@ -1,5 +1,6 @@
 package communication.API;
 
+import exceptions.RemoteCallException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,15 +13,46 @@ public class HTTPClient {
     public HTTPClient(WebClient webClient) {
         this.webClient = webClient;
     }
+    public HTTPResponse postSync(String url) {
+        return postSync(url, null);
+    }
 
-    public String postSync(String url) {
+    public HTTPResponse postSync(String url, String body) {
+        return sendRequest("POST", url, body);
+    }
+
+    public HTTPResponse putSync(String url) {
+        return putSync(url, null);
+    }
+
+    public HTTPResponse putSync(String url, String body) {
+        return sendRequest("PUT", url, body);
+    }
+
+    private HTTPResponse sendRequest(String method, String url, String body) {
         try {
-       return webClient.post().uri(url)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+            WebClient.RequestBodySpec request = webClient
+                    .method(org.springframework.http.HttpMethod.valueOf(method))
+                    .uri(url)
+                    .header("Content-Type", "application/json");
+
+            var result = (body == null)
+                    ? request.exchangeToMono(response ->
+                    response.bodyToMono(String.class)
+                            .map(b -> new HTTPResponse(response.statusCode(), b))
+                            .defaultIfEmpty(new HTTPResponse(response.statusCode(), null))
+            ).block()
+                    : request.bodyValue(body).exchangeToMono(response ->
+                    response.bodyToMono(String.class)
+                            .map(b -> new HTTPResponse(response.statusCode(), b))
+                            .defaultIfEmpty(new HTTPResponse(response.statusCode(), null))
+            ).block();
+            if (result == null) {
+                throw new RemoteCallException("Received no response at " + url);
+            }
+            return result;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RemoteCallException("Request failed: " + url, e);
         }
     }
 }

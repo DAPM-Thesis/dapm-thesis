@@ -2,9 +2,11 @@ package pipeline.processingelement;
 
 import communication.Consumer;
 import communication.Subscriber;
+import communication.config.ConsumerConfig;
 import communication.message.Message;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -13,7 +15,7 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
      *  separate Channel's and Petri Net's from one Channel, it will have (key, value) pairs (Event.class, 2) and
      *  (PetriNet.class, 1).*/
     protected final Map<Class<? extends Message>, Integer> inputs;
-    private final Collection<Consumer> consumers = new HashSet<>();
+    private final Map<Integer, Consumer> consumers = new HashMap<>();
 
     protected ConsumingProcessingElement() {
         this.inputs = setConsumedInputs();
@@ -24,10 +26,9 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
 
     protected abstract Map<Class<? extends Message>, Integer> setConsumedInputs();
 
-
-    public void registerConsumer(String brokerURL, String topic) {
-        Consumer consumer = new Consumer(this, brokerURL, topic);
+    public void registerConsumer(ConsumerConfig config) {
+        Consumer consumer = new Consumer(this, config);
         consumer.start();
-        consumers.add(consumer);
+        consumers.put(config.portNumber(), consumer);
     }
 }

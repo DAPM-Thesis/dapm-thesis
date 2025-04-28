@@ -1,6 +1,7 @@
 package pipeline.processingelement.operator;
 
 import communication.Producer;
+import communication.config.ProducerConfig;
 import communication.message.Message;
 import pipeline.processingelement.ConsumingProcessingElement;
 import communication.Publisher;
@@ -10,15 +11,15 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     private Producer producer;
 
     @Override
-    public void observe(Message input) {
-        AO algorithmOutput = process(input);
+    public void observe(Message input, int portNumber) {
+        AO algorithmOutput = process(input, portNumber);
         if (publishCondition(algorithmOutput)) {
             O output = convertAlgorithmOutput(algorithmOutput);
             publish(output);
         }
     }
 
-    protected abstract AO process(Message input);
+    protected abstract AO process(Message input, int portNumber);
 
     protected abstract O convertAlgorithmOutput(AO algorithmOutput);
 
@@ -28,7 +29,7 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public void publish(O output) { producer.publish(output); }
 
     @Override
-    public void registerProducer(String brokerURL, String topic) {
-        this.producer = new Producer(brokerURL, topic);
+    public void registerProducer(ProducerConfig config) {
+        this.producer = new Producer(config);
     }
 }
