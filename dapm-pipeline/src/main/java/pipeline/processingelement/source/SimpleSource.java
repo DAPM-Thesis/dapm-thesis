@@ -1,6 +1,7 @@
 package pipeline.processingelement.source;
 
 import communication.message.Message;
+import exceptions.PipelineExecutionException;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -18,6 +19,15 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
                 publish(output);
             }
         });
+    }
+
+    @Override
+    public void stop() {
+        try {
+            executor.shutdown();
+        } catch (Exception e) {
+            throw new PipelineExecutionException("Failed to stop source.", e);
+        }
     }
 
     public abstract O process();

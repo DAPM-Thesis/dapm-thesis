@@ -28,10 +28,9 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
 
     @Override
     public void publish(O data) {
-        if (producer == null) {
-            throw new IllegalStateException("Producer not registered for source");
+        if (producer != null) {
+            producer.publish(data);
         }
-        producer.publish(data);
     }
 
     @Override
@@ -46,8 +45,6 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public void registerProducer(ProducerConfig config) {
         if (this.producer == null) {
             this.producer = new Producer(config);
-        } else {
-            LogUtil.debug("Producer already registered for operator.");
         }
     }
 }
