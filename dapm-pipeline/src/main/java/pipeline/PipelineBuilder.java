@@ -30,6 +30,7 @@ public class PipelineBuilder {
     }
 
     public Pipeline buildPipeline(String organizationOwnerID, ValidatedPipeline validatedPipeline) {
+        configuredInstances.clear();
         Pipeline pipeline = new Pipeline(organizationOwnerID);
         this.DG = new DG<>();
         initializeDG(validatedPipeline.getChannels());
@@ -120,6 +121,9 @@ public class PipelineBuilder {
         if (sourceResponse == null) {
             throw new IllegalStateException("No response received for source: " + pe);
         }
+
+        assertValidResponse(sourceResponse, true);
+
         configuredInstances.put(pe, sourceResponse);
         return sourceResponse.getInstanceID();
     }
@@ -133,6 +137,7 @@ public class PipelineBuilder {
         if (operatorResponse == null) {
             throw new IllegalStateException("No response received for operator: " + pe);
         }
+        assertValidResponse(operatorResponse, true);
         configuredInstances.put(pe, operatorResponse);
         return operatorResponse.getInstanceID();
     }
@@ -146,6 +151,7 @@ public class PipelineBuilder {
         if (sinkResponse == null) {
             throw new IllegalStateException("No response received for sink: " + pe);
         }
+        assertValidResponse(sinkResponse, /*needsProducer*/ false);
         configuredInstances.put(pe, sinkResponse);
         return sinkResponse.getInstanceID();
     }
@@ -188,7 +194,7 @@ public class PipelineBuilder {
                 ? webClient.postSync(url)
                 : webClient.postSync(url, body);
 
-        if(response.body() == null) {
+        if(response == null|| response.body() == null) {
             throw new IllegalStateException("No response received from " + url);
         }
         return JsonUtil.fromJson(response.body(), PEInstanceResponse.class);
@@ -210,40 +216,68 @@ public class PipelineBuilder {
 
         sendVoidPost(url, JsonUtil.toJson(cfg));
     }
+    
+    private void sendVoidPost(String url, String body) {
+        HTTPResponse resp = (body == null)
+            ? webClient.postSync(url)
+            : webClient.postSync(url, body);
 
-    private void sendVoidPost(String url, String body){
-        HTTPResponse resp = (body==null)
-                ? webClient.postSync(url)
-                : webClient.postSync(url, body);
-
-        if (resp.status() == null || !resp.status().is2xxSuccessful()) {
+        if (resp == null || resp.status() != null && !resp.status().is2xxSuccessful()) {   
             throw new IllegalStateException("HB call failed: " + url);
         }
     }
 
-    private void wireHeartbeats() {
+    private void assertValidResponse(PEInstanceResponse r,
+                                     boolean needsProducer) {
 
+        if (r == null)
+            throw new IllegalStateException("response is null");
+                                    
+        if (r.getTemplateID() == null || r.getTemplateID().isBlank())
+            throw new IllegalStateException("templateID missing/empty");
+
+        if (r.getInstanceID() == null || r.getInstanceID().isBlank())
+            throw new IllegalStateException("instanceID missing/empty");
+
+        if (needsProducer) {
+            if (r.getProducerConfig() == null)
+                throw new IllegalStateException("producerConfig missing");
+
+            if (r.getProducerConfig().brokerURL() == null
+                    || r.getProducerConfig().brokerURL().isBlank()
+                || r.getProducerConfig().topic() == null
+                    || r.getProducerConfig().topic().isBlank())
+                throw new IllegalStateException("brokerURL / topic empty");
+        }
+    }
+
+    private void wireHeartbeats() {    
         for (ProcessingElementReference upstream : DG.getNodes()) {
-            for (ProcessingElementReference downstream : DG.getNeighbors(upstream)) {    
-                String dataTopic = configuredInstances.get(downstream)
-                                            .getProducerConfig().topic();
-                String hbTopic   = dataTopic + "-hb-" + downstream.getInstanceNumber();
-    
-                /* 1  downstream PE publishes heartbeat */
-                ProducerConfig hbProd =
-                        new ProducerConfig(configuredInstances
-                                            .get(downstream)
-                                            .getProducerConfig()
-                                            .brokerURL(), hbTopic);
-                attachHeartbeatPublisher(downstream, hbProd);
-    
-                /* 2  upstream PE consumes heartbeat */
-                ConsumerConfig hbCons =
-                        new ConsumerConfig(configuredInstances.get(upstream)
-                                            .getProducerConfig()
-                                            .brokerURL(), hbTopic,0);
-                attachHeartbeatConsumer(upstream, hbCons);
+            for (ProcessingElementReference downstream : DG.getNeighbors(upstream)) {
+                //* downstream must be able to PUBLISH */            
+                PEInstanceResponse downResp = configuredInstances.get(downstream);
+                ProducerConfig downDataProd = downResp.getProducerConfig();
+            
+                //  Skip edges where the downstream PE is a Sink
+                if (downDataProd == null) {
+                    continue;
+                }
+
+                String hbTopic = downDataProd.topic() + "-hb-" + downstream.getInstanceNumber();            
+                attachHeartbeatPublisher(
+                        downstream,
+                        new ProducerConfig(downDataProd.brokerURL(), hbTopic));
+            
+                //* upstream must be able to CONSUME */
+                PEInstanceResponse upResp   = configuredInstances.get(upstream);
+                ProducerConfig     upDataPd = upResp.getProducerConfig();
+            
+                if (upDataPd == null) continue;            
+                attachHeartbeatConsumer(
+                        upstream,
+                        new ConsumerConfig(upDataPd.brokerURL(), hbTopic, 0));
             }
         }
     }
+
 }

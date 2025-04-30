@@ -1,4 +1,4 @@
-package pipeline.processingelement;
+package pipeline.processingelement.source;
 
 import communication.Producer;
 import communication.Publisher;
@@ -7,31 +7,21 @@ import communication.message.Message;
 import pipeline.processingelement.accesscontrolled.AccessControlledProcessingElement;
 import pipeline.processingelement.accesscontrolled.PEToken;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-
 public abstract class Source<O extends Message> extends AccessControlledProcessingElement implements Publisher<O> {
     protected Source(PEToken initialToken) {
         super(initialToken);
     }
 
     private Producer producer; // Channel
-    ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
-    public void start() {
-        if (getHeartbeatManager() != null) getHeartbeatManager().start();
-        executor.submit(() -> {
-        while(isAvailable()) {
-            O output = process();
-            publish(output);
-        }
-        });
-    }
-
-    public abstract O process();
+    public abstract void start();
 
     @Override
-    public void publish(O data) { producer.publish(data); }
+    public void publish(O data) {
+        if(producer != null) {
+            producer.publish(data);
+        }
+    }
 
     @Override
     public void registerProducer(ProducerConfig config) {
