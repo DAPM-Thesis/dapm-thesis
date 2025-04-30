@@ -6,6 +6,7 @@ import communication.API.HTTPClient;
 import communication.API.HTTPResponse;
 import communication.API.PEInstanceResponse;
 import communication.config.ConsumerConfig;
+import communication.config.ProducerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import utils.graph.DG;
@@ -94,9 +95,15 @@ public class PipelineBuilder {
 
     private List<ConsumerConfig> getConsumerConfigs(ProcessingElementReference pe, Map<ProcessingElementReference, PEInstanceResponse> configured) {
         return getUpstream(pe).stream()
-                .filter(node -> configured.get(node) != null &&
-                        configured.get(node).getProducerConfig() != null &&
-                        DG.getEdgeAttribute(node, pe) != null)
+                .filter(node -> {
+                    PEInstanceResponse response = configured.get(node);
+                    ProducerConfig producerConfig = response != null ? response.getProducerConfig() : null;
+                    boolean hasEdgeAttribute = DG.getEdgeAttribute(node, pe) != null;
+                    return producerConfig != null
+                            && hasEdgeAttribute
+                            && producerConfig.brokerURL() != null && !producerConfig.brokerURL().isEmpty()
+                            && producerConfig.topic() != null && !producerConfig.topic().isEmpty();
+                })
                 .map(node -> new ConsumerConfig(
                         configured.get(node).getProducerConfig().brokerURL(),
                         configured.get(node).getProducerConfig().topic(),
@@ -106,9 +113,6 @@ public class PipelineBuilder {
 
     private String createSource(Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
         PEInstanceResponse sourceResponse = sendCreateSourceRequest(pe.getOrganizationHostURL(), pe.getTemplateID());
-        if (sourceResponse == null) {
-            throw new IllegalStateException("No response received for source: " + pe);
-        }
         configuredInstances.put(pe, sourceResponse);
         return sourceResponse.getInstanceID();
     }
@@ -119,9 +123,6 @@ public class PipelineBuilder {
             throw new IllegalStateException("No ConsumerConfigs found for operator: " + pe);
         }
         PEInstanceResponse operatorResponse = sendCreateOperatorRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs);
-        if (operatorResponse == null) {
-            throw new IllegalStateException("No response received for operator: " + pe);
-        }
         configuredInstances.put(pe, operatorResponse);
         return operatorResponse.getInstanceID();
     }
@@ -132,9 +133,6 @@ public class PipelineBuilder {
             throw new IllegalStateException("No ConsumerConfigs found for sink: " + pe);
         }
         PEInstanceResponse sinkResponse = sendCreateSinkRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs);
-        if (sinkResponse == null) {
-            throw new IllegalStateException("No response received for sink: " + pe);
-        }
         configuredInstances.put(pe, sinkResponse);
         return sinkResponse.getInstanceID();
     }
@@ -177,9 +175,17 @@ public class PipelineBuilder {
                 ? webClient.postSync(url)
                 : webClient.postSync(url, body);
 
-        if(response.body() == null) {
+        if (response == null || response.body() == null) {
             throw new IllegalStateException("No response received from " + url);
         }
-        return JsonUtil.fromJson(response.body(), PEInstanceResponse.class);
+        PEInstanceResponse peInstanceResponse = JsonUtil.fromJson(response.body(), PEInstanceResponse.class);
+
+        if (peInstanceResponse.getTemplateID() == null ||
+                peInstanceResponse.getInstanceID() == null ||
+                peInstanceResponse.getTemplateID().isEmpty() ||
+                peInstanceResponse.getInstanceID().isEmpty()) {
+            throw new IllegalStateException("Received invalid response from " + url + ": " + response.body());
+        }
+        return peInstanceResponse;
     }
 }
