@@ -6,18 +6,23 @@ import communication.API.HTTPClient;
 import communication.API.HTTPResponse;
 import communication.API.PEInstanceResponse;
 import communication.config.ConsumerConfig;
+import communication.config.ProducerConfig;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import utils.graph.DG;
 import utils.JsonUtil;
-
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 public class PipelineBuilder {
+    public static final Duration HB_PERIOD = Duration.ofSeconds(5);
+    public static final Duration HB_TOLERANCE = Duration.ofSeconds(15);
     private final HTTPClient webClient;
     private DG<ProcessingElementReference, Integer> DG;
+    private final Map<ProcessingElementReference, PEInstanceResponse> configuredInstances = new HashMap<>(); 
 
     @Autowired
     public PipelineBuilder(HTTPClient webClient) {
@@ -29,6 +34,11 @@ public class PipelineBuilder {
         this.DG = new DG<>();
         initializeDG(validatedPipeline.getChannels());
         buildPipeline(pipeline);
+
+        System.out.println("[PipelineBuilder] pipeline built with " + configuredInstances.size() + " instances.");
+        //heartbeat
+        wireHeartbeats();
+
         return pipeline;
     }
 
@@ -43,7 +53,8 @@ public class PipelineBuilder {
     }
 
     private void buildPipeline(Pipeline pipeline) {
-        Map<ProcessingElementReference, PEInstanceResponse> configuredInstances = new HashMap<>();
+        // TODO: Discuss with CY: if we want to keep track of the instances in the pipeline here or on the top level.
+        //Map<ProcessingElementReference, PEInstanceResponse> configuredInstances = new HashMap<>();
         Set<ProcessingElementReference> currentLevel = findSources();
 
         while (!currentLevel.isEmpty()) {
@@ -181,5 +192,58 @@ public class PipelineBuilder {
             throw new IllegalStateException("No response received from " + url);
         }
         return JsonUtil.fromJson(response.body(), PEInstanceResponse.class);
+    }
+
+    // For heartbeat
+    private void attachHeartbeatPublisher(ProcessingElementReference pe, ProducerConfig cfg) {
+        String url = pe.getOrganizationHostURL()
+                + "/pipelineBuilder/heartbeat/publisher/instance/"
+                + configuredInstances.get(pe).getInstanceID(); 
+
+        sendVoidPost(url, JsonUtil.toJson(cfg));
+    }
+
+    private void attachHeartbeatConsumer(ProcessingElementReference pe, ConsumerConfig cfg) {
+        String url = pe.getOrganizationHostURL()
+                + "/pipelineBuilder/heartbeat/consumer/instance/"
+                + configuredInstances.get(pe).getInstanceID();
+
+        sendVoidPost(url, JsonUtil.toJson(cfg));
+    }
+
+    private void sendVoidPost(String url, String body){
+        HTTPResponse resp = (body==null)
+                ? webClient.postSync(url)
+                : webClient.postSync(url, body);
+
+        if (resp.status() == null || !resp.status().is2xxSuccessful()) {
+            throw new IllegalStateException("HB call failed: " + url);
+        }
+    }
+
+    private void wireHeartbeats() {
+
+        for (ProcessingElementReference upstream : DG.getNodes()) {
+            for (ProcessingElementReference downstream : DG.getNeighbors(upstream)) {    
+                String dataTopic = configuredInstances.get(downstream)
+                                            .getProducerConfig().topic();
+                String hbTopic   = dataTopic + "-hb-" + downstream.getInstanceNumber();
+    
+                /* 1  downstream PE publishes heartbeat */
+                ProducerConfig hbProd =
+                        new ProducerConfig(configuredInstances
+                                            .get(downstream)
+                                            .getProducerConfig()
+                                            .brokerURL(), hbTopic);
+                attachHeartbeatPublisher(downstream, hbProd);
+    
+                /* 2  upstream PE consumes heartbeat */
+                ConsumerConfig hbCons =
+                        new ConsumerConfig(configuredInstances.get(upstream)
+                                            .getProducerConfig()
+                                            .brokerURL(), hbTopic,0);
+                attachHeartbeatConsumer(upstream, hbCons);
+            }
+        }
     }
 }

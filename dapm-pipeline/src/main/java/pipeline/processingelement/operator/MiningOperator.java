@@ -1,9 +1,14 @@
 package pipeline.processingelement.operator;
 
 import communication.message.Message;
+import pipeline.processingelement.accesscontrolled.PEToken;
 import utils.Pair;
 
 public abstract class MiningOperator<O extends Message> extends Operator<Pair<O, Boolean>, O> {
+
+    protected MiningOperator(PEToken initialToken) {
+        super(initialToken);
+    }
 
     @Override
     protected O convertAlgorithmOutput(Pair<O, Boolean> rawOutput) {

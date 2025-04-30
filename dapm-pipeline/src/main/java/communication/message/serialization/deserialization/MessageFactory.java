@@ -2,10 +2,13 @@ package communication.message.serialization.deserialization;
 
 import communication.message.Message;
 import communication.message.impl.Alignment;
+import communication.message.impl.Heartbeat;
+import communication.message.impl.HeartbeatID;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +23,7 @@ public class MessageFactory {
         register(new Alignment(new Trace(List.of(new Event("c", "a", "1", new HashSet<>()))),
                                new Trace(List.of(new Event("c", "a", "1", new HashSet<>())))));
         register(new Trace(new ArrayList<>()));
+        register(new Heartbeat(new HeartbeatID(), Instant.EPOCH));
     }
 
     private static void register(Message instance) {

@@ -4,14 +4,19 @@ import communication.Producer;
 import communication.config.ProducerConfig;
 import communication.message.Message;
 import pipeline.processingelement.ConsumingProcessingElement;
+import pipeline.processingelement.accesscontrolled.PEToken;
 import communication.Publisher;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
                                                       implements Publisher<O> {
+    protected Operator(PEToken initialToken) {
+        super(initialToken);
+    }
+
     private Producer producer;
 
     @Override
-    public void observe(Message input, int portNumber) {
+    public void handle(Message input, int portNumber) {
         AO algorithmOutput = process(input, portNumber);
         if (publishCondition(algorithmOutput)) {
             O output = convertAlgorithmOutput(algorithmOutput);

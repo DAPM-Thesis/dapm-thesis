@@ -55,4 +55,8 @@ public class HTTPClient {
             throw new RemoteCallException("Request failed: " + url, e);
         }
     }
+
+    public HTTPResponse getSync(String url) {
+        return sendRequest("GET", url, null);
+    }
 }
