@@ -1,4 +1,4 @@
-package communication.API;
+package communication.API.response;
 
 import org.springframework.http.HttpStatusCode;
 
