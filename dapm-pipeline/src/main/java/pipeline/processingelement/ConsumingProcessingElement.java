@@ -32,19 +32,12 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
 
     @Override
     public void start() {
-        Exception firstException = null;
         for (Consumer consumer : consumers.values()) {
             try {
                 consumer.start();
             } catch (Exception e) {
-                if (firstException == null) {
-                    firstException = e;
-                }
-                LogUtil.error(e, "Failed to start a consumer.");
+                throw new PipelineExecutionException("Failed to start a consumer.", e);
             }
-        }
-        if (firstException != null) {
-            throw new PipelineExecutionException("Failed to start one or more consumers.", firstException);
         }
     }
 
