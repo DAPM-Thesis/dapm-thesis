@@ -2,9 +2,11 @@ package pipeline;
 
 
 import candidate_validation.*;
-import communication.API.HTTPClient;
-import communication.API.HTTPResponse;
-import communication.API.PEInstanceResponse;
+import communication.API.*;
+import communication.API.request.HTTPRequest;
+import communication.API.request.PEInstanceRequest;
+import communication.API.response.HTTPResponse;
+import communication.API.response.PEInstanceResponse;
 import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +114,7 @@ public class PipelineBuilder {
     }
 
     private String createSource(Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
-        PEInstanceResponse sourceResponse = sendCreateSourceRequest(pe.getOrganizationHostURL(), pe.getTemplateID());
+        PEInstanceResponse sourceResponse = sendCreateSourceRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), pe.getConfiguration());
         configuredInstances.put(pe, sourceResponse);
         return sourceResponse.getInstanceID();
     }
@@ -122,7 +124,7 @@ public class PipelineBuilder {
         if (consumerConfigs == null || consumerConfigs.isEmpty()) {
             throw new IllegalStateException("No ConsumerConfigs found for operator: " + pe);
         }
-        PEInstanceResponse operatorResponse = sendCreateOperatorRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs);
+        PEInstanceResponse operatorResponse = sendCreateOperatorRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs, pe.getConfiguration());
         configuredInstances.put(pe, operatorResponse);
         return operatorResponse.getInstanceID();
     }
@@ -132,48 +134,48 @@ public class PipelineBuilder {
         if (consumerConfigs == null || consumerConfigs.isEmpty()) {
             throw new IllegalStateException("No ConsumerConfigs found for sink: " + pe);
         }
-        PEInstanceResponse sinkResponse = sendCreateSinkRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs);
+        PEInstanceResponse sinkResponse = sendCreateSinkRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs, pe.getConfiguration());
         configuredInstances.put(pe, sinkResponse);
         return sinkResponse.getInstanceID();
     }
 
-    private PEInstanceResponse sendCreateSourceRequest(String hostURL, String templateID) {
+    private PEInstanceResponse sendCreateSourceRequest(String hostURL, String templateID, Map<String, Object> configuration) {
         String encodedTemplateID = JsonUtil.encode(templateID);
         String url = hostURL + String.format(
                 "/pipelineBuilder/source/templateID/%s",
                 encodedTemplateID
         );
-        return sendPostRequest(url);
+        PEInstanceRequest requestBody = new PEInstanceRequest();
+        requestBody.setConfiguration(configuration);
+        return sendPostRequest(url, requestBody);
     }
 
-    private PEInstanceResponse sendCreateOperatorRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs) {
+    private PEInstanceResponse sendCreateOperatorRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Map<String, Object> configuration) {
         String encodedTemplateID = JsonUtil.encode(templateID);
         String url = hostURL + String.format(
                 "/pipelineBuilder/operator/templateID/%s",
                 encodedTemplateID
         );
-        String requestBody = JsonUtil.toJson(consumerConfigs);
+        PEInstanceRequest requestBody = new PEInstanceRequest();
+        requestBody.setConfiguration(configuration);
+        requestBody.setConsumerConfigs(consumerConfigs);
         return sendPostRequest(url, requestBody);
     }
 
-    private PEInstanceResponse sendCreateSinkRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs) {
+    private PEInstanceResponse sendCreateSinkRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Map<String, Object> configuration) {
         String encodedTemplateID = JsonUtil.encode(templateID);
         String url = hostURL + String.format(
                 "/pipelineBuilder/sink/templateID/%s",
                 encodedTemplateID
         );
-        String requestBody = JsonUtil.toJson(consumerConfigs);
+        PEInstanceRequest requestBody = new PEInstanceRequest();
+        requestBody.setConfiguration(configuration);
+        requestBody.setConsumerConfigs(consumerConfigs);
         return sendPostRequest(url, requestBody);
     }
 
-    private PEInstanceResponse sendPostRequest(String url) {
-        return sendPostRequest(url, null);
-    }
-
-    private PEInstanceResponse sendPostRequest(String url, String body) {
-        HTTPResponse response = (body == null)
-                ? webClient.postSync(url)
-                : webClient.postSync(url, body);
+    private PEInstanceResponse sendPostRequest(String url, PEInstanceRequest body) {
+        HTTPResponse response = webClient.postSync(new HTTPRequest(url, JsonUtil.toJson(body)));
 
         if (response == null || response.body() == null) {
             throw new IllegalStateException("No response received from " + url);

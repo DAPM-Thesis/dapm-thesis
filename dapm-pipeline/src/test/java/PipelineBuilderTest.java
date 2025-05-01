@@ -3,7 +3,8 @@
 import candidate_validation.PipelineCandidate;
 import candidate_validation.ValidatedPipeline;
 import communication.API.HTTPClient;
-import communication.API.HTTPResponse;
+import communication.API.request.HTTPRequest;
+import communication.API.response.HTTPResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +33,6 @@ public class PipelineBuilderTest {
     @Autowired
     private HTTPClient httpClient;
 
-
     @BeforeEach
     public void setUp() {
         Mockito.reset(httpClient);
@@ -40,8 +40,9 @@ public class PipelineBuilderTest {
 
     public static PipelineCandidate getPipelineCandidate(String jsonPath) {
         String contents;
-        try { contents = Files.readString(Paths.get(jsonPath)); }
-        catch (IOException e) {
+        try {
+            contents = Files.readString(Paths.get(jsonPath));
+        } catch (IOException e) {
             System.out.println(System.getProperty("user.dir") + "\n\n");
             throw new RuntimeException(e);
         }
@@ -55,17 +56,10 @@ public class PipelineBuilderTest {
     }
 
     private void setUpMockResponses(Function<String, String> bodyForUrl) {
-        Mockito.when(httpClient.postSync(Mockito.anyString(), Mockito.any()))
+        Mockito.when(httpClient.postSync(Mockito.any(HTTPRequest.class)))
                 .thenAnswer(invocation -> {
-                    String url = invocation.getArgument(0, String.class);
-                    HTTPResponse mockResponse = Mockito.mock(HTTPResponse.class);
-                    Mockito.when(mockResponse.body()).thenReturn(bodyForUrl.apply(url));
-                    return mockResponse;
-                });
-
-        Mockito.when(httpClient.postSync(Mockito.anyString()))
-                .thenAnswer(invocation -> {
-                    String url = invocation.getArgument(0, String.class);
+                    HTTPRequest request = invocation.getArgument(0, HTTPRequest.class);
+                    String url = request.getUrl();
                     HTTPResponse mockResponse = Mockito.mock(HTTPResponse.class);
                     Mockito.when(mockResponse.body()).thenReturn(bodyForUrl.apply(url));
                     return mockResponse;
@@ -128,10 +122,7 @@ public class PipelineBuilderTest {
 
 
     void setUpFailedMockResponsesNullResponse() {
-        Mockito.when(httpClient.postSync(Mockito.anyString(), Mockito.any()))
-                .thenReturn(null);
-
-        Mockito.when(httpClient.postSync(Mockito.anyString()))
+        Mockito.when(httpClient.postSync(Mockito.any(HTTPRequest.class)))
                 .thenReturn(null);
     }
 

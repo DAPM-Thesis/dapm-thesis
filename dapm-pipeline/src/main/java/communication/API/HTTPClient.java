@@ -1,8 +1,9 @@
 package communication.API;
 
+import communication.API.request.HTTPRequest;
+import communication.API.response.HTTPResponse;
+
 public interface HTTPClient {
-    HTTPResponse postSync(String url);
-    HTTPResponse postSync(String url, String body);
-    HTTPResponse putSync(String url);
-    HTTPResponse putSync(String url, String body);
+    HTTPResponse postSync(HTTPRequest httpRequest);
+    HTTPResponse putSync(HTTPRequest httpRequest);
 }
