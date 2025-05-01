@@ -94,54 +94,36 @@ public class PipelineBuilderTest {
     }
 
     private void setUpFailedMockResponsesNullTemplateId() {
-        setUpMockResponses(url -> {
-            return getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_TemplateID.json");
-        });
+        setUpMockResponses(url -> getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_TemplateID.json"));
     }
 
     void setUpFailedMockResponsesNullInstanceID() {
-        setUpMockResponses(url -> {
-            return getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_instanceID.json");
-        });
+        setUpMockResponses(url -> getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_instanceID.json"));
     }
 
     private void setUpFailedMockResponsesNullProducerConfig() {
-        setUpMockResponses(url -> {
-
-            return getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_producerConfig.json");
-        });
+        setUpMockResponses(url -> getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_producerConfig.json"));
     }
 
     private void setUpFailedMockResponsesNullProducerConfigs() {
-        setUpMockResponses(url -> {
-
-            return getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_producerConfigs.json");
-        });
+        setUpMockResponses(url -> getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_producerConfigs.json"));
     }
 
 
     void setUpFailedMockResponsesEmptyTemplateID() {
-        setUpMockResponses(url -> {
-            return getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_templateID.json");
-        });
+        setUpMockResponses(url -> getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_templateID.json"));
     }
 
     void setUpFailedMockResponsesEmptyInstanceID() {
-        setUpMockResponses(url -> {
-            return getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_empty_instanceID.json");
-        });
+        setUpMockResponses(url -> getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_empty_instanceID.json"));
     }
 
     void setUpFailedMockResponsesEmptyProducerConfigs() {
-        setUpMockResponses(url -> {
-            return getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_empty_producerConfig.json");
-        });
+        setUpMockResponses(url -> getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_empty_producerConfig.json"));
     }
 
     private void setUpFailedMockResponsesNullResponseBody() {
-        setUpMockResponses(url -> {
-            return null;
-        });
+        setUpMockResponses(url -> null);
     }
 
 
