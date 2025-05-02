@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public abstract class SimpleSource<O extends Message> extends Source<O> {
 
-    public volatile boolean isRunning = true;
+    private volatile boolean isRunning = true;
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
     @Override
@@ -21,6 +21,8 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
         });
     }
 
+    protected abstract O process();
+
     @Override
     public void stop() {
         try {
@@ -29,6 +31,4 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
             throw new PipelineExecutionException("Failed to stop source.", e);
         }
     }
-
-    public abstract O process();
 }
