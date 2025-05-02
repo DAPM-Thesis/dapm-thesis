@@ -1,5 +1,6 @@
 package communication.message.serialization;
 import communication.message.impl.Alignment;
+import communication.message.impl.InstantTime;
 import communication.message.impl.Time;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
@@ -56,7 +57,14 @@ public class MessageSerializer implements MessageVisitor<String> {
 
     @Override
     public String visit(Time time) {
-        return time.getName() + ":" + time.getTime().toString();
+        this.serialization = time.getName() + ":" + time.getTime().toString();
+        return getSerialization();
+    }
+
+    @Override
+    public String visit(InstantTime instantTime) {
+        this.serialization = instantTime.getName() + ":" + instantTime.getTime().toString();
+        return getSerialization();
     }
 
     private String toJXES(Trace trace) {

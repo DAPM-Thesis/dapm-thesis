@@ -2,6 +2,7 @@ package communication.message.serialization.deserialization;
 
 import communication.message.Message;
 import communication.message.impl.Alignment;
+import communication.message.impl.InstantTime;
 import communication.message.impl.Time;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Event;
@@ -22,6 +23,7 @@ public class MessageFactory {
                                new Trace(List.of(new Event("c", "a", "1", new HashSet<>())))));
         register(new Trace(new ArrayList<>()));
         register(new Time());
+        register(new InstantTime());
     }
 
     private static void register(Message instance) {

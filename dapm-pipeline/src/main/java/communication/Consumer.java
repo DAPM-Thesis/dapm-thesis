@@ -62,7 +62,7 @@ public class Consumer {
                 var records = kafkaConsumer.poll(java.time.Duration.ofMillis(100));
                 if (!records.isEmpty()) {
                     for (ConsumerRecord<String, String> record : records) {
-                        Message msg =  MessageFactory.deserialize(record.value());
+                        Message msg = MessageFactory.deserialize(record.value());
                         this.subscriber.observe(msg, portNumber);
                     }
                 }

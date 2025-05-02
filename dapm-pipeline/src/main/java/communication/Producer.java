@@ -27,11 +27,13 @@ public class Producer {
     }
 
     public void publish(Message message) {
+        // TODO: make serializer static so a new one is not created with every publish
+        // TODO: only make it static if it does not cause issues when run concurrently (because of getSerialization()) - remodel Serializer if concurrency becomes an issue.
         MessageSerializer serializer = new MessageSerializer();
         message.acceptVisitor(serializer);
         String serialization = serializer.getSerialization();
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, serialization);
-        kafkaProducer.send(record);
+        kafkaProducer.send(record); // TODO: inline ProducerRecord?
     }
 
     private void createKafkaTopicIfNotExist(String brokerURL) {
@@ -42,9 +44,9 @@ public class Producer {
                 // Create a new topic with a default number of partitions and replication factor
                 NewTopic newTopic = new NewTopic(topic, 1, (short) 1); // 1 partition, replication factor of 1
                 adminClient.createTopics(Collections.singletonList(newTopic)).all().get();
-                System.out.println("Topic created: " + topic);
+                System.out.println("Topic created: " + topic); // TODO: do we want the print?
             } else {
-                System.out.println("Topic already exists: " + topic);
+                System.out.println("Topic already exists: " + topic); // TODO: is this ever called? If it is, do we want any logic around it?
             }
         }catch (Exception e) {
             e.printStackTrace();

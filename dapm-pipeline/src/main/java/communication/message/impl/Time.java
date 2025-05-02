@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Time extends Message {
-    LocalDateTime time;
+    private final LocalDateTime time;
 
     public Time(LocalDateTime time) {
         super(new TimeDeserializationStrategy());
@@ -20,24 +20,24 @@ public class Time extends Message {
         time = LocalDateTime.now();
     }
 
+    public LocalDateTime getTime() {
+        return time;
+    }
+
     @Override
     public void acceptVisitor(MessageVisitor<?> messageVisitor) {
         messageVisitor.visit(this);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Time otherTime)) return false;
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof Time otherTime)) return false;
         return time.equals(otherTime.time);
     }
 
     @Override
     public int hashCode() {
         return time.hashCode();
-    }
-
-    public LocalDateTime getTime() {
-        return time;
     }
 }

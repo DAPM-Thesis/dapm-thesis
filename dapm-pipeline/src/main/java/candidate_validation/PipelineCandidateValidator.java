@@ -23,9 +23,8 @@ public class PipelineCandidateValidator {
             else if (element.isSink() && isPublisher(element, channels)) { return false; }
             else if (element.isOperator()
                     && !(isPublisher(element, channels) && isSubscriber(element, channels)) ) { return false; }
-            else {
-                if (!element.isSource() && !element.isSink() && !element.isOperator()) { throw new IllegalStateException("unexpected ProcessingElementReference type."); }
-            }
+            else if (!element.isSource() && !element.isSink() && !element.isOperator())
+                { throw new IllegalStateException("unexpected ProcessingElementReference type."); }
         }
         return true;
     }
