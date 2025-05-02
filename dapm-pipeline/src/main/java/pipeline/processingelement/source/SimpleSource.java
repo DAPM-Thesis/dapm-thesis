@@ -7,7 +7,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public abstract class SimpleSource<O extends Message> extends Source<O> {
 
-    public volatile boolean isRunning = true;
+    private volatile boolean isRunning = true;
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
     @Override
@@ -20,5 +20,5 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
         });
     }
 
-    public abstract O process();
+    protected abstract O process();
 }

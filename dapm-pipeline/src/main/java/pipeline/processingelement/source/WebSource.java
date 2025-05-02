@@ -12,5 +12,5 @@ public abstract class WebSource<O extends Message> extends Source<O> {
         subscription = process().subscribe(this::publish);
     }
 
-    public abstract Flux<O> process();
+    protected abstract Flux<O> process();
 }
