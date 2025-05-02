@@ -2,6 +2,7 @@ package pipeline.service;
 
 import communication.API.HTTPClient;
 import candidate_validation.ProcessingElementReference;
+import communication.API.request.HTTPRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pipeline.Pipeline;
@@ -22,7 +23,7 @@ public class PipelineExecutionService {
             if(entry.getValue().isSource()) {
                 String url = entry.getValue().getOrganizationHostURL() +
                         "/pipelineBuilder/start/instance/" + entry.getKey();
-                webClient.putSync(url);
+                webClient.putSync(new HTTPRequest(url));
             }
         }
     }
