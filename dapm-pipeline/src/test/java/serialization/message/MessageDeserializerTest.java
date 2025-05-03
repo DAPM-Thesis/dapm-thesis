@@ -116,6 +116,18 @@ class MessageDeserializerTest {
     }
 
     @Test
+    void bugEvent() {
+        Event expected = new Event("\"SAVOY, NY\"",
+                "edit",
+                "1746088230",
+                new HashSet<>());
+
+        MessageSerializer serializer = new MessageSerializer();
+        String JXES = serializer.visit(expected);
+        Message output = MessageFactory.deserialize(JXES);
+    }
+
+    @Test
     void traceSingleInverse() {
         // create trace
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());

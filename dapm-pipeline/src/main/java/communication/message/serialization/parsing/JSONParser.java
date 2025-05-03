@@ -111,11 +111,15 @@ public class JSONParser {
         int openedSquare = 0;
         boolean openedQuote = false;
         int currentStart = 0;
-
+        System.out.println(""); // TODO delete
         for (int i = 0; i < contents.length(); i++) {
             char ch = contents.charAt(i);
+            System.out.println(ch + "   (JSONParser 117)"); // TODO: delete
 
             if (ch == '"') {
+                if (contents.startsWith("\"concept:name\": \"File")) {
+                    System.out.println("DELETE JSONParser 121\n"); // TODO: delete
+                }
                 if (shouldFlipQuote(contents, i)) {
                     openedQuote = !openedQuote;
                 }
