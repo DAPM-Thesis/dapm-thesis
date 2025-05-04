@@ -128,7 +128,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void wikipediaEvent() throws IOException {
+    void wikipediaEvent() throws IOException { // TODO: remove once bugEvent works
         Event output = (Event) getMessage(Event.class, "src/test/resources/serialization/message/event/wikipedia_event.json");
         Event expected = new Event(
                 "File:THIRTEENTH ANNUAL REUNION & BANQUET (held by) UNION COLLEGE \nALUMNI ASSOCIATION OF NEW YORK (at) \"SAVOY, THE, NEW YORK, NY\" (HOTEL;) (NYPL Hades-275181-4000011701).jpg",

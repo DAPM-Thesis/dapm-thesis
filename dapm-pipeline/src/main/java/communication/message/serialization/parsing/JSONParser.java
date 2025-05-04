@@ -153,7 +153,7 @@ public class JSONParser {
 
         // find the closing quotation mark
         int colonIndex = getPropertyStringColonIndex(pair);
-        /*
+        /* // TODO: delete
         int endQuoteIndex = pair.indexOf('\"');
         assert endQuoteIndex != -1 : String.format("no starting quotation in: %s", pair);
         endQuoteIndex = pair.indexOf('\"', endQuoteIndex+1);

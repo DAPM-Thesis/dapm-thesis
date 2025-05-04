@@ -39,7 +39,7 @@ public class MessageSerializerTest {
         Set<Attribute<?>> extraAttributes = new HashSet<>(Arrays.asList(intAttr, stringAttr, doubleAttr, booleanAttr));
         Event event = new Event("caseID", "activity", "timestamp", extraAttributes);
 
-        String expected = Event.class.getName() + ":{\"traces\": [{\"attrs\": {\"concept:name\": \"caseID\"}, \"events\": [{\"concept:name\": \"activity\", \"date\": \"timestamp\", \"boolean\": true, \"string\": \"str '\":({ ing\", \"double\": 5.0, \"int\": 5}]}]}\n";
+        String expected = Event.class.getName() + ":{\"traces\": [{\"attrs\": {\"concept:name\": \"caseID\"}, \"events\": [{\"concept:name\": \"activity\", \"date\": \"timestamp\", \"boolean\": true, \"string\": \"str '\\\":({ ing\", \"double\": 5.0, \"int\": 5}]}]}\n";
         MessageSerializer serializer = new MessageSerializer();
         String output = serializer.visit(event);
         assertEquals(expected.replaceAll("\\s+", ""), output.replaceAll("\\s+", ""));

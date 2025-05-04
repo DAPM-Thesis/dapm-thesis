@@ -23,9 +23,8 @@ public class MessageSerializer implements MessageVisitor<String> {
 
     @Override
     public String visit(Event event) {
-        String caseID = event.getCaseID();
         this.serialization = event.getName() + ":" + "{\"traces\": [{" +
-                                            "\"attrs\": {\"concept:name\": \"" + event.getCaseID() + "\"}, " +
+                                            "\"attrs\": {\"concept:name\": \"" + toJSONString(event.getCaseID()) + "\"}, " +
                                             "\"events\": [" + toJXES(event) + "]}]}";
         return getSerialization();
     }
@@ -79,13 +78,13 @@ public class MessageSerializer implements MessageVisitor<String> {
         if (!trace.isEmpty()) { sb.delete(sb.length() - 2, sb.length()); } // delete last ", "
         sb.append(']');
 
-        return "{\"attrs\": {\"concept:name\": \"" + trace.getCaseID() + "\"}, " +
-                    "\"events\": " + sb.toString() +"}";
+        return "{\"attrs\": {\"concept:name\": \"" + toJSONString(trace.getCaseID()) + "\"}, " +
+                    "\"events\": " + sb +"}";
     }
 
     private String toJXES(Event event) {
-        return "{\"concept:name\": \"" + event.getActivity() +
-                "\", \"date\": \"" + event.getTimestamp() +
+        return "{\"concept:name\": \"" + toJSONString(event.getActivity()) +
+                "\", \"date\": \"" + toJSONString(event.getTimestamp()) +
                 "\"" + commaSeparatedAttributesString(event.getAttributes()) + '}';
     }
 
@@ -94,8 +93,38 @@ public class MessageSerializer implements MessageVisitor<String> {
         if (attributes.isEmpty()) {return "";}
         StringBuilder sb = new StringBuilder();
         for (Attribute<?> attr : attributes) {
-            sb.append(", ").append(attr.toString());
+            String valueString = attr.getValue() instanceof String ? "\"" + toJSONString(attr.getValue().toString()) + "\""
+                                                                   : attr.getValue().toString();
+            sb.append(", ")
+                    .append('\"' + toJSONString(attr.getName()) + "\": ")
+                    .append(valueString);
         }
+        return sb.toString();
+    }
+
+    private String toJSONString(String original) {
+        if (original == null)
+            { return null; }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < original.length(); i++) {
+            char c = original.charAt(i);
+            switch (c) {
+                case '"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                case '\b': sb.append("\\b"); break;
+                case '\f': sb.append("\\f"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                case '/': sb.append("\\/"); break;
+                default:
+                    if (c < ' ') {
+                        // formatting magic: control characters (e.g. carriage return or backspace) are handled correctly
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else { sb.append(c); }
+            }
+        }
+
         return sb.toString();
     }
 
