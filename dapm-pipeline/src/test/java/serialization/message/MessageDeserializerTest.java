@@ -130,6 +130,18 @@ class MessageDeserializerTest {
     }
 
     @Test
+    void arabicCharsEvent() throws IOException {
+        Event expected = new Event("تصنيف:تجمع سكان",
+                "categorize",
+                "1746088411",
+                new HashSet<>());
+
+        Event output = (Event) getMessage(Event.class, "src/test/resources/serialization/JSONParser/arabic_chars.json");
+
+        assertEquals(expected, output);
+    }
+
+    @Test
     void traceSingleInverse() {
         // create trace
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
