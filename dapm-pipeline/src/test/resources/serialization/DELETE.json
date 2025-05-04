@@ -1,0 +1,16 @@
+{
+  "traces": [
+    {
+      "attrs":
+      {
+        "concept:name": "\"SAVOY, NY\""
+      },
+      "events": [
+        {
+          "concept:name": "edit",
+          "date": "1746088230"
+        }
+      ]
+    }
+  ]
+}

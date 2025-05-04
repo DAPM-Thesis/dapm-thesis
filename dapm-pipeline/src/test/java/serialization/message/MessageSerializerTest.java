@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -124,6 +125,29 @@ public class MessageSerializerTest {
         assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
     }
 
+    @Test
+    public void serializeWikipediaEvent() throws IOException { // TODO: delete / update
+        Event event = new Event(
+                " \"SAVOY, THE, NEW YORK, NY\" ", // TODO: edit '\"' -> "\\\""
+                "edit",
+                "1746088230",
+                new HashSet<>()
+        );
+
+        MessageSerializer serializer = new MessageSerializer();
+        serializer.visit(event);
+        String JXES = serializer.getSerialization();
+        String path = "src/test/resources/serialization/message/event/DELETE.json";
+
+        try {
+            Files.write(
+                    Paths.get(path),
+                    JXES.getBytes(),
+                    StandardOpenOption.CREATE      // Create if not exists
+            );
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
     public PetriNet getExamplePetriNet(){
         /*
          *             --> p2 -
@@ -152,4 +176,6 @@ public class MessageSerializerTest {
         // so this is not a workflow net
         return new PetriNet(places, transitions, flowRelation);
     }
+
+
 }

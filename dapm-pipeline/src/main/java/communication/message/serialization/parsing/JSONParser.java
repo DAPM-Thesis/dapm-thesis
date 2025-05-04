@@ -111,18 +111,14 @@ public class JSONParser {
         int openedSquare = 0;
         boolean openedQuote = false;
         int currentStart = 0;
-        System.out.println(""); // TODO delete
+        //System.out.println(""); // TODO delete
         for (int i = 0; i < contents.length(); i++) {
             char ch = contents.charAt(i);
-            System.out.println(ch + "   (JSONParser 117)"); // TODO: delete
+            //System.out.println(ch + "   (JSONParser 117)"); // TODO: delete
 
             if (ch == '"') {
-                if (contents.startsWith("\"concept:name\": \"File")) {
-                    System.out.println("DELETE JSONParser 121\n"); // TODO: delete
-                }
-                if (shouldFlipQuote(contents, i)) {
-                    openedQuote = !openedQuote;
-                }
+                if (shouldFlipQuote(contents, i))
+                    { openedQuote = !openedQuote; }
             } else if (!openedQuote) {
                 if (ch == ',' && openedCurly == 0 && openedSquare == 0) {
                     commaSeparatedStrings.add(contents.substring(currentStart, i));
@@ -138,7 +134,7 @@ public class JSONParser {
         commaSeparatedStrings.add(contents.substring(currentStart));
         return commaSeparatedStrings;
     }
-
+    // TODO: refactor such that both
     private boolean shouldFlipQuote(String str, int quoteIndex) {
         // the quotes should only be flipped if there are no quotes in the given string, or if the quotes in the given
         // string are closed. Both cases only happen if the number of backslashes in the string is even.
@@ -150,16 +146,44 @@ public class JSONParser {
     Pair<String, String> splitAndStripKeyAndValue(String pair) {
         /* the pair is always of the form key:pair, where the key is a quotation-wrapped character sequence which may
          * contain its own ':' (colon). */
+
+        if (pair.contains("\"\\\":\\\"\": \"3\"")) {
+            System.out.println("JSONParser 151"); // TODO: delete
+        }
+
         // find the closing quotation mark
+        int colonIndex = getPropertyStringColonIndex(pair);
+        /*
         int endQuoteIndex = pair.indexOf('\"');
         assert endQuoteIndex != -1 : String.format("no starting quotation in: %s", pair);
         endQuoteIndex = pair.indexOf('\"', endQuoteIndex+1);
         assert endQuoteIndex != -1 : String.format("no closing quotation in: %s", pair);
         int colonIndex = pair.indexOf(':', endQuoteIndex);
-
+        */
         String key = pair.substring(0, colonIndex).strip();
         String value = pair.substring(colonIndex+1).strip();
         return new Pair<>(key, value);
+    }
+
+    /** Given a single property's string, returns the index of the colon separating the name from the value. */
+    private int getPropertyStringColonIndex(String property) {
+        boolean inQuote = false;
+        for (int i = 0; i < property.length(); i++) {
+            char c = property.charAt(i);
+            if (c == '"') {
+                if (isOuterQuote(property, i)) { inQuote = !inQuote; }
+            } else if (c == ':' && !inQuote)
+                { return i; }
+        }
+        throw new InvalidJSON("Property without outer colon provided: " + property);
+    }
+
+    private boolean isOuterQuote(String property, int index) {
+        if (property.charAt(index) != '"')
+            { return false; }
+        int backslashCount = 0;
+        while (--index >= 0 && property.charAt(index) == '\\') { backslashCount++; }
+        return backslashCount % 2 == 0;
     }
 
     /** @param str The string to be searched.

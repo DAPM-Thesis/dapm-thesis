@@ -116,7 +116,7 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void bugEvent() {
+    void bugEvent() { // TODO: rename
         Event expected = new Event("\"SAVOY, NY\"",
                 "edit",
                 "1746088230",
@@ -125,6 +125,18 @@ class MessageDeserializerTest {
         MessageSerializer serializer = new MessageSerializer();
         String JXES = serializer.visit(expected);
         Message output = MessageFactory.deserialize(JXES);
+    }
+
+    @Test
+    void wikipediaEvent() throws IOException {
+        Event output = (Event) getMessage(Event.class, "src/test/resources/serialization/message/event/wikipedia_event.json");
+        Event expected = new Event(
+                "File:THIRTEENTH ANNUAL REUNION & BANQUET (held by) UNION COLLEGE \nALUMNI ASSOCIATION OF NEW YORK (at) \"SAVOY, THE, NEW YORK, NY\" (HOTEL;) (NYPL Hades-275181-4000011701).jpg",
+                "edit",
+                "1746088230",
+                new HashSet<>()
+                );
+        assertEquals(expected, output);
     }
 
     @Test

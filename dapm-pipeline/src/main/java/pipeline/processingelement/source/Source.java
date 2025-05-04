@@ -15,7 +15,7 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
 
     @Override
     public void publish(O data) {
-        if(producer != null) {
+        if(producer != null) { // TODO: why would producer be null?
             producer.publish(data);
         }
     }
