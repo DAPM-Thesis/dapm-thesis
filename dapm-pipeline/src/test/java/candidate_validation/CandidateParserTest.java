@@ -143,9 +143,26 @@ public class CandidateParserTest {
 
         Map<String, Object> expected = new HashMap<>();
         expected.put("number", 0.5);
-        expected.put("number duplicate", 0.5);
-        expected.put("boolean", true);
-        expected.put("string", "string");
+        expected.put("string", "some string");
+        expected.put("optional config", "not required");
+
+        PipelineCandidate candidate = CandidateParserTest.getPipelineCandidate(path);
+        ProcessingElementReference source = candidate.getElements().stream()
+                .filter(e -> e.getOrganizationID().equals("Pepsi"))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("parsing of Pepsi template failed."));
+        Map<String, Object> output = source.getConfiguration();
+
+        assertEquals(expected, output);
+    }
+
+    @Test
+    public void omitOptionalConfiguration() {
+        String path = "src/test/resources/candidate_validation/parser/omit_optional_configuration.json";
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("number", 0.5);
+        expected.put("string", "some string");
 
         PipelineCandidate candidate = CandidateParserTest.getPipelineCandidate(path);
         ProcessingElementReference source = candidate.getElements().stream()
