@@ -31,7 +31,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void eventTest() {
+    public void event() {
         Attribute<Integer> intAttr = new Attribute<>("int", 5);
         Attribute<String> stringAttr = new Attribute<>("string", "str '\":({ ing");
         Attribute<Double> doubleAttr = new Attribute<>("double", 5.0);
@@ -46,7 +46,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void petriNetTest() throws IOException {
+    public void petriNet() throws IOException {
         PetriNet petriNet = getExamplePetriNet();
         MessageSerializer serializer = new MessageSerializer();
         String output = serializer.visit(petriNet);
@@ -59,7 +59,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void traceEmptyTest() {
+    public void traceEmpty() {
         // this test is here in case traces are allowed to be non-empty in the future
         Trace trace = new Trace(new ArrayList<>());
         MessageSerializer serializer = new MessageSerializer();
@@ -67,7 +67,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void traceSingleTest() throws IOException {
+    public void traceSingle() throws IOException {
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
         List<Event> events = new ArrayList<>(List.of(e1));
         Trace singletonTrace = new Trace(events);
@@ -81,7 +81,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void traceMultipleTest() throws IOException {
+    public void traceMultiple() throws IOException {
         String caseID = "c1";
         Event e1 = new Event(caseID, "a1", "t1", new HashSet<>());
         Event e2 = new Event(caseID, "a2", "t2", new HashSet<>());
@@ -99,7 +99,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void multipleCaseIDTraceTest(){
+    public void multipleCaseIDTrace(){
         // trace serialization assumes all event case IDs in a trace are the same. If this is not the case, update trace serialization
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
         Event e2 = new Event("c2", "a2", "t2", new HashSet<>());
@@ -108,7 +108,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void alignmentTest() throws IOException {
+    public void alignment() throws IOException {
         Event el1 = new Event("C1", "A1", "1", new HashSet<>());
         Event el2 = new Event("C1", "A2", "2", new HashSet<>());
         Trace logTrace = new Trace(new ArrayList<>(List.of(el1, el2)));
@@ -123,29 +123,6 @@ public class MessageSerializerTest {
                 "src/test/resources/serialization//message/alignment/alignment.json");
 
         assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
-    }
-
-    @Test
-    public void serializeWikipediaEvent() throws IOException { // TODO: delete / update
-        Event event = new Event(
-                " \"SAVOY, THE, NEW YORK, NY\" ", // TODO: edit '\"' -> "\\\""
-                "edit",
-                "1746088230",
-                new HashSet<>()
-        );
-
-        MessageSerializer serializer = new MessageSerializer();
-        serializer.visit(event);
-        String JXES = serializer.getSerialization();
-        String path = "src/test/resources/serialization/message/event/DELETE.json";
-
-        try {
-            Files.write(
-                    Paths.get(path),
-                    JXES.getBytes(),
-                    StandardOpenOption.CREATE      // Create if not exists
-            );
-        } catch (IOException e) { e.printStackTrace(); }
     }
 
     public PetriNet getExamplePetriNet(){

@@ -2,7 +2,7 @@ package serialization.message;
 
 import communication.message.Message;
 import communication.message.impl.Alignment;
-import communication.message.impl.Time;
+import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
 import communication.message.impl.event.Event;
@@ -116,27 +116,17 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void bugEvent() { // TODO: rename
-        Event expected = new Event("\"SAVOY, NY\"",
-                "edit",
-                "1746088230",
-                new HashSet<>());
-
-        MessageSerializer serializer = new MessageSerializer();
-        String JXES = serializer.visit(expected);
-        Message output = MessageFactory.deserialize(JXES);
-    }
-
-    @Test
-    void wikipediaEvent() throws IOException { // TODO: remove once bugEvent works
-        Event output = (Event) getMessage(Event.class, "src/test/resources/serialization/message/event/wikipedia_event.json");
+    void wikipediaEventInverse() throws IOException {
         Event expected = new Event(
                 "File:THIRTEENTH ANNUAL REUNION & BANQUET (held by) UNION COLLEGE \nALUMNI ASSOCIATION OF NEW YORK (at) \"SAVOY, THE, NEW YORK, NY\" (HOTEL;) (NYPL Hades-275181-4000011701).jpg",
                 "edit",
                 "1746088230",
                 new HashSet<>()
-                );
-        assertEquals(expected, output);
+        );
+
+        MessageSerializer serializer = new MessageSerializer();
+        String JXES = serializer.visit(expected);
+        Message output = MessageFactory.deserialize(JXES);
     }
 
     @Test
@@ -227,7 +217,7 @@ class MessageDeserializerTest {
 
     @Test
     void timeInverse() {
-        Time expected = new Time();
+        Date expected = new Date();
         MessageSerializer serializer = new MessageSerializer();
         String timeStr = serializer.visit(expected);
         Message output = MessageFactory.deserialize(timeStr);

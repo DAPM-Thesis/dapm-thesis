@@ -1,7 +1,7 @@
 package communication.message.serialization;
 import communication.message.impl.Alignment;
-import communication.message.impl.InstantTime;
-import communication.message.impl.Time;
+import communication.message.impl.time.UTCTime;
+import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
 import communication.message.impl.event.Event;
@@ -11,10 +11,10 @@ import communication.message.impl.petrinet.Transition;
 import communication.message.impl.petrinet.arc.Arc;
 import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
+import communication.message.serialization.parsing.JSONParser;
 
 import java.util.Collection;
 
-// TODO: make serialization its own class? Sure it adds an extra step but it will make maintainability easier, and enforce the correct formatting. Should be considered if serialization format changes frequently.
 /** Class for serializing Message's. Note that any given instance of this class only is safe to use in a synchronous context. */
 public class MessageSerializer implements MessageVisitor<String> {
     private String serialization;
@@ -24,7 +24,7 @@ public class MessageSerializer implements MessageVisitor<String> {
     @Override
     public String visit(Event event) {
         this.serialization = event.getName() + ":" + "{\"traces\": [{" +
-                                            "\"attrs\": {\"concept:name\": \"" + toJSONString(event.getCaseID()) + "\"}, " +
+                                            "\"attrs\": {\"concept:name\": " + JSONParser.toJSONString(event.getCaseID()) + "}, " +
                                             "\"events\": [" + toJXES(event) + "]}]}";
         return getSerialization();
     }
@@ -56,14 +56,14 @@ public class MessageSerializer implements MessageVisitor<String> {
     }
 
     @Override
-    public String visit(Time time) {
+    public String visit(Date time) {
         this.serialization = time.getName() + ":" + time.getTime().toString();
         return getSerialization();
     }
 
     @Override
-    public String visit(InstantTime instantTime) {
-        this.serialization = instantTime.getName() + ":" + instantTime.getTime().toString();
+    public String visit(UTCTime UTCTime) {
+        this.serialization = UTCTime.getName() + ":" + UTCTime.getTime().toString();
         return getSerialization();
     }
 
@@ -78,14 +78,14 @@ public class MessageSerializer implements MessageVisitor<String> {
         if (!trace.isEmpty()) { sb.delete(sb.length() - 2, sb.length()); } // delete last ", "
         sb.append(']');
 
-        return "{\"attrs\": {\"concept:name\": \"" + toJSONString(trace.getCaseID()) + "\"}, " +
+        return "{\"attrs\": {\"concept:name\": " + JSONParser.toJSONString(trace.getCaseID()) + "}, " +
                     "\"events\": " + sb +"}";
     }
 
     private String toJXES(Event event) {
-        return "{\"concept:name\": \"" + toJSONString(event.getActivity()) +
-                "\", \"date\": \"" + toJSONString(event.getTimestamp()) +
-                "\"" + commaSeparatedAttributesString(event.getAttributes()) + '}';
+        return "{\"concept:name\": " + JSONParser.toJSONString(event.getActivity()) +
+                ", \"date\": " + JSONParser.toJSONString(event.getTimestamp())
+                + commaSeparatedAttributesString(event.getAttributes()) + '}';
     }
 
 
@@ -93,38 +93,12 @@ public class MessageSerializer implements MessageVisitor<String> {
         if (attributes.isEmpty()) {return "";}
         StringBuilder sb = new StringBuilder();
         for (Attribute<?> attr : attributes) {
-            String valueString = attr.getValue() instanceof String ? "\"" + toJSONString(attr.getValue().toString()) + "\""
-                                                                   : attr.getValue().toString();
+
             sb.append(", ")
-                    .append('\"' + toJSONString(attr.getName()) + "\": ")
-                    .append(valueString);
+                    .append(JSONParser.toJSONString(attr.getName()))
+                    .append(": ")
+                    .append(JSONParser.toJSONString(attr.getValue()));
         }
-        return sb.toString();
-    }
-
-    private String toJSONString(String original) {
-        if (original == null)
-            { return null; }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < original.length(); i++) {
-            char c = original.charAt(i);
-            switch (c) {
-                case '"': sb.append("\\\""); break;
-                case '\\': sb.append("\\\\"); break;
-                case '\b': sb.append("\\b"); break;
-                case '\f': sb.append("\\f"); break;
-                case '\n': sb.append("\\n"); break;
-                case '\r': sb.append("\\r"); break;
-                case '\t': sb.append("\\t"); break;
-                case '/': sb.append("\\/"); break;
-                default:
-                    if (c < ' ') {
-                        // formatting magic: control characters (e.g. carriage return or backspace) are handled correctly
-                        sb.append(String.format("\\u%04x", (int) c));
-                    } else { sb.append(c); }
-            }
-        }
-
         return sb.toString();
     }
 

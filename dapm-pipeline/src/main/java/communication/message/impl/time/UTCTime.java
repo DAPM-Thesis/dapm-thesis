@@ -1,21 +1,21 @@
-package communication.message.impl;
+package communication.message.impl.time;
 
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
-import communication.message.serialization.deserialization.DeserializationStrategy;
 import communication.message.serialization.deserialization.impl.InstantTimeDeserializationStrategy;
 
 import java.time.Instant;
-// TODO: change name to UTCTime?
-public class InstantTime extends Message {
+
+/** An absolute UTC time (a single instantaneous, unambiguous point on the time-line). */
+public class UTCTime extends Message {
     private final Instant time;
 
-    public InstantTime() {
+    public UTCTime() {
         super(new InstantTimeDeserializationStrategy());
         this.time = Instant.now();
     }
 
-    public InstantTime(Instant instant) {
+    public UTCTime(Instant instant) {
         super(new InstantTimeDeserializationStrategy());
         this.time = instant;
     }
@@ -30,8 +30,8 @@ public class InstantTime extends Message {
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
-        if (!(other instanceof InstantTime otherInstantTime)) return false;
-        return time.equals(otherInstantTime.time);
+        if (!(other instanceof UTCTime otherUTCTime)) return false;
+        return time.equals(otherUTCTime.time);
     }
 
     @Override

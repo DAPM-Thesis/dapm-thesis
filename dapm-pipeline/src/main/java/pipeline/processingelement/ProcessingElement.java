@@ -6,7 +6,7 @@ import java.util.Map;
 
 public abstract class ProcessingElement {
     private final int ID; // only used for illustrative toString purposes currently
-    private boolean isAvailable = true;
+    private boolean isAvailable = true; // TODO: remove when R is done with ACPE
     private Map<String, Object> configuration;
 
     protected ProcessingElement() { ID = IDGenerator.generate(); }

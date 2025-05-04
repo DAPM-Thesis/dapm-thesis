@@ -2,8 +2,8 @@ package communication.message.serialization.deserialization;
 
 import communication.message.Message;
 import communication.message.impl.Alignment;
-import communication.message.impl.InstantTime;
-import communication.message.impl.Time;
+import communication.message.impl.time.UTCTime;
+import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
@@ -22,8 +22,8 @@ public class MessageFactory {
         register(new Alignment(new Trace(List.of(new Event("c", "a", "1", new HashSet<>()))),
                                new Trace(List.of(new Event("c", "a", "1", new HashSet<>())))));
         register(new Trace(new ArrayList<>()));
-        register(new Time());
-        register(new InstantTime());
+        register(new Date());
+        register(new UTCTime());
     }
 
     private static void register(Message instance) {

@@ -5,9 +5,7 @@ import communication.Subscriber;
 import communication.config.ConsumerConfig;
 import communication.message.Message;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 public abstract class ConsumingProcessingElement extends ProcessingElement implements Subscriber<Message> {

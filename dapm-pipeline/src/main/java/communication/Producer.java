@@ -27,13 +27,12 @@ public class Producer {
     }
 
     public void publish(Message message) {
-        // TODO: make serializer static so a new one is not created with every publish
-        // TODO: only make it static if it does not cause issues when run concurrently (because of getSerialization()) - remodel Serializer if concurrency becomes an issue.
+        // Arguably serializer should be refactored such that a new one is not created with every publish().
+        // On the other hand, we have established via performance testing that this is far from being the bottleneck
         MessageSerializer serializer = new MessageSerializer();
         message.acceptVisitor(serializer);
         String serialization = serializer.getSerialization();
-        ProducerRecord<String, String> record = new ProducerRecord<>(topic, serialization);
-        kafkaProducer.send(record); // TODO: inline ProducerRecord?
+        kafkaProducer.send(new ProducerRecord<>(topic, serialization));
     }
 
     private void createKafkaTopicIfNotExist(String brokerURL) {

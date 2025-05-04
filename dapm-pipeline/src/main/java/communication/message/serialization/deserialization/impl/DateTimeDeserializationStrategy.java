@@ -1,14 +1,14 @@
 package communication.message.serialization.deserialization.impl;
 
 import communication.message.Message;
-import communication.message.impl.Time;
+import communication.message.impl.time.Date;
 import communication.message.serialization.deserialization.DeserializationStrategy;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
-public class TimeDeserializationStrategy implements DeserializationStrategy {
+public class DateTimeDeserializationStrategy implements DeserializationStrategy {
     @Override
     public Message deserialize(String s) {
-        return new Time(LocalDateTime.parse(s));
+        return new Date(ZonedDateTime.parse(s));
     }
 }
