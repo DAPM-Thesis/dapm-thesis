@@ -1,7 +1,7 @@
 package pipeline.processingelement.operator;
 
 import communication.message.Message;
-import pipeline.processingelement.accesscontrolled.PEToken;
+import security.token.PEToken;
 
 public abstract class SimpleOperator<O extends Message> extends Operator<O, O> {
 

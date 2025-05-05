@@ -9,22 +9,25 @@ public class PEInstanceResponse {
     private final String templateID;
     private final String instanceID;
     private final ProducerConfig producerConfig;
-
+    private String tokenValue;
+    
     @JsonCreator
     public PEInstanceResponse(
             @JsonProperty("templateID") String templateID,
             @JsonProperty("instanceID") String instanceID,
-            @JsonProperty("producerConfig") ProducerConfig producerConfig
-            ) {
+            @JsonProperty("producerConfig") ProducerConfig producerConfig,
+            @JsonProperty("tokenValue") String tokenValue) {            
         this.templateID = templateID;
         this.instanceID = instanceID;
         this.producerConfig = producerConfig;
+        this.tokenValue = tokenValue;
     }
 
     public static class Builder {
         private final String templateID;
         private final String instanceID;
         private ProducerConfig producerConfig;
+        private String tokenValue;
 
         public Builder(String templateID, String instanceID) {
             this.templateID = templateID;
@@ -36,8 +39,13 @@ public class PEInstanceResponse {
             return this;
         }
 
+        public Builder tokenValue(String tokenValue) {
+            this.tokenValue = tokenValue;
+            return this;
+        }
+
         public PEInstanceResponse build() {
-            return new PEInstanceResponse(templateID, instanceID, producerConfig);
+            return new PEInstanceResponse(templateID, instanceID, producerConfig, tokenValue);
         }
     }
 
@@ -49,5 +57,13 @@ public class PEInstanceResponse {
 
     public String getInstanceID() {
         return instanceID;
+    }
+
+    public void setTokenValue(String tokenValue) {
+        this.tokenValue = tokenValue;
+    }
+
+    public String getTokenValue() {
+        return tokenValue;
     }
 }

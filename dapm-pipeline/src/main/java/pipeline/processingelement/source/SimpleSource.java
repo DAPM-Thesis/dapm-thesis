@@ -1,7 +1,7 @@
 package pipeline.processingelement.source;
 
 import communication.message.Message;
-import pipeline.processingelement.accesscontrolled.PEToken;
+import security.token.PEToken;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;

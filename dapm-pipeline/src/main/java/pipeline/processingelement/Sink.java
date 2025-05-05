@@ -1,7 +1,7 @@
 package pipeline.processingelement;
 
 import communication.message.Message;
-import pipeline.processingelement.accesscontrolled.PEToken;
+import security.token.PEToken;
 
 public abstract class Sink extends ConsumingProcessingElement {
     protected Sink(PEToken initialToken) {

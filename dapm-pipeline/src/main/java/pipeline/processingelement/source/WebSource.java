@@ -1,9 +1,9 @@
 package pipeline.processingelement.source;
 
 import communication.message.Message;
-import pipeline.processingelement.accesscontrolled.PEToken;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import security.token.PEToken;
 
 public abstract class WebSource<O extends Message> extends Source<O> {
     protected WebSource(PEToken initialToken) {

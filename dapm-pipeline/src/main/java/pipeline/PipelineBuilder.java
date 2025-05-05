@@ -11,7 +11,11 @@ import communication.config.ProducerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import utils.graph.DG;
+import utils.IDGenerator;
 import utils.JsonUtil;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -123,8 +127,13 @@ public class PipelineBuilder {
         }
 
         assertValidResponse(sourceResponse, true);
-
+        String tokenValue = "";
+        if(initializeTokenManagerIfPossible(pe, sourceResponse.getInstanceID())){
+            tokenValue = fetchInitialToken(pe, sourceResponse.getInstanceID());
+        }
+        sourceResponse.setTokenValue(tokenValue);
         configuredInstances.put(pe, sourceResponse);
+
         return sourceResponse.getInstanceID();
     }
 
@@ -138,7 +147,13 @@ public class PipelineBuilder {
             throw new IllegalStateException("No response received for operator: " + pe);
         }
         assertValidResponse(operatorResponse, true);
+        String tokenValue = "";
+        if(initializeTokenManagerIfPossible(pe, operatorResponse.getInstanceID())){
+            tokenValue = fetchInitialToken(pe, operatorResponse.getInstanceID());
+        }
+        operatorResponse.setTokenValue(tokenValue);
         configuredInstances.put(pe, operatorResponse);
+
         return operatorResponse.getInstanceID();
     }
 
@@ -151,8 +166,15 @@ public class PipelineBuilder {
         if (sinkResponse == null) {
             throw new IllegalStateException("No response received for sink: " + pe);
         }
+
         assertValidResponse(sinkResponse, /*needsProducer*/ false);
+        String tokenValue = "";
+        if(initializeTokenManagerIfPossible(pe, sinkResponse.getInstanceID())){
+            tokenValue = fetchInitialToken(pe, sinkResponse.getInstanceID());
+        }
+        sinkResponse.setTokenValue(tokenValue);
         configuredInstances.put(pe, sinkResponse);
+        
         return sinkResponse.getInstanceID();
     }
 
@@ -263,7 +285,7 @@ public class PipelineBuilder {
                     continue;
                 }
 
-                String hbTopic = downDataProd.topic() + "-hb-" + downstream.getInstanceNumber();            
+                String hbTopic = IDGenerator.generateTopic() + "-hb-" + downstream.getInstanceNumber();            
                 attachHeartbeatPublisher(
                         downstream,
                         new ProducerConfig(downDataProd.brokerURL(), hbTopic));
@@ -280,4 +302,45 @@ public class PipelineBuilder {
         }
     }
 
+    private String fetchInitialToken(ProcessingElementReference ref, String instanceId) {
+        String encodedInstanceID = URLEncoder.encode(instanceId, StandardCharsets.UTF_8);
+        String base = ref.getOrganizationHostURL().replaceAll("/+$", "");
+        String url   = base + "/token?instanceId=" + encodedInstanceID;
+
+        System.out.println("[PipelineBuilder] fetching token for " + encodedInstanceID + " from " + url);
+
+        HTTPResponse response = webClient.getSync(url);
+        if (response == null
+         || response.body() == null
+         || !response.status().is2xxSuccessful()) {
+            throw new IllegalStateException("Cannot fetch token for " + instanceId);
+        }
+        return response.body();
+    }
+
+    private boolean initializeTokenManagerIfPossible(ProcessingElementReference ref,
+                                                  String instanceId) {
+        try {
+            String base  = ref.getOrganizationHostURL().replaceAll("/+$", "");
+            String encId = URLEncoder.encode(instanceId, StandardCharsets.UTF_8);
+            String url   = String.format(
+                    "%s/token/setup?instanceId=%s&amount=%d&unit=%s",
+                    base, encId, 10, "hours");
+
+            HTTPResponse resp = webClient.postSync(url);
+            if (resp != null
+             && resp.status() != null
+             && resp.status().is2xxSuccessful()) {
+                System.out.println("[PipelineBuilder] token-manager initialized for " + instanceId);
+            } else {
+                System.out.println("[PipelineBuilder] token-manager setup skipped for " + instanceId);
+            }
+            
+        } catch (Exception e) {
+            System.out.println("[PipelineBuilder] token-manager init error for "
+                    + instanceId + ": " + e.getMessage());
+        } 
+        return true;
+}
+    
 }

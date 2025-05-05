@@ -4,7 +4,7 @@ import communication.Producer;
 import communication.config.ProducerConfig;
 import communication.message.Message;
 import pipeline.processingelement.ConsumingProcessingElement;
-import pipeline.processingelement.accesscontrolled.PEToken;
+import security.token.PEToken;
 import communication.Publisher;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement

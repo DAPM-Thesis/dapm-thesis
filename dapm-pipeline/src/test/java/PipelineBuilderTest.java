@@ -200,9 +200,22 @@ public class PipelineBuilderTest {
                 .thenReturn(null);
     }
 
+    private void stubTokenFetch() {
+        Mockito.when(httpClient.getSync(Mockito.contains("/token?instanceId=")))
+               .thenAnswer(inv -> {
+                   HTTPResponse tokenResp = Mockito.mock(HTTPResponse.class);
+                   Mockito.when(tokenResp.status())
+                          .thenReturn(org.springframework.http.HttpStatus.OK);
+                   Mockito.when(tokenResp.body())
+                          .thenReturn("dummy-jwt");
+                   return tokenResp;
+               });
+    }
+
     @Test
     public void success() {
         setUpSuccessfulMockResponses();
+        stubTokenFetch();
         String orgID = "org1";
         PipelineCandidate candidate = CandidateParserTest.getPipelineCandidate(pipelineCandidatePath);
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);

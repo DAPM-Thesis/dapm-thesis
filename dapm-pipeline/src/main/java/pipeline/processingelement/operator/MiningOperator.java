@@ -1,7 +1,7 @@
 package pipeline.processingelement.operator;
 
 import communication.message.Message;
-import pipeline.processingelement.accesscontrolled.PEToken;
+import security.token.PEToken;
 import utils.Pair;
 
 public abstract class MiningOperator<O extends Message> extends Operator<Pair<O, Boolean>, O> {

@@ -5,7 +5,7 @@ import communication.Publisher;
 import communication.config.ProducerConfig;
 import communication.message.Message;
 import pipeline.processingelement.accesscontrolled.AccessControlledProcessingElement;
-import pipeline.processingelement.accesscontrolled.PEToken;
+import security.token.PEToken;
 
 public abstract class Source<O extends Message> extends AccessControlledProcessingElement implements Publisher<O> {
     protected Source(PEToken initialToken) {
