@@ -29,9 +29,9 @@ public abstract class ProcessingElement {
         this.configuration = configuration;
     }
 
-    public abstract void start();
-    public abstract void pause();
-    public abstract void terminate();
+    public abstract boolean start();
+    public abstract boolean pause();
+    public abstract boolean terminate();
 
     @Override
     public String toString() { return getClass().getSimpleName() + ' ' + ID; }

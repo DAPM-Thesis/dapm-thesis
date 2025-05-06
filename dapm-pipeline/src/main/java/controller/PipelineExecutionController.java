@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pipeline.processingelement.ProcessingElement;
 import repository.PEInstanceRepository;
+import utils.LogUtil;
 
 @RestController
 @RequestMapping("/pipelineExecution")
@@ -22,32 +23,39 @@ public class PipelineExecutionController {
     }
 
     @PutMapping("/start/instance/{instanceID}")
-    public ResponseEntity<Void> startProcessingElement(@PathVariable String instanceID) {
+    public ResponseEntity<Void> startProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
         if (processingElement != null) {
-            processingElement.start();
-            return ResponseEntity.ok().build();
+            boolean started = processingElement.start();
+            if (started) return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().body(null);
     }
 
     @PutMapping("/pause/instance/{instanceID}")
-    public ResponseEntity<Void> stopProcessingElement(@PathVariable String instanceID) {
+    public ResponseEntity<Void> stopProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
+        LogUtil.info("Pausing... PE " + instanceID);
         if (processingElement != null) {
-            processingElement.pause();
-            return ResponseEntity.ok().build();
+            boolean paused = processingElement.pause();
+            LogUtil.debug("Paused PE " + instanceID + ": " + paused);
+            if (paused) {
+                LogUtil.info("Paused PE instance successfully.");
+                return ResponseEntity.ok().build();
+            }
         }
         return ResponseEntity.badRequest().body(null);
     }
 
     @PutMapping("/terminate/instance/{instanceID}")
-    public ResponseEntity<Void> terminateProcessingElement(@PathVariable String instanceID) {
+    public ResponseEntity<Void> terminateProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
         if (processingElement != null) {
-            processingElement.terminate();
-            peInstanceRepository.removeInstance(instanceID);
-            return ResponseEntity.ok().build();
+            boolean terminated = processingElement.terminate();
+            if (terminated) {
+                peInstanceRepository.removeInstance(instanceID);
+                return ResponseEntity.ok().build();
+            }
         }
         return ResponseEntity.badRequest().body(null);
     }

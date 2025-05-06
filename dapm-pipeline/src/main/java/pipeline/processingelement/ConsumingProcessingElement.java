@@ -29,60 +29,38 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
     protected abstract Map<Class<? extends Message>, Integer> setConsumedInputs();
 
     @Override
-    public void start() {
+    public boolean start() {
+        boolean started = true;
         for (Consumer consumer : consumers.values()) {
-            try {
-                consumer.start();
-            } catch (Exception e) {
-                throw new PipelineExecutionException("Failed to start a consumer.", e);
-            }
+            started &= consumer.start();
         }
+        return started;
     }
 
     @Override
-    public void pause() {
-        Exception firstException = null;
+    public boolean pause() {
+        boolean paused = true;
         for (Consumer consumer : consumers.values()) {
-            try {
-                consumer.pause();
-            } catch (Exception e) {
-                if (firstException == null) {
-                    firstException = e;
-                }
-                LogUtil.error(e, "Failed to stop a consumer.");
-            }
+            paused &= consumer.pause();
         }
-        if (firstException != null) {
-            throw new PipelineExecutionException("Failed to stop one or more consumers.", firstException);
-        }
+        return paused;
     }
 
     @Override
-    public void terminate() {
-        Exception firstException = null;
+    public boolean terminate() {
+        boolean terminated = true;
         for (Consumer consumer : consumers.values()) {
-            try {
-                consumer.terminate();
-            } catch (Exception e) {
-                if (firstException == null) {
-                    firstException = e;
-                }
-                LogUtil.error(e, "Failed to terminate a consumer.");
-            }
+           terminated &= consumer.terminate();
         }
-        consumers.clear();
-        if (firstException != null) {
-            throw new PipelineExecutionException("Failed to terminate one or more consumers.", firstException);
+        if(terminated) {
+            consumers.clear();
         }
+        return terminated;
     }
 
     @Override
     public void registerConsumer(ConsumerConfig config) {
-        if (!consumers.containsKey(config.portNumber())) {
-            Consumer consumer = new Consumer(this, config);
-            consumers.put(config.portNumber(), consumer);
-        } else {
-            LogUtil.debug("Consumer already registered with port number {}.", config.portNumber());
-        }
+        Consumer consumer = new Consumer(this, config);
+        consumers.put(config.portNumber(), consumer);
     }
 }

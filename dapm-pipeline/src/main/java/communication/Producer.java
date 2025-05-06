@@ -4,6 +4,7 @@ import communication.config.KafkaConfiguration;
 import communication.config.ProducerConfig;
 import communication.message.Message;
 import communication.message.serialization.MessageSerializer;
+import org.apache.commons.logging.Log;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -29,12 +30,14 @@ public class Producer {
         createKafkaTopic(config.brokerURL());
     }
 
-    public void terminate() {
+    public boolean terminate() {
         try {
             deleteKafkaTopic();
             kafkaProducer.close();
+            return true;
         } catch (Exception e) {
-            throw new KafkaException("Failed to close Kafka producer for topic " + topic, e);
+            LogUtil.error(e, "Failed to close Kafka producer for topic {} ", topic);
+            return false;
         }
     }
 

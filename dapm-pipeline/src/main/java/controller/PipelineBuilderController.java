@@ -90,14 +90,4 @@ public class PipelineBuilderController {
         }
         return ResponseEntity.badRequest().body(null);
     }
-
-    @PutMapping("/start/instance/{instanceID}")
-    public ResponseEntity<Void> startSource(@PathVariable("instanceID") String instanceID) {
-        Source<Message> source = peInstanceRepository.getInstance(instanceID);
-        if (source != null) {
-            source.start();
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.badRequest().body(null);
-    }
 }

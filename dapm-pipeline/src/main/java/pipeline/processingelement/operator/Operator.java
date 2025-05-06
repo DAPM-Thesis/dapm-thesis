@@ -33,11 +33,15 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     }
 
     @Override
-    public void terminate() {
+    public boolean terminate() {
+        boolean terminated = false;
         if (producer != null) {
-            producer.terminate();
-            producer = null;
+          terminated =  producer.terminate();
+          if(terminated) {
+              producer = null;
+          }
         }
+        return terminated;
     }
 
     @Override

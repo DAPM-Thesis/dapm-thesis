@@ -9,10 +9,6 @@ import pipeline.processingelement.ProcessingElement;
 public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O> {
     private Producer producer; // Channel
 
-    public abstract void start();
-
-    public abstract void pause();
-
     public void publish(O data) {
         if(producer != null) { // TODO: why would producer be null?
             producer.publish(data);
@@ -20,11 +16,21 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     }
 
     @Override
-    public void terminate() {
+    public abstract boolean start();
+
+    @Override
+    public abstract boolean pause();
+
+    @Override
+    public boolean terminate() {
+        boolean terminated = false;
         if (producer != null) {
-            producer.terminate();
-            producer = null;
+           terminated = producer.terminate();
+           if(terminated) {
+               producer = null;
+           }
         }
+        return terminated;
     }
 
     @Override
