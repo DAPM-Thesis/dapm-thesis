@@ -40,11 +40,11 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
     }
 
     @Override
-    public void stop() {
+    public void pause() {
         Exception firstException = null;
         for (Consumer consumer : consumers.values()) {
             try {
-                consumer.stop();
+                consumer.pause();
             } catch (Exception e) {
                 if (firstException == null) {
                     firstException = e;

@@ -11,7 +11,7 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
 
     public abstract void start();
 
-    public abstract void stop();
+    public abstract void pause();
 
     public void publish(O data) {
         if(producer != null) { // TODO: why would producer be null?

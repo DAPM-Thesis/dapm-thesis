@@ -24,7 +24,7 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
     protected abstract O process();
 
     @Override
-    public void stop() {
+    public void pause() {
         try {
             executor.shutdown();
         } catch (Exception e) {

@@ -50,7 +50,7 @@ public class Consumer {
         }
     }
 
-    public void stop() {
+    public void pause() {
         running = false;
         kafkaConsumer.wakeup();
         if (thread != null) {
@@ -67,7 +67,7 @@ public class Consumer {
 
     public void terminate() {
         try {
-            stop();
+            pause();
             kafkaConsumer.close();
         } catch (Exception e) {
             throw new KafkaException("Failed to close Kafka consumer for topic " + topic, e);

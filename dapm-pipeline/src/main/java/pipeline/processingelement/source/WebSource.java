@@ -16,7 +16,7 @@ public abstract class WebSource<O extends Message> extends Source<O> {
     protected abstract Flux<O> process();
 
     @Override
-    public void stop() {
+    public void pause() {
         try {
             subscription.dispose();
         } catch (Exception e) {

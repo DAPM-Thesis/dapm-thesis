@@ -5,7 +5,6 @@ import communication.config.ProducerConfig;
 import communication.message.Message;
 import pipeline.processingelement.ConsumingProcessingElement;
 import communication.Publisher;
-import utils.LogUtil;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
         implements Publisher<O> {
