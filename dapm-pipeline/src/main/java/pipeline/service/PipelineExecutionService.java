@@ -33,13 +33,13 @@ public class PipelineExecutionService {
         }
     }
 
-    public void stop(Pipeline pipeline) {
+    public void pause(Pipeline pipeline) {
         for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
             String instanceId = entry.getKey();
             String url = entry.getValue().getOrganizationHostURL() +
-                    "/pipelineExecution/stop/instance/" + instanceId;
+                    "/pipelineExecution/pause/instance/" + instanceId;
             HTTPResponse response = webClient.putSync(new HTTPRequest(url));
-            ;
+            
             if (!isSuccess(response.status())) {
                 throw new PipelineExecutionException("Failed to stop PE " + instanceId);
             }
