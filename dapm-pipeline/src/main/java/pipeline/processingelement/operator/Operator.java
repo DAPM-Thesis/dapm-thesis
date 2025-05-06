@@ -3,12 +3,17 @@ package pipeline.processingelement.operator;
 import communication.Producer;
 import communication.config.ProducerConfig;
 import communication.message.Message;
+import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ConsumingProcessingElement;
 import communication.Publisher;
+
+import java.util.Map;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
                                                       implements Publisher<O> {
     private Producer producer;
+
+    public Operator(Configuration configuration) { super(configuration); }
 
     @Override
     public void observe(Message input, int portNumber) {

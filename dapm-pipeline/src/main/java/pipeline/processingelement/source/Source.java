@@ -4,12 +4,15 @@ import communication.Producer;
 import communication.Publisher;
 import communication.config.ProducerConfig;
 import communication.message.Message;
+import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ProcessingElement;
-import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
+
+import java.util.Map;
 
 public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O> {
     private Producer producer; // Channel
+
+    public Source(Configuration configuration) { super(configuration); }
 
     public abstract void start();
 
