@@ -67,4 +67,12 @@ public class JSONParserTest {
                 "src/test/resources/serialization/JSONParser/empty_array_item.json"));
     }
 
+    @Test
+    public void trickyQuotesAndColons() throws IOException{
+        JSONParser parser = new JSONParser();
+        Map<String, String> objectMap = (Map<String, String>) getJSONMap(
+                "src/test/resources/serialization/JSONParser/tricky_quotes_and_colons.json");
+
+    }
+
 }

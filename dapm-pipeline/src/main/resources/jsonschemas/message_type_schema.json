@@ -3,6 +3,6 @@
   "$id": "https://www.dapm.org/message_type_schema.json",
   "title": "Message Type",
   "type": "string",
-  "enum": ["Event", "PetriNet", "Alignment"]
+  "enum": ["Event", "PetriNet", "Alignment", "Time", "InstantTime"]
 }
 

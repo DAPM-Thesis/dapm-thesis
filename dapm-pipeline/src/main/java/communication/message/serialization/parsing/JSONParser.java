@@ -109,17 +109,15 @@ public class JSONParser {
         // since contents can be nested [they can contain lists/containers/quotes], we must only split at the current level
         int openedCurly = 0;
         int openedSquare = 0;
-        boolean openedQuote = false;
+        boolean inQuote = false;
         int currentStart = 0;
 
         for (int i = 0; i < contents.length(); i++) {
             char ch = contents.charAt(i);
 
             if (ch == '"') {
-                if (shouldFlipQuote(contents, i)) {
-                    openedQuote = !openedQuote;
-                }
-            } else if (!openedQuote) {
+                if (isOuterQuote(contents, i)) { inQuote = !inQuote; }
+            } else if (!inQuote) {
                 if (ch == ',' && openedCurly == 0 && openedSquare == 0) {
                     commaSeparatedStrings.add(contents.substring(currentStart, i));
                     currentStart = i+1;
@@ -135,27 +133,35 @@ public class JSONParser {
         return commaSeparatedStrings;
     }
 
-    private boolean shouldFlipQuote(String str, int quoteIndex) {
-        // the quotes should only be flipped if there are no quotes in the given string, or if the quotes in the given
-        // string are closed. Both cases only happen if the number of backslashes in the string is even.
-        int backslashCount = 0;
-        while (--quoteIndex >= 0 && str.charAt(quoteIndex) == '\\') {backslashCount++;}
-        return backslashCount % 2 == 0;
+
+    Pair<String, String> splitAndStripKeyAndValue(String property) {
+        // property is always of the form key:value () note that key is a String and so can value be. They can contain
+        // ':', so we can't simply match the first/last colon in property.
+        int colonIndex = getPropertyStringColonIndex(property);
+        String key = property.substring(0, colonIndex).strip();
+        String value = property.substring(colonIndex+1).strip();
+        return new Pair<>(key, value);
     }
 
-    Pair<String, String> splitAndStripKeyAndValue(String pair) {
-        /* the pair is always of the form key:pair, where the key is a quotation-wrapped character sequence which may
-         * contain its own ':' (colon). */
-        // find the closing quotation mark
-        int endQuoteIndex = pair.indexOf('\"');
-        assert endQuoteIndex != -1 : String.format("no starting quotation in: %s", pair);
-        endQuoteIndex = pair.indexOf('\"', endQuoteIndex+1);
-        assert endQuoteIndex != -1 : String.format("no closing quotation in: %s", pair);
-        int colonIndex = pair.indexOf(':', endQuoteIndex);
+    /** Given a single property's string, returns the index of the colon separating the name from the value. */
+    private int getPropertyStringColonIndex(String property) {
+        boolean inQuote = false;
+        for (int i = 0; i < property.length(); i++) {
+            char c = property.charAt(i);
+            if (c == '"') {
+                if (isOuterQuote(property, i)) { inQuote = !inQuote; }
+            } else if (c == ':' && !inQuote)
+                { return i; }
+        }
+        throw new InvalidJSON("Property without outer colon provided: " + property);
+    }
 
-        String key = pair.substring(0, colonIndex).strip();
-        String value = pair.substring(colonIndex+1).strip();
-        return new Pair<>(key, value);
+    private boolean isOuterQuote(String property, int index) {
+        if (property.charAt(index) != '"')
+            { return false; }
+        int backslashCount = 0;
+        while (--index >= 0 && property.charAt(index) == '\\') { backslashCount++; }
+        return backslashCount % 2 == 0;
     }
 
     /** @param str The string to be searched.
@@ -214,7 +220,7 @@ public class JSONParser {
                 .replace("\\f", "\f");
     }
 
-    public String toJSONString(Object jsonObject) {
+    public static String toJSONString(Object jsonObject) {
         if (jsonObject instanceof Map) {
             StringBuilder sb = new StringBuilder();
             sb.append("{");
@@ -239,9 +245,35 @@ public class JSONParser {
             sb.append("]");
             return sb.toString();
         }
-        else if (jsonObject instanceof String) { return "\"" + ((String) jsonObject).replace("\"", "\\\"") + "\"";}
+        else if (jsonObject instanceof String str) { return "\"" + unescapeString(str) + "\"";}
         else if (jsonObject == null) { return "null"; }
         else { return jsonObject.toString(); }
+    }
+
+    public static String unescapeString(String original) {
+        if (original == null)
+        { return null; }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < original.length(); i++) {
+            char c = original.charAt(i);
+            switch (c) {
+                case '"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                case '\b': sb.append("\\b"); break;
+                case '\f': sb.append("\\f"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                case '/': sb.append("\\/"); break;
+                default:
+                    if (c < ' ') {
+                        // formatting magic: control characters (e.g. carriage return or backspace) are handled correctly
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else { sb.append(c); }
+            }
+        }
+
+        return sb.toString();
     }
 
 }

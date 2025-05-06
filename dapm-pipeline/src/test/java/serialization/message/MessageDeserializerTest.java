@@ -2,6 +2,7 @@ package serialization.message;
 
 import communication.message.Message;
 import communication.message.impl.Alignment;
+import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
 import communication.message.impl.event.Event;
@@ -115,6 +116,32 @@ class MessageDeserializerTest {
     }
 
     @Test
+    void wikipediaEventInverse() throws IOException {
+        Event expected = new Event(
+                "File:THIRTEENTH ANNUAL REUNION & BANQUET (held by) UNION COLLEGE \nALUMNI ASSOCIATION OF NEW YORK (at) \"SAVOY, THE, NEW YORK, NY\" (HOTEL;) (NYPL Hades-275181-4000011701).jpg",
+                "edit",
+                "1746088230",
+                new HashSet<>()
+        );
+
+        MessageSerializer serializer = new MessageSerializer();
+        String JXES = serializer.visit(expected);
+        Message output = MessageFactory.deserialize(JXES);
+    }
+
+    @Test
+    void arabicCharsEvent() throws IOException {
+        Event expected = new Event("تصنيف:تجمع سكان",
+                "categorize",
+                "1746088411",
+                new HashSet<>());
+
+        Event output = (Event) getMessage(Event.class, "src/test/resources/serialization/JSONParser/arabic_chars.json");
+
+        assertEquals(expected, output);
+    }
+
+    @Test
     void traceSingleInverse() {
         // create trace
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
@@ -198,6 +225,15 @@ class MessageDeserializerTest {
         String output_2 = serializer.visit(alignment_2);
         assertNotEquals(MessageFactory.deserialize(output_1),
                 MessageFactory.deserialize(output_2));
+    }
+
+    @Test
+    void timeInverse() {
+        Date expected = new Date();
+        MessageSerializer serializer = new MessageSerializer();
+        String timeStr = serializer.visit(expected);
+        Message output = MessageFactory.deserialize(timeStr);
+        assertEquals(expected, output);
     }
 
 

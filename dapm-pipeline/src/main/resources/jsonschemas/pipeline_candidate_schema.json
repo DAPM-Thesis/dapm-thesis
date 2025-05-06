@@ -32,3 +32,4 @@
   "required": ["processing elements", "channels"],
   "additionalProperties": false
 }
+

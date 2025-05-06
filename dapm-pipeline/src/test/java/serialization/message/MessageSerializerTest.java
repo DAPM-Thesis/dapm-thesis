@@ -30,7 +30,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void eventTest() {
+    public void event() {
         Attribute<Integer> intAttr = new Attribute<>("int", 5);
         Attribute<String> stringAttr = new Attribute<>("string", "str '\":({ ing");
         Attribute<Double> doubleAttr = new Attribute<>("double", 5.0);
@@ -38,14 +38,27 @@ public class MessageSerializerTest {
         Set<Attribute<?>> extraAttributes = new HashSet<>(Arrays.asList(intAttr, stringAttr, doubleAttr, booleanAttr));
         Event event = new Event("caseID", "activity", "timestamp", extraAttributes);
 
-        String expected = Event.class.getName() + ":{\"traces\": [{\"attrs\": {\"concept:name\": \"caseID\"}, \"events\": [{\"concept:name\": \"activity\", \"date\": \"timestamp\", \"boolean\": true, \"string\": \"str '\":({ ing\", \"double\": 5.0, \"int\": 5}]}]}\n";
+        String expected = Event.class.getName() + ":{\"traces\": [{\"attrs\": {\"concept:name\": \"caseID\"}, \"events\": [{\"concept:name\": \"activity\", \"date\": \"timestamp\", \"boolean\": true, \"string\": \"str '\\\":({ ing\", \"double\": 5.0, \"int\": 5}]}]}\n";
         MessageSerializer serializer = new MessageSerializer();
         String output = serializer.visit(event);
         assertEquals(expected.replaceAll("\\s+", ""), output.replaceAll("\\s+", ""));
     }
 
     @Test
-    public void petriNetTest() throws IOException {
+    void arabic_chars() {
+        Event event = new Event("تصنيف:تجمع سكان",
+                "categorize",
+                "1746088411",
+                new HashSet<>());
+
+        String expected = Event.class.getName() + ":{\"traces\": [{\"attrs\": {\"concept:name\": \"تصنيف:تجمع سكان\"}, \"events\": [{\"concept:name\": \"categorize\", \"date\": \"1746088411\"}]}]}\n";
+        MessageSerializer serializer = new MessageSerializer();
+        String output = serializer.visit(event);
+        assertEquals(expected.replaceAll("\\s+", ""), output.replaceAll("\\s+", ""));
+    }
+
+    @Test
+    void petriNet() throws IOException {
         PetriNet petriNet = getExamplePetriNet();
         MessageSerializer serializer = new MessageSerializer();
         String output = serializer.visit(petriNet);
@@ -58,7 +71,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void traceEmptyTest() {
+    void traceEmpty() {
         // this test is here in case traces are allowed to be non-empty in the future
         Trace trace = new Trace(new ArrayList<>());
         MessageSerializer serializer = new MessageSerializer();
@@ -66,7 +79,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void traceSingleTest() throws IOException {
+    void traceSingle() throws IOException {
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
         List<Event> events = new ArrayList<>(List.of(e1));
         Trace singletonTrace = new Trace(events);
@@ -80,7 +93,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void traceMultipleTest() throws IOException {
+    void traceMultiple() throws IOException {
         String caseID = "c1";
         Event e1 = new Event(caseID, "a1", "t1", new HashSet<>());
         Event e2 = new Event(caseID, "a2", "t2", new HashSet<>());
@@ -98,7 +111,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void multipleCaseIDTraceTest(){
+    void multipleCaseIDTrace(){
         // trace serialization assumes all event case IDs in a trace are the same. If this is not the case, update trace serialization
         Event e1 = new Event("c1", "a1", "t1", new HashSet<>());
         Event e2 = new Event("c2", "a2", "t2", new HashSet<>());
@@ -107,7 +120,7 @@ public class MessageSerializerTest {
     }
 
     @Test
-    public void alignmentTest() throws IOException {
+    void alignment() throws IOException {
         Event el1 = new Event("C1", "A1", "1", new HashSet<>());
         Event el2 = new Event("C1", "A2", "2", new HashSet<>());
         Trace logTrace = new Trace(new ArrayList<>(List.of(el1, el2)));
@@ -152,4 +165,6 @@ public class MessageSerializerTest {
         // so this is not a workflow net
         return new PetriNet(places, transitions, flowRelation);
     }
+
+
 }

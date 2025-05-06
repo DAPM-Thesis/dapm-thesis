@@ -2,7 +2,7 @@ package utils;
 
 import java.util.UUID;
 
-public class IDGenerator {
+public class IDGenerator { // TODO: delete if not used; probably refactor current usages
     private static int nextID = 0;
 
     public static int generate() { return nextID++; }

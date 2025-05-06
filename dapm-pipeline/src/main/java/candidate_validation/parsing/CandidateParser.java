@@ -63,7 +63,7 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
     private String getConfigurationJSONString(Map<String, Object> elementMap) {
         Object configuration = elementMap.get("configuration");
         if (configuration == null) { throw new IllegalStateException("a processing element must have a configuration"); }
-        return new JSONParser().toJSONString(configuration);
+        return JSONParser.toJSONString(configuration);
     }
 
     private Set<ChannelReference> getChannelReferences(List<Map<String, Object>> rawChannels) {
