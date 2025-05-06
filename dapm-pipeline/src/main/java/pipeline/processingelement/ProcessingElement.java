@@ -29,6 +29,10 @@ public abstract class ProcessingElement {
         this.configuration = configuration;
     }
 
+    public abstract void start();
+    public abstract void stop();
+    public abstract void terminate();
+
     @Override
     public String toString() { return getClass().getSimpleName() + ' ' + ID; }
 }
