@@ -23,7 +23,7 @@ public class JsonUtil {
         try {
             return mapper.writeValueAsString(obj);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to convert object to JSON", e);
+            throw new RuntimeException("Failed to convert object to JSON string. Object: " + obj, e);
         }
     }
 
@@ -31,7 +31,7 @@ public class JsonUtil {
         try {
             return mapper.readValue(json, typeRef);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to convert JSON to object", e);
+            throw new RuntimeException("Failed to deserialize JSON to object" + json, e);
         }
     }
 
@@ -39,7 +39,7 @@ public class JsonUtil {
         try {
             return mapper.readValue(json, clazz);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to convert JSON to object", e);
+            throw new RuntimeException("Failed to deserialize JSON to object: " + json , e);
         }
     }
 }

@@ -36,8 +36,9 @@ public class PipelineBuilderController {
     @PostMapping("/source/templateID/{templateID}")
     public ResponseEntity<PEInstanceResponse> configureSource(@PathVariable("templateID") String templateID, @RequestBody PEInstanceRequest requestBody) {
         String decodedTemplateID = JsonUtil.decode(templateID);
-        Configuration configuration = new Configuration(requestBody.getConfiguration());
-        Source<Message> source = templateRepository.createInstanceFromTemplate(decodedTemplateID, configuration);
+        Source<Message> source = templateRepository.createInstanceFromTemplate(
+                decodedTemplateID,
+                requestBody.getConfiguration());
 
         if (source != null) {
             String topic = IDGenerator.generateTopic();
@@ -56,8 +57,10 @@ public class PipelineBuilderController {
     @PostMapping("/operator/templateID/{templateID}")
     public ResponseEntity<PEInstanceResponse> createOperator(@PathVariable("templateID") String templateID, @RequestBody PEInstanceRequest requestBody) {
         String decodedTemplateID = JsonUtil.decode(templateID);
-        Configuration configuration = new Configuration(requestBody.getConfiguration());
-        Operator<Message, Message> operator = templateRepository.createInstanceFromTemplate(decodedTemplateID, configuration);
+        Operator<Message, Message> operator = templateRepository.createInstanceFromTemplate(
+                decodedTemplateID,
+                requestBody.getConfiguration());
+
         if (operator != null) {
             for (ConsumerConfig config : requestBody.getConsumerConfigs()) {
                 operator.registerConsumer(config);
@@ -78,8 +81,10 @@ public class PipelineBuilderController {
     @PostMapping("/sink/templateID/{templateID}")
     public ResponseEntity<PEInstanceResponse> createSink(@PathVariable("templateID") String templateID, @RequestBody PEInstanceRequest requestBody) {
         String decodedTemplateID = JsonUtil.decode(templateID);
-        Configuration configuration = new Configuration(requestBody.getConfiguration());
-        Sink sink = templateRepository.createInstanceFromTemplate(decodedTemplateID, configuration);
+        Sink sink = templateRepository.createInstanceFromTemplate(
+                decodedTemplateID,
+                requestBody.getConfiguration());
+
         if (sink != null) {
             for (ConsumerConfig config : requestBody.getConsumerConfigs()) {
                 sink.registerConsumer(config);

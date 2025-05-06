@@ -11,6 +11,7 @@ import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pipeline.processingelement.Configuration;
 import utils.graph.DG;
 import utils.JsonUtil;
 
@@ -139,7 +140,7 @@ public class PipelineBuilder {
         return sinkResponse.getInstanceID();
     }
 
-    private PEInstanceResponse sendCreateSourceRequest(String hostURL, String templateID, Map<String, Object> configuration) {
+    private PEInstanceResponse sendCreateSourceRequest(String hostURL, String templateID, Configuration configuration) {
         String encodedTemplateID = JsonUtil.encode(templateID);
         String url = hostURL + String.format(
                 "/pipelineBuilder/source/templateID/%s",
@@ -150,7 +151,7 @@ public class PipelineBuilder {
         return sendPostRequest(url, requestBody);
     }
 
-    private PEInstanceResponse sendCreateOperatorRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Map<String, Object> configuration) {
+    private PEInstanceResponse sendCreateOperatorRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Configuration configuration) {
         String encodedTemplateID = JsonUtil.encode(templateID);
         String url = hostURL + String.format(
                 "/pipelineBuilder/operator/templateID/%s",
@@ -162,7 +163,7 @@ public class PipelineBuilder {
         return sendPostRequest(url, requestBody);
     }
 
-    private PEInstanceResponse sendCreateSinkRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Map<String, Object> configuration) {
+    private PEInstanceResponse sendCreateSinkRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Configuration configuration) {
         String encodedTemplateID = JsonUtil.encode(templateID);
         String url = hostURL + String.format(
                 "/pipelineBuilder/sink/templateID/%s",

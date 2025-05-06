@@ -1,6 +1,7 @@
 package communication.API.request;
 
 import communication.config.ConsumerConfig;
+import pipeline.processingelement.Configuration;
 
 import java.util.List;
 import java.util.Map;
@@ -8,7 +9,7 @@ import java.util.Map;
 public class PEInstanceRequest {
 
     private List<ConsumerConfig> consumerConfigs;
-    private Map<String, Object> configuration;
+    private Configuration configuration;
 
     public PEInstanceRequest() {
     }
@@ -17,7 +18,7 @@ public class PEInstanceRequest {
         return consumerConfigs;
     }
 
-    public Map<String, Object> getConfiguration() {
+    public Configuration getConfiguration() {
         return configuration;
     }
 
@@ -25,7 +26,7 @@ public class PEInstanceRequest {
         this.consumerConfigs = consumerConfigs;
     }
 
-    public void setConfiguration(Map<String, Object> configuration) {
+    public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
 }

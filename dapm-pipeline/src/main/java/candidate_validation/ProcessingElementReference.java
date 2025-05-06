@@ -1,6 +1,7 @@
 package candidate_validation;
 
 import communication.message.Message;
+import pipeline.processingelement.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ public class ProcessingElementReference {
     private final List<Class<? extends Message>> inputs;
     private final Class<? extends Message> output;
     private final int instanceNumber;
-    private final Map<String, Object> configuration;
+    private final Configuration configuration;
 
     public ProcessingElementReference(String organizationID,
                                       String organizationHostURL,
@@ -22,7 +23,7 @@ public class ProcessingElementReference {
                                       List<Class<? extends Message>> inputs,
                                       Class<? extends Message> output,
                                       int instanceNumber,
-                                      Map<String, Object> configuration) {
+                                      Configuration configuration) {
         // only output is allowed to be null
         assert organizationID != null && organizationHostURL != null && templateID != null && inputs != null && configuration != null: "stop being lazy.";
         assert !organizationID.isEmpty() && !templateID.isEmpty() : "indistinguishable orgID and templateID";
@@ -47,7 +48,7 @@ public class ProcessingElementReference {
     /** returns a copy of the inputs */
     public List<Class<? extends Message>> getInputs() { return new ArrayList<>(inputs); }
     public Class<? extends Message> getOutput() { return output; }
-    public Map<String, Object> getConfiguration() { return configuration; }
+    public Configuration getConfiguration() { return configuration; }
 
     public Class<? extends Message> typeAt(int index) { return inputs.get(index); }
 
