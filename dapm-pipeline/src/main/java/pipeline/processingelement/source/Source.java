@@ -13,8 +13,6 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
 
     public Source(Configuration configuration) { super(configuration); }
 
-    public abstract void start();
-
     @Override
     public void publish(O data) {
         producer.publish(data);
