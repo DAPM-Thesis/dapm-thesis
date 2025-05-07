@@ -33,7 +33,6 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     @Override
     public void publish(O output) { producer.publish(output); }
 
-    @Override
     public void registerProducer(ProducerConfig config) {
         this.producer = new Producer(config);
     }
