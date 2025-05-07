@@ -6,6 +6,7 @@ import communication.message.serialization.parsing.JSONParser;
 import candidate_validation.ChannelReference;
 import candidate_validation.SubscriberReference;
 import candidate_validation.ProcessingElementReference;
+import pipeline.processingelement.Configuration;
 import utils.Pair;
 
 import java.net.URI;
@@ -110,7 +111,7 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
         List<Class<? extends Message>> inputs = extractInputs((List<String>) elementMap.get("inputs"));
         Class<? extends Message> output = extractOutput(elementMap);
         int instanceNumber = (int) elementMap.get("instanceNumber");
-        Map<String, Object> configuration = (Map<String, Object>) elementMap.get("configuration");
+        Configuration configuration = new Configuration((Map<String, Object>) elementMap.get("configuration"));
 
         return new ProcessingElementReference(
                 organizationID, organizationHostURL, templateID,inputs, output, instanceNumber, configuration);

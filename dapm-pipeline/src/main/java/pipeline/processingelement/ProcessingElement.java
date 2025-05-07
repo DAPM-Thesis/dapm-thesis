@@ -1,26 +1,11 @@
 package pipeline.processingelement;
 
-import utils.IDGenerator;
-
 import java.util.Map;
 
 public abstract class ProcessingElement {
-    private final int ID; // only used for illustrative toString purposes currently
-    private boolean isAvailable = true; // TODO: remove when R is done with ACPE
-    private Map<String, Object> configuration;
+    protected final Configuration configuration;
 
-    protected ProcessingElement() { ID = IDGenerator.generate(); }
-
-    public boolean isAvailable() {
-        return isAvailable;
-    }
-
-    public int getID() { return ID; }
-
-    public void setAvailable(boolean available) {
-        isAvailable = available;
-    }
-
+    public ProcessingElement(Configuration configuration) { this.configuration = configuration; }
     public Map<String, Object> getConfiguration() {
         return configuration;
     }

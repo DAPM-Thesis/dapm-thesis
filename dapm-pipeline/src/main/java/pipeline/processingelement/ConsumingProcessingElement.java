@@ -16,14 +16,15 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
     protected final Map<Class<? extends Message>, Integer> inputs;
     private Map<Integer, Consumer> consumers = new HashMap<>();
 
-    protected ConsumingProcessingElement() {
+    public ConsumingProcessingElement(Configuration configuration) {
+        super(configuration);
         this.inputs = setConsumedInputs();
         for (int typeCount : inputs.values()) {
             assert typeCount > 0 : "every provided input type must occur a positive number of times.";
         }
     }
 
-    protected abstract Map<Class<? extends Message>, Integer> setConsumedInputs();
+    protected abstract Map<Class<? extends Message>, Integer> setConsumedInputs(); // TODO: refactor with annotations
 
     @Override
     public boolean start() {

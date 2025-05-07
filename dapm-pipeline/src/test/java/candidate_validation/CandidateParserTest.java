@@ -4,6 +4,7 @@ import communication.message.Message;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
 import org.junit.jupiter.api.Test;
+import pipeline.processingelement.Configuration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,17 +54,17 @@ public class CandidateParserTest {
         // make source
         List<Class<? extends Message>> sourceInputs = new ArrayList<>();
         Class<? extends Message> sourceOutput = Event.class;
-        ProcessingElementReference source = new ProcessingElementReference("Pepsi", "http://localhost:8082", "$$$ Source", sourceInputs, sourceOutput, 1, new HashMap<>());
+        ProcessingElementReference source = new ProcessingElementReference("Pepsi", "http://localhost:8082", "$$$ Source", sourceInputs, sourceOutput, 1, new Configuration(new HashMap<>()));
 
         // make operator
         List<Class<? extends Message>> operatorInputs = List.of(Event.class);
         Class<? extends Message> operatorOutput = PetriNet.class;
-        ProcessingElementReference operator = new ProcessingElementReference("Coca Cola", "http://localhost:8092","The Profit Miner", operatorInputs, operatorOutput, 1, new HashMap<>());
+        ProcessingElementReference operator = new ProcessingElementReference("Coca Cola", "http://localhost:8092","The Profit Miner", operatorInputs, operatorOutput, 1, new Configuration(new HashMap<>()));
 
         // make sink
         List<Class<? extends Message>> sinkInputs = List.of(PetriNet.class);
         Class<? extends Message> sinkOutput = null;
-        ProcessingElementReference sink = new ProcessingElementReference("DTU", "http://localhost:8102", "Dream Sink", sinkInputs, sinkOutput, 1, new HashMap<>() );
+        ProcessingElementReference sink = new ProcessingElementReference("DTU", "http://localhost:8102", "Dream Sink", sinkInputs, sinkOutput, 1, new Configuration(new HashMap<>()) );
 
         Set<ProcessingElementReference> expectedElements = Set.of(source, operator, sink);
 
@@ -141,35 +142,51 @@ public class CandidateParserTest {
     public void configurationParsing() {
         String path = "src/test/resources/candidate_validation/parser/configuration_parsing.json";
 
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("number", 0.5);
-        expected.put("string", "some string");
-        expected.put("optional config", "not required");
+        Map<String, Object> map = new HashMap<>();
+        map.put("number", 0.5);
+        map.put("string", "some string");
+        map.put("optional config", "not required");
+        Configuration expectedConfiguration = new Configuration(map);
+        ProcessingElementReference expected = new ProcessingElementReference(
+                "Pepsi",
+                "http://localhost:8082",
+                "CONFIGURATION",
+                new ArrayList<>(),
+                Event.class,
+                1,
+                expectedConfiguration);
 
         PipelineCandidate candidate = CandidateParserTest.getPipelineCandidate(path);
-        ProcessingElementReference source = candidate.getElements().stream()
+        ProcessingElementReference output = candidate.getElements().stream()
                 .filter(e -> e.getOrganizationID().equals("Pepsi"))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("parsing of Pepsi template failed."));
-        Map<String, Object> output = source.getConfiguration();
 
-        assertEquals(expected, output);
+        assertEquals(output, expected);
     }
 
     @Test
     public void omitOptionalConfiguration() {
         String path = "src/test/resources/candidate_validation/parser/omit_optional_configuration.json";
 
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("number", 0.5);
-        expected.put("string", "some string");
+        Map<String, Object> map = new HashMap<>();
+        map.put("number", 0.5);
+        map.put("string", "some string");
+        Configuration expectedConfiguration = new Configuration(map);
+        ProcessingElementReference expected = new ProcessingElementReference(
+                "Pepsi",
+                "http://localhost:8082",
+                "CONFIGURATION",
+                new ArrayList<>(),
+                Event.class,
+                1,
+                expectedConfiguration);
 
         PipelineCandidate candidate = CandidateParserTest.getPipelineCandidate(path);
-        ProcessingElementReference source = candidate.getElements().stream()
+        ProcessingElementReference output = candidate.getElements().stream()
                 .filter(e -> e.getOrganizationID().equals("Pepsi"))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("parsing of Pepsi template failed."));
-        Map<String, Object> output = source.getConfiguration();
 
         assertEquals(expected, output);
     }

@@ -2,12 +2,17 @@ package pipeline.processingelement.source;
 
 import communication.message.Message;
 import exceptions.PipelineExecutionException;
+import pipeline.processingelement.Configuration;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import utils.LogUtil;
 
+import java.util.Map;
+
 public abstract class WebSource<O extends Message> extends Source<O> {
     private Disposable subscription;
+
+    public WebSource(Configuration configuration) { super(configuration); }
 
     @Override
     public boolean start() {

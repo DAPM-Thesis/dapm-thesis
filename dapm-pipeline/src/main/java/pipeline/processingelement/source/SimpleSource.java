@@ -4,7 +4,9 @@ import communication.message.Message;
 import exceptions.PipelineExecutionException;
 import org.apache.commons.logging.Log;
 import utils.LogUtil;
+import pipeline.processingelement.Configuration;
 
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 // TODO: understand simple source and maybe distinguish instead by making a GeneratingSource (a source from which data is generated in the source).
@@ -12,6 +14,8 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
 
     private volatile boolean isRunning;
     private ThreadPoolExecutor executor;
+
+    public SimpleSource(Configuration configuration) { super(configuration); }
 
     @Override
     public boolean start() {

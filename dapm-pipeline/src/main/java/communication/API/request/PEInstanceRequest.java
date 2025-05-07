@@ -1,31 +1,32 @@
 package communication.API.request;
 
 import communication.config.ConsumerConfig;
+import pipeline.processingelement.Configuration;
 
 import java.util.List;
 import java.util.Map;
 
 public class PEInstanceRequest {
 
-    private List<ConsumerConfig> consumerData;
-    private Map<String, Object> configuration;
+    private List<ConsumerConfig> consumerConfigs;
+    private Configuration configuration;
 
     public PEInstanceRequest() {
     }
 
     public List<ConsumerConfig> getConsumerConfigs() {
-        return consumerData;
+        return consumerConfigs;
     }
 
-    public Map<String, Object> getConfiguration() {
+    public Configuration getConfiguration() {
         return configuration;
     }
 
-    public void setConsumerConfigs(List<ConsumerConfig> consumerData) {
-        this.consumerData = consumerData;
+    public void setConsumerConfigs(List<ConsumerConfig> consumerConfigs) {
+        this.consumerConfigs = consumerConfigs;
     }
 
-    public void setConfiguration(Map<String, Object> configuration) {
+    public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
 }

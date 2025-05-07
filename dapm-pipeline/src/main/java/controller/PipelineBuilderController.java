@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pipeline.processingelement.Configuration;
 import pipeline.processingelement.Sink;
 import pipeline.processingelement.operator.Operator;
 import pipeline.processingelement.source.Source;
@@ -44,10 +45,11 @@ public class PipelineBuilderController {
     @PostMapping("/source/templateID/{templateID}")
     public ResponseEntity<PEInstanceResponse> configureSource(@PathVariable("templateID") String templateID, @RequestBody PEInstanceRequest requestBody) {
         String decodedTemplateID = JsonUtil.decode(templateID);
+        Source<Message> source = templateRepository.createInstanceFromTemplate(
+                decodedTemplateID,
+                requestBody.getConfiguration());
 
-        Source<Message> source = templateRepository.createInstanceFromTemplate(decodedTemplateID);
         if (source != null) {
-            source.setConfiguration(requestBody.getConfiguration());
             String topic = IDGenerator.generateTopic();
             ProducerConfig producerConfig = new ProducerConfig(brokerURL, topic);
             producerFactory.registerProducer(source, producerConfig);
@@ -64,9 +66,11 @@ public class PipelineBuilderController {
     @PostMapping("/operator/templateID/{templateID}")
     public ResponseEntity<PEInstanceResponse> createOperator(@PathVariable("templateID") String templateID, @RequestBody PEInstanceRequest requestBody) {
         String decodedTemplateID = JsonUtil.decode(templateID);
-        Operator<Message, Message> operator = templateRepository.createInstanceFromTemplate(decodedTemplateID);
+        Operator<Message, Message> operator = templateRepository.createInstanceFromTemplate(
+                decodedTemplateID,
+                requestBody.getConfiguration());
+
         if (operator != null) {
-            operator.setConfiguration(requestBody.getConfiguration());
             for (ConsumerConfig config : requestBody.getConsumerConfigs()) {
                 consumerFactory.registerConsumer(operator, config);
             }
@@ -86,9 +90,11 @@ public class PipelineBuilderController {
     @PostMapping("/sink/templateID/{templateID}")
     public ResponseEntity<PEInstanceResponse> createSink(@PathVariable("templateID") String templateID, @RequestBody PEInstanceRequest requestBody) {
         String decodedTemplateID = JsonUtil.decode(templateID);
-        Sink sink = templateRepository.createInstanceFromTemplate(decodedTemplateID);
+        Sink sink = templateRepository.createInstanceFromTemplate(
+                decodedTemplateID,
+                requestBody.getConfiguration());
+
         if (sink != null) {
-            sink.setConfiguration(requestBody.getConfiguration());
             for (ConsumerConfig config : requestBody.getConsumerConfigs()) {
                 consumerFactory.registerConsumer(sink, config);
             }
