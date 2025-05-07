@@ -25,6 +25,7 @@ public class Consumer {
     private final int portNumber;
 
     private volatile boolean running;
+    private volatile boolean paused;
     private Thread thread;
 
     public Consumer(Subscriber<Message> subscriber, ConsumerConfig config) {
@@ -34,15 +35,18 @@ public class Consumer {
         this.topic = config.topic();
         this.brokerURL = config.brokerURL();
         this.portNumber = config.portNumber();
+        this.paused = false;
         subscribeToTopic();
     }
 
     public boolean start() {
         if (thread != null && thread.isAlive()) {
             LogUtil.debug("Consumer already running for topic {} ", topic);
+            paused = false;
             return true;
         }
         running = true;
+        paused = false;
         try {
             observe();
             LogUtil.info("Kafka consumer thread for topic {} has started", topic);
@@ -55,28 +59,21 @@ public class Consumer {
     }
 
     public boolean pause() {
-        running = false;
-        kafkaConsumer.wakeup();
-        if (thread != null) {
-            try {
-                thread.join();
-                LogUtil.debug("Kafka consumer thread for topic {} has paused", topic);
-                return true;
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                LogUtil.error(e, "Failed to join Kafka consumer thread for topic {} ", topic);
-                return false;
-            } finally {
-                thread = null;
-            }
-        }
+        paused = true;
+        LogUtil.debug("Consumer paused for topic {}", topic);
         return true;
     }
 
     public boolean terminate() {
         try {
-            pause();
+            running = false;
+            kafkaConsumer.wakeup();
+            if (thread != null) {
+                thread.join();
+                thread = null;
+            }
             kafkaConsumer.close();
+            LogUtil.debug("Kafka consumer for topic {} has been terminated", topic);
             return true;
         } catch (Exception e) {
             LogUtil.error(e, "Failed to close Kafka consumer for topic {} ", topic);
@@ -89,25 +86,34 @@ public class Consumer {
             try {
                 while (running) {
                     var records = kafkaConsumer.poll(java.time.Duration.ofMillis(100));
-                    if (!records.isEmpty()) {
-                        try {
-                            for (ConsumerRecord<String, String> record : records) {
-                                Message msg = MessageFactory.deserialize(record.value());
-                                this.subscriber.observe(msg, portNumber);
+                    var assigned = kafkaConsumer.assignment();
+                    if (!assigned.isEmpty()) {
+                        if (paused) {
+                            kafkaConsumer.pause(assigned);
+                        } else {
+                            kafkaConsumer.resume(assigned);
+                            if (!records.isEmpty()) {
+                                try {
+                                    for (ConsumerRecord<String, String> record : records) {
+                                        Message msg = MessageFactory.deserialize(record.value());
+                                        this.subscriber.observe(msg, portNumber);
+                                    }
+                                } catch (WakeupException e) {
+                                    LogUtil.info("Kafka consumer thread for topic {} has been interrupted", topic);
+                                } catch (Exception e) {
+                                    throw new KafkaException("Failed to deserialize record in consumer for topic " + topic, e);
+                                }
                             }
-                        } catch (Exception e) {
-                            throw new KafkaException("Failed to deserialize record in consumer for topic " + topic, e);
                         }
                     }
                 }
-            } catch (WakeupException e) {
-                LogUtil.info("Kafka consumer thread for topic {} has been interrupted", topic);
             } catch (Exception e) {
                 throw new KafkaException("Failed to poll records from consumer for topic " + topic, e);
             }
         }, "KafkaConsumer-" + topic);
         thread.start();
     }
+
 
     private void subscribeToTopic() {
         final int maxRetries = 10;
