@@ -32,7 +32,6 @@ public class PipelineExecutionService {
             if (!isSuccess(response.status())) {
                 throw new PipelineExecutionException("Failed to start PE " + instanceId);
             }
-            LogUtil.info("Started pipeline successfully.");
         }
     }
 

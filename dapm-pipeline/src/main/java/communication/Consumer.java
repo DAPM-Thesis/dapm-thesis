@@ -1,154 +1,124 @@
 package communication;
 
 import communication.config.ConsumerConfig;
-import communication.config.KafkaConfiguration;
 import communication.message.Message;
 import communication.message.serialization.deserialization.MessageFactory;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.ListTopicsOptions;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.KafkaException;
-import org.apache.kafka.common.errors.WakeupException;
-import utils.LogUtil;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.config.MethodKafkaListenerEndpoint;
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
+import org.springframework.stereotype.Component;
+import utils.IDGenerator;
 
+import java.util.HashMap;
+import java.util.Map;
+
+
+@Component
+@Scope("prototype")
 public class Consumer {
 
-    private final KafkaConsumer<String, String> kafkaConsumer;
-    private final Subscriber<Message> subscriber;
-    private final String topic;
-    private final String brokerURL;
-    private final int portNumber;
+    private final KafkaListenerEndpointRegistry registry;
+    private final ApplicationContext applicationContext;
 
-    private volatile boolean running;
-    private volatile boolean paused;
-    private Thread thread;
+    private Subscriber<Message> subscriber;
+    private int portNumber;
+    private String containerId;
 
-    public Consumer(Subscriber<Message> subscriber, ConsumerConfig config) {
-        Properties props = KafkaConfiguration.getConsumerProperties(config.brokerURL());
-        this.kafkaConsumer = new KafkaConsumer<>(props);
+    @Autowired
+    public Consumer(KafkaListenerEndpointRegistry registry, ApplicationContext applicationContext) {
+        this.registry = registry;
+        this.applicationContext = applicationContext;
+    }
+
+    public void registerListener(Subscriber<Message> subscriber, ConsumerConfig consumerConfig) {
         this.subscriber = subscriber;
-        this.topic = config.topic();
-        this.brokerURL = config.brokerURL();
-        this.portNumber = config.portNumber();
-        this.paused = false;
-        subscribeToTopic();
+        this.portNumber = consumerConfig.portNumber();
+        this.containerId = IDGenerator.generateKafkaContainerID();
+        MethodKafkaListenerEndpoint<String, String> endpoint = null;
+        try {
+            endpoint = new MethodKafkaListenerEndpoint<>();
+            endpoint.setId(containerId);
+            endpoint.setGroupId(IDGenerator.generateConsumerGroupID());
+            endpoint.setTopics(consumerConfig.topic());
+            endpoint.setBean(this);
+            endpoint.setMethod(
+                    Consumer.class.getDeclaredMethod("consume", ConsumerRecord.class)
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+        endpoint.setMessageHandlerMethodFactory(applicationContext.getBean(MessageHandlerMethodFactory.class));
+
+        KafkaListenerContainerFactory<?> factory = createConsumerContainerFactory(consumerConfig.brokerURL());
+        registry.registerListenerContainer(endpoint, factory, false);
+    }
+
+    public void consume(ConsumerRecord<String, String> record) {
+        Message msg = MessageFactory.deserialize(record.value());
+        this.subscriber.observe(msg, portNumber);
     }
 
     public boolean start() {
-        if (thread != null && thread.isAlive()) {
-            LogUtil.debug("Consumer already running for topic {} ", topic);
-            paused = false;
-            return true;
+        var container = registry.getListenerContainer(containerId);
+        if (container == null) {
+            throw new IllegalStateException("No listener container found for ID: " + containerId);
         }
-        running = true;
-        paused = false;
-        try {
-            observe();
-            LogUtil.info("Kafka consumer thread for topic {} has started", topic);
-            return true;
-        } catch (Exception e) {
-            running = false;
-            LogUtil.error(e, "Failed to start Kafka consumer for topic {} ", topic);
-            return false;
+        if (!container.isRunning()) {
+            container.start();
         }
+//        else if (container.isContainerPaused()) {
+//            container.resume();
+//        }
+        return container.isRunning() && !container.isContainerPaused();
     }
 
     public boolean pause() {
-        paused = true;
-        LogUtil.debug("Consumer paused for topic {}", topic);
-        return true;
+        var container = registry.getListenerContainer(containerId);
+        if (container == null) {
+            return true;
+        }
+        container.stop();
+        return !container.isRunning();
     }
+
+    // TODO: is pause really needed? heartbeats keep going
+//    public boolean pause() {
+//        var container = registry.getListenerContainer(containerId);
+//        if (container == null) {
+//            throw new IllegalStateException("No listener container found for ID: " + containerId);
+//        }
+//        container.pause();
+//        return container.isContainerPaused();
+//    }
 
     public boolean terminate() {
-        try {
-            running = false;
-            kafkaConsumer.wakeup();
-            if (thread != null) {
-                thread.join();
-                thread = null;
-            }
-            kafkaConsumer.close();
-            LogUtil.debug("Kafka consumer for topic {} has been terminated", topic);
-            return true;
-        } catch (Exception e) {
-            LogUtil.error(e, "Failed to close Kafka consumer for topic {} ", topic);
-            return false;
-        }
+       return pause();
     }
 
-    private void observe() {
-        thread = new Thread(() -> {
-            try {
-                while (running) {
-                    var records = kafkaConsumer.poll(java.time.Duration.ofMillis(100));
-                    var assigned = kafkaConsumer.assignment();
-                    if (!assigned.isEmpty()) {
-                        if (paused) {
-                            kafkaConsumer.pause(assigned);
-                        } else {
-                            kafkaConsumer.resume(assigned);
-                            if (!records.isEmpty()) {
-                                try {
-                                    for (ConsumerRecord<String, String> record : records) {
-                                        Message msg = MessageFactory.deserialize(record.value());
-                                        this.subscriber.observe(msg, portNumber);
-                                    }
-                                } catch (WakeupException e) {
-                                    LogUtil.info("Kafka consumer thread for topic {} has been interrupted", topic);
-                                } catch (Exception e) {
-                                    throw new KafkaException("Failed to deserialize record in consumer for topic " + topic, e);
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                throw new KafkaException("Failed to poll records from consumer for topic " + topic, e);
-            }
-        }, "KafkaConsumer-" + topic);
-        thread.start();
-    }
+    private KafkaListenerContainerFactory<?> createConsumerContainerFactory(String brokerUrl) {
+        Map<String, Object> props = new HashMap<>();
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerUrl);
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
+        ConsumerFactory<String, String> consumerFactory = new DefaultKafkaConsumerFactory<>(props);
 
-    private void subscribeToTopic() {
-        final int maxRetries = 10;
-        final int retryDelayMillis = 5000;
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
 
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-            if (topicExists()) {
-                kafkaConsumer.subscribe(List.of(topic));
-                return;
-            }
-            if (attempt < maxRetries) {
-                try {
-                    Thread.sleep(retryDelayMillis);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new KafkaException("Interrupted while waiting for topic '" + topic + "' to exist.", e);
-                }
-            }
-        }
-        throw new IllegalStateException("Failed to find topic '" + topic + "' after " + maxRetries + " attempts.");
-    }
-
-    private boolean topicExists() {
-        Properties props = KafkaConfiguration.getAdminProperties(brokerURL);
-        try (AdminClient adminClient = AdminClient.create(props)) {
-            Set<String> topics = adminClient
-                    .listTopics(new ListTopicsOptions().listInternal(false))
-                    .names()
-                    .get();
-            return topics.contains(topic);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new KafkaException("Interrupted while checking topic existence " + topic, e);
-        } catch (Exception e) {
-            throw new KafkaException("Failed to get list of topics for broker " + brokerURL, e);
-        }
+        return factory;
     }
 }
+

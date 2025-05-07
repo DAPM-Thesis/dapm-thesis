@@ -15,8 +15,8 @@ public class IDGenerator { // TODO: delete if not used; probably refactor curren
         return "Instance-" + UUID.randomUUID();
     }
 
-    public static String generateInstanceMetaDataID() {
-        return "Instance-MetaData-" + UUID.randomUUID();
+    public static String generateKafkaContainerID() {
+        return "Container-" + UUID.randomUUID();
     }
 
     public static String generateConsumerGroupID() {

@@ -35,14 +35,9 @@ public class PipelineExecutionController {
     @PutMapping("/pause/instance/{instanceID}")
     public ResponseEntity<Void> stopProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
-        LogUtil.info("Pausing... PE " + instanceID);
         if (processingElement != null) {
             boolean paused = processingElement.pause();
-            LogUtil.debug("Paused PE " + instanceID + ": " + paused);
-            if (paused) {
-                LogUtil.info("Paused PE instance successfully.");
-                return ResponseEntity.ok().build();
-            }
+            if (paused) return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().body(null);
     }

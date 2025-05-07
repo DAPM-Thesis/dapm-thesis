@@ -1,0 +1,19 @@
+package communication;
+
+import communication.config.ProducerConfig;
+import communication.message.Message;
+import org.springframework.beans.factory.annotation.Lookup;
+import org.springframework.stereotype.Component;
+
+@Component
+public abstract class ProducerFactory {
+
+    @Lookup
+    protected abstract Producer createMessageProducer();
+
+    public void registerProducer(Publisher<Message> publisher, ProducerConfig producerConfig) {
+        Producer producer = createMessageProducer();
+        producer.registerPublisher(producerConfig);
+        publisher.registerProducer(producer);
+    }
+}

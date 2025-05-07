@@ -49,9 +49,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>3.9.0</version>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <version>3.3.5</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -107,6 +107,7 @@
                     <source>21</source>
                     <target>21</target>
                     <debug>false</debug>
+                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
         </plugins>

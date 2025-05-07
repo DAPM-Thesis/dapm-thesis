@@ -120,21 +120,21 @@ public class PipelineBuilder {
     }
 
     private String createOperator(Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
-        List<ConsumerConfig> consumerConfigs = getConsumerConfigs(pe, configuredInstances);
-        if (consumerConfigs == null || consumerConfigs.isEmpty()) {
+        List<ConsumerConfig> consumerData = getConsumerConfigs(pe, configuredInstances);
+        if (consumerData == null || consumerData.isEmpty()) {
             throw new IllegalStateException("No ConsumerConfigs found for operator: " + pe);
         }
-        PEInstanceResponse operatorResponse = sendCreateOperatorRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs, pe.getConfiguration());
+        PEInstanceResponse operatorResponse = sendCreateOperatorRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerData, pe.getConfiguration());
         configuredInstances.put(pe, operatorResponse);
         return operatorResponse.getInstanceID();
     }
 
     private String createSink(Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
-        List<ConsumerConfig> consumerConfigs = getConsumerConfigs(pe, configuredInstances);
-        if (consumerConfigs == null || consumerConfigs.isEmpty()) {
+        List<ConsumerConfig> consumerData = getConsumerConfigs(pe, configuredInstances);
+        if (consumerData == null || consumerData.isEmpty()) {
             throw new IllegalStateException("No ConsumerConfigs found for sink: " + pe);
         }
-        PEInstanceResponse sinkResponse = sendCreateSinkRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs, pe.getConfiguration());
+        PEInstanceResponse sinkResponse = sendCreateSinkRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerData, pe.getConfiguration());
         configuredInstances.put(pe, sinkResponse);
         return sinkResponse.getInstanceID();
     }
@@ -150,7 +150,7 @@ public class PipelineBuilder {
         return sendPostRequest(url, requestBody);
     }
 
-    private PEInstanceResponse sendCreateOperatorRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Map<String, Object> configuration) {
+    private PEInstanceResponse sendCreateOperatorRequest(String hostURL, String templateID, List<ConsumerConfig> consumerData, Map<String, Object> configuration) {
         String encodedTemplateID = JsonUtil.encode(templateID);
         String url = hostURL + String.format(
                 "/pipelineBuilder/operator/templateID/%s",
@@ -158,11 +158,11 @@ public class PipelineBuilder {
         );
         PEInstanceRequest requestBody = new PEInstanceRequest();
         requestBody.setConfiguration(configuration);
-        requestBody.setConsumerConfigs(consumerConfigs);
+        requestBody.setConsumerConfigs(consumerData);
         return sendPostRequest(url, requestBody);
     }
 
-    private PEInstanceResponse sendCreateSinkRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Map<String, Object> configuration) {
+    private PEInstanceResponse sendCreateSinkRequest(String hostURL, String templateID, List<ConsumerConfig> consumerData, Map<String, Object> configuration) {
         String encodedTemplateID = JsonUtil.encode(templateID);
         String url = hostURL + String.format(
                 "/pipelineBuilder/sink/templateID/%s",
@@ -170,7 +170,7 @@ public class PipelineBuilder {
         );
         PEInstanceRequest requestBody = new PEInstanceRequest();
         requestBody.setConfiguration(configuration);
-        requestBody.setConsumerConfigs(consumerConfigs);
+        requestBody.setConsumerConfigs(consumerData);
         return sendPostRequest(url, requestBody);
     }
 

@@ -2,6 +2,8 @@ package controller;
 
 import communication.API.request.PEInstanceRequest;
 import communication.API.response.PEInstanceResponse;
+import communication.ConsumerFactory;
+import communication.ProducerFactory;
 import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
 import communication.message.Message;
@@ -23,13 +25,20 @@ public class PipelineBuilderController {
     @Value("${organization.broker.port}")
     private String brokerURL;
 
+    private final ProducerFactory producerFactory;
+    private final ConsumerFactory consumerFactory;
     private final TemplateRepository templateRepository;
     private final PEInstanceRepository peInstanceRepository;
 
     @Autowired
-    public PipelineBuilderController(TemplateRepository templateRepository, PEInstanceRepository peInstanceRepository) {
+    public PipelineBuilderController(TemplateRepository templateRepository,
+                                     PEInstanceRepository peInstanceRepository,
+                                     ConsumerFactory consumerFactory,
+                                     ProducerFactory producerFactory) {
         this.templateRepository = templateRepository;
         this.peInstanceRepository = peInstanceRepository;
+        this.consumerFactory = consumerFactory;
+        this.producerFactory = producerFactory;
     }
 
     @PostMapping("/source/templateID/{templateID}")
@@ -41,7 +50,7 @@ public class PipelineBuilderController {
             source.setConfiguration(requestBody.getConfiguration());
             String topic = IDGenerator.generateTopic();
             ProducerConfig producerConfig = new ProducerConfig(brokerURL, topic);
-            source.registerProducer(producerConfig);
+            producerFactory.registerProducer(source, producerConfig);
             String instanceID = peInstanceRepository.storeInstance(source);
 
             return ResponseEntity.ok(new PEInstanceResponse
@@ -59,11 +68,11 @@ public class PipelineBuilderController {
         if (operator != null) {
             operator.setConfiguration(requestBody.getConfiguration());
             for (ConsumerConfig config : requestBody.getConsumerConfigs()) {
-                operator.registerConsumer(config);
+                consumerFactory.registerConsumer(operator, config);
             }
             String topic = IDGenerator.generateTopic();
             ProducerConfig producerConfig = new ProducerConfig(brokerURL, topic);
-            operator.registerProducer(producerConfig);
+            producerFactory.registerProducer(operator, producerConfig);
 
             String instanceID = peInstanceRepository.storeInstance(operator);
             return ResponseEntity.ok(new PEInstanceResponse
@@ -81,7 +90,7 @@ public class PipelineBuilderController {
         if (sink != null) {
             sink.setConfiguration(requestBody.getConfiguration());
             for (ConsumerConfig config : requestBody.getConsumerConfigs()) {
-                sink.registerConsumer(config);
+                consumerFactory.registerConsumer(sink, config);
             }
             String instanceID = peInstanceRepository.storeInstance(sink);
             return ResponseEntity.ok(new PEInstanceResponse

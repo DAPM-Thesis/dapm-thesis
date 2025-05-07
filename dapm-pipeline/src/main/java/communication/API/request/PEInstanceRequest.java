@@ -7,22 +7,22 @@ import java.util.Map;
 
 public class PEInstanceRequest {
 
-    private List<ConsumerConfig> consumerConfigs;
+    private List<ConsumerConfig> consumerData;
     private Map<String, Object> configuration;
 
     public PEInstanceRequest() {
     }
 
     public List<ConsumerConfig> getConsumerConfigs() {
-        return consumerConfigs;
+        return consumerData;
     }
 
     public Map<String, Object> getConfiguration() {
         return configuration;
     }
 
-    public void setConsumerConfigs(List<ConsumerConfig> consumerConfigs) {
-        this.consumerConfigs = consumerConfigs;
+    public void setConsumerConfigs(List<ConsumerConfig> consumerData) {
+        this.consumerData = consumerData;
     }
 
     public void setConfiguration(Map<String, Object> configuration) {

@@ -1,7 +1,6 @@
 package pipeline.processingelement.operator;
 
 import communication.Producer;
-import communication.config.ProducerConfig;
 import communication.message.Message;
 import pipeline.processingelement.ConsumingProcessingElement;
 import communication.Publisher;
@@ -27,9 +26,7 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
 
     @Override
     public void publish(O data) {
-        if (producer != null) {
-            producer.publish(data);
-        }
+        producer.publish(data);
     }
 
     @Override
@@ -45,9 +42,7 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     }
 
     @Override
-    public void registerProducer(ProducerConfig config) {
-        if (this.producer == null) {
-            this.producer = new Producer(config);
-        }
+    public void registerProducer(Producer producer) {
+        this.producer = producer;
     }
 }

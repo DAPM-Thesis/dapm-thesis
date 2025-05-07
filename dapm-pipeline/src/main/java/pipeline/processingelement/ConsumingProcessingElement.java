@@ -2,10 +2,7 @@ package pipeline.processingelement;
 
 import communication.Consumer;
 import communication.Subscriber;
-import communication.config.ConsumerConfig;
 import communication.message.Message;
-import exceptions.PipelineExecutionException;
-import utils.LogUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -59,8 +56,7 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
     }
 
     @Override
-    public void registerConsumer(ConsumerConfig config) {
-        Consumer consumer = new Consumer(this, config);
-        consumers.put(config.portNumber(), consumer);
+    public void registerConsumer(Consumer consumer, int portNumber) {
+        consumers.put(portNumber, consumer);
     }
 }

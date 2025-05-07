@@ -2,7 +2,6 @@ package pipeline.processingelement.source;
 
 import communication.Producer;
 import communication.Publisher;
-import communication.config.ProducerConfig;
 import communication.message.Message;
 import pipeline.processingelement.ProcessingElement;
 
@@ -10,9 +9,7 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     private Producer producer; // Channel
 
     public void publish(O data) {
-        if(producer != null) { // TODO: why would producer be null?
-            producer.publish(data);
-        }
+        producer.publish(data);
     }
 
     @Override
@@ -34,9 +31,7 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     }
 
     @Override
-    public void registerProducer(ProducerConfig config) {
-        if (this.producer == null) {
-            this.producer = new Producer(config);
-        }
+    public void registerProducer(Producer producer) {
+        this.producer = producer;
     }
 }
