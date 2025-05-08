@@ -1,12 +1,9 @@
 package pipeline.processingelement.source;
 
 import communication.message.Message;
-import exceptions.PipelineExecutionException;
-import org.apache.commons.logging.Log;
 import utils.LogUtil;
 import pipeline.processingelement.Configuration;
 
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 // TODO: understand simple source and maybe distinguish instead by making a GeneratingSource (a source from which data is generated in the source).
@@ -45,16 +42,10 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
         try {
             isRunning = false;
             executor.shutdown();
-            LogUtil.debug("Source has been paused.");
-            return true;
+            return super.pause();
         } catch (Exception e) {
             LogUtil.error(e, "Failed to pause source.");
             return false;
         }
-    }
-
-    @Override
-    public boolean terminate() {
-      return pause();
     }
 }

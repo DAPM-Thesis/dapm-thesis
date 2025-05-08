@@ -6,8 +6,6 @@ import communication.message.Message;
 import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ProcessingElement;
 
-import java.util.Map;
-
 public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O> {
     private Producer producer; // Channel
 
@@ -22,17 +20,14 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public abstract boolean start();
 
     @Override
-    public abstract boolean pause();
+    public boolean pause() {
+        return producer.pause();
+    }
 
     @Override
     public boolean terminate() {
-        boolean terminated = false;
-        if (producer != null) {
-           terminated = producer.terminate();
-           if(terminated) {
-               producer = null;
-           }
-        }
+        boolean terminated = producer.terminate();
+        if (terminated) producer = null;
         return terminated;
     }
 

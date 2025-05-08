@@ -50,9 +50,7 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
         for (Consumer consumer : consumers.values()) {
            terminated &= consumer.terminate();
         }
-        if(terminated) {
-            consumers.clear();
-        }
+        if(terminated) consumers.clear();
         return terminated;
     }
 

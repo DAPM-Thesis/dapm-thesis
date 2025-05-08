@@ -15,6 +15,8 @@ import org.springframework.kafka.config.MethodKafkaListenerEndpoint;
 
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
 import org.springframework.stereotype.Component;
 import utils.IDGenerator;
@@ -52,10 +54,10 @@ public class Consumer {
             endpoint.setTopics(consumerConfig.topic());
             endpoint.setBean(this);
             endpoint.setMethod(
-                    Consumer.class.getDeclaredMethod("consume", ConsumerRecord.class)
+                    Consumer.class.getDeclaredMethod("consume", ConsumerRecord.class, Acknowledgment.class)
             );
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to register Kafka listener endpoint", e);
         }
         endpoint.setMessageHandlerMethodFactory(applicationContext.getBean(MessageHandlerMethodFactory.class));
 
@@ -63,9 +65,10 @@ public class Consumer {
         registry.registerListenerContainer(endpoint, factory, false);
     }
 
-    public void consume(ConsumerRecord<String, String> record) {
+    public void consume(ConsumerRecord<String, String> record, Acknowledgment ack) {
         Message msg = MessageFactory.deserialize(record.value());
         this.subscriber.observe(msg, portNumber);
+        ack.acknowledge(); // Ensure at least once or exactly once guarantee
     }
 
     public boolean start() {
@@ -111,13 +114,17 @@ public class Consumer {
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100); // Default is 500
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false); // Ensure at least once or exactly once guarantee
 
         ConsumerFactory<String, String> consumerFactory = new DefaultKafkaConsumerFactory<>(props);
 
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
-
+        factory.setConcurrency(1); // Only one working thread per container
+        factory.getContainerProperties().setPollTimeout(1000);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return factory;
     }
 }
