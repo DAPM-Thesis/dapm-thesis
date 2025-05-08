@@ -4,11 +4,12 @@ import communication.Consumer;
 import communication.Subscriber;
 import communication.config.ConsumerConfig;
 import communication.message.Message;
+import utils.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ConsumingProcessingElement extends ProcessingElement implements Subscriber<Message> {
+public abstract class ConsumingProcessingElement extends ProcessingElement implements Subscriber<Pair<Message, Integer>> {
     /** Holds the input types and their multiplicities. So if processing element consumes Event's from two
      *  separate Channel's and Petri Net's from one Channel, it will have (key, value) pairs (Event.class, 2) and
      *  (PetriNet.class, 1).*/

@@ -10,6 +10,7 @@ import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.KafkaFuture;
+import utils.Pair;
 
 import java.util.List;
 import java.util.Properties;
@@ -19,12 +20,12 @@ import java.util.concurrent.ExecutionException;
 public class Consumer {
 
     private final KafkaConsumer<String, String> kafkaConsumer;
-    private final Subscriber<Message> subscriber;
+    private final Subscriber<Pair<Message, Integer>> subscriber;
     private final String topic;
     private final String brokerURL;
     private final int portNumber;
 
-    public Consumer(Subscriber<Message> subscriber, ConsumerConfig config) {
+    public Consumer(Subscriber<Pair<Message, Integer>> subscriber, ConsumerConfig config) {
         Properties props = KafkaConfiguration.getConsumerProperties(config.brokerURL());
         this.kafkaConsumer = new KafkaConsumer<>(props);
         this.subscriber = subscriber;
@@ -43,7 +44,7 @@ public class Consumer {
                 observe();
                 return;
             }
-            System.out.println("Attempt " + attempt + ": Topic '" + topic + "' does not exist. Retrying...");
+            System.out.println("Attempt " + attempt + ": Topic '" + topic + "' does not exist. Retrying..."); // TODO: do we still need these fancy checks?
             if (attempt < maxRetries) {
                 try {
                     Thread.sleep(retryDelayMillis);
@@ -63,13 +64,13 @@ public class Consumer {
                 if (!records.isEmpty()) {
                     for (ConsumerRecord<String, String> record : records) {
                         Message msg = MessageFactory.deserialize(record.value());
-                        this.subscriber.observe(msg, portNumber);
+                        this.subscriber.observe(new Pair<>(msg, portNumber));
                     }
                 }
             }
         }).start();
     }
-
+    // TODO: Same with this one: still needed?
     private boolean topicExists() {
         Properties props = KafkaConfiguration.getAdminProperties(brokerURL);
         try (AdminClient adminClient = AdminClient.create(props)) {

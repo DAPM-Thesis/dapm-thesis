@@ -5,10 +5,6 @@ import java.util.*;
 public class DG<T, U> {
     private final Map<Edge<T>, U> adjacencyList = new HashMap<>();
 
-    public void addEdgeWithAttribute(T from, T to, U attr) {
-        adjacencyList.put(new Edge<>(from, to), attr);
-    }
-
     public Set<T> getNeighbors(T node) {
         Set<T> neighbors = new HashSet<>();
         for (Edge<T> edge : adjacencyList.keySet()) {
@@ -31,5 +27,10 @@ public class DG<T, U> {
     public U getEdgeAttribute(T from, T to) {
         return adjacencyList.get(new Edge<>(from, to));
     }
+
+    public void addEdgeWithAttribute(T from, T to, U attr) {
+        adjacencyList.put(new Edge<>(from, to), attr);
+    }
+
 }
 

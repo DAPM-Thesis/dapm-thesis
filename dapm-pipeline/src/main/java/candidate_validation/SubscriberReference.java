@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class SubscriberReference {
     private final ProcessingElementReference element;
-    private final int portNumber; // 0-indexed internally, but 1-indexed in API
+    private final int portNumber; // 0-indexed internally, but 1-indexed in API // TODO: should getter return portNumber+1?
 
     public SubscriberReference(ProcessingElementReference element, int portNumber) {
         assert element != null : "Consumer should not be null";

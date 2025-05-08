@@ -136,7 +136,7 @@ public class PipelineBuilderTest {
         Pipeline pipeline = pipelineBuilder.buildPipeline(orgID, validatedPipeline);
 
         assertNotNull(pipeline);
-        assertEquals(orgID, pipeline.getOrganizationOwnerID());
+        assertEquals(orgID, pipeline.getOwningOrganizationID());
         assertEquals(3, pipeline.getProcessingElements().size());
         String instanceIDSource = "source-id";
         assertNotNull(pipeline.getProcessingElements().get(instanceIDSource));

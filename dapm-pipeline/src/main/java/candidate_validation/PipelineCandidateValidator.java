@@ -7,13 +7,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class PipelineCandidateValidator {
-    public static boolean isValid(PipelineCandidate candidate) throws InvalidCandidate {
-        return hasConsistentElements(candidate)
-                && !isCyclic(candidate)
-                && isConnected(candidate)
-                && channelInputsAndOutputsMatch(candidate)
-                && allPathsFromSourceToSink(candidate);
+    /** Returns a list of necessary pipeline properties that are not met. */
+    public static List<String> validate(PipelineCandidate candidate) {
+        List<String> errors = new ArrayList<>();
+
+        if (!hasConsistentElements(candidate)) {
+            errors.add("Candidate contains element(s) not referenced consistently between elements and channels.");
+            return errors; // this criterion is necessary for ensuing criteria and therefore returns early, unlike the ones below.
+        }
+
+        if (isCyclic(candidate)) { errors.add("Pipeline contains cycles."); }
+        if (!isConnected(candidate)) { errors.add("Pipeline graph is not weakly connected."); }
+        if (!channelInputsAndOutputsMatch(candidate)) { errors.add("There are mismatches between channel input and outputs, either because of type mismatch(es) or because multiple publishers produce to the same port number in the channel's subscriber(s)."); }
+        if (!allPathsFromSourceToSink(candidate)) { errors.add("The pipeline is not fully (weakly) connected: not all paths lead from a source to a sink."); }
+
+        return errors;
     }
+
 
     private static boolean allPathsFromSourceToSink(PipelineCandidate candidate) {
         Set<ProcessingElementReference> elements = candidate.getElements();
@@ -36,7 +46,7 @@ public class PipelineCandidateValidator {
     }
 
     private static boolean isPublisher(ProcessingElementReference element, Set<ChannelReference> channels) {
-        return channels.stream().anyMatch(channel -> channel.getProducer().equals(element));
+        return channels.stream().anyMatch(channel -> channel.getPublisher().equals(element));
     }
 
     private static boolean channelInputsAndOutputsMatch(PipelineCandidate candidate) {
@@ -177,7 +187,7 @@ public class PipelineCandidateValidator {
     private static Map<ProcessingElementReference, Set<ProcessingElementReference>> getSuccessors(Collection<ChannelReference> channels) {
         Map<ProcessingElementReference, Set<ProcessingElementReference>> successors = new HashMap<>();
         for (ChannelReference channel : channels) {
-            ProcessingElementReference from = channel.getProducer();
+            ProcessingElementReference from = channel.getPublisher();
             if (!successors.containsKey(from)) { successors.put(from, new HashSet<>()); }
             Set<ProcessingElementReference> consumingElements = extractConsumerElements(channel);
             successors.get(from).addAll(consumingElements);
@@ -193,7 +203,7 @@ public class PipelineCandidateValidator {
     private static Map<ProcessingElementReference, Set<ProcessingElementReference>> getUndirectedSuccessors(Set<ChannelReference> channels) {
         Map<ProcessingElementReference, Set<ProcessingElementReference>> successors = new HashMap<>();
         for (ChannelReference channel : channels) {
-            ProcessingElementReference from = channel.getProducer();
+            ProcessingElementReference from = channel.getPublisher();
             Set<ProcessingElementReference> consumerElements = extractConsumerElements(channel);
             successors.computeIfAbsent(from, k -> new HashSet<>()).addAll(consumerElements);
             for (ProcessingElementReference consumerElement : consumerElements) {
@@ -215,7 +225,7 @@ public class PipelineCandidateValidator {
     private static boolean hasConsistentElements(PipelineCandidate candidate) {
         Set<ProcessingElementReference> channelElements =  new HashSet<>();
         for (ChannelReference channel : candidate.getChannels()) {
-            channelElements.add(channel.getProducer());
+            channelElements.add(channel.getPublisher());
             for (SubscriberReference consumer : channel.getSubscribers()) {
                 channelElements.add(consumer.getElement());
             }

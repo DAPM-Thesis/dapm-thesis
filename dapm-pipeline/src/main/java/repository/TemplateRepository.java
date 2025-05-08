@@ -11,11 +11,7 @@ import java.util.Map;
 @Repository
 public class TemplateRepository {
 
-    private Map<String, Class<? extends ProcessingElement>> templates;
-
-    public TemplateRepository() {
-        templates = new HashMap<>();
-    }
+    private final Map<String, Class<? extends ProcessingElement>> templates = new HashMap<>();
 
     public void storeTemplate(String templateID, Class<? extends ProcessingElement> template) {
         templates.put(templateID, template);
