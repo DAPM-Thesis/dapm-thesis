@@ -8,12 +8,12 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import utils.LogUtil;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 @Component
@@ -23,11 +23,7 @@ public class Producer {
     private KafkaProducer<String, String> kafkaProducer;
     private String topic;
     private String brokerUrl;
-    private boolean pausePublishing = false;
-
-    @Autowired
-    public Producer() {
-    }
+    private volatile boolean pausePublishing = false;
 
     public void registerPublisher(ProducerConfig producerConfig) {
         this.topic = producerConfig.topic();
@@ -42,12 +38,13 @@ public class Producer {
         message.acceptVisitor(serializer);
         String serialization = serializer.getSerialization();
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, serialization);
-        try {
-            kafkaProducer.send(record);
-        } catch (Exception e) {
-            throw new KafkaException("Failed to send message to topic " + topic, e);
-        }
+        kafkaProducer.send(record, (metadata, exception) -> {
+            if (exception != null) {
+                LogUtil.error(exception, "Failed to publish message '{}'", message, exception);
+            }
+        });
     }
+
 
     public boolean pause() {
         try {
@@ -87,11 +84,9 @@ public class Producer {
         Properties props = new Properties();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, brokerUrl);
         try (AdminClient adminClient = AdminClient.create(props)) {
-            if (!adminClient.listTopics().names().get().contains(topic)) {
+            if (!adminClient.listTopics().names().get(5, TimeUnit.SECONDS).contains(topic)) {
                 NewTopic newTopic = new NewTopic(topic, 1, (short) 1);
                 adminClient.createTopics(Collections.singletonList(newTopic)).all().get();
-            } else {
-                LogUtil.debug("Topic {} already exists.", topic);
             }
         } catch (Exception e) {
             throw new KafkaException("Failed to create topic, " + topic, e);
@@ -102,7 +97,7 @@ public class Producer {
         Properties props = new Properties();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, brokerUrl);
         try (AdminClient adminClient = AdminClient.create(props)) {
-            adminClient.deleteTopics(Collections.singletonList(topic)).all().get();
+            adminClient.deleteTopics(Collections.singletonList(topic)).all().get(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             throw new KafkaException("Failed to delete topic, " + topic, e);
         }

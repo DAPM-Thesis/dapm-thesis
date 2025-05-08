@@ -66,9 +66,13 @@ public class Consumer {
     }
 
     public void consume(ConsumerRecord<String, String> record, Acknowledgment ack) {
-        Message msg = MessageFactory.deserialize(record.value());
-        this.subscriber.observe(msg, portNumber);
-        ack.acknowledge(); // Ensure at least once or exactly once guarantee
+        try {
+            Message msg = MessageFactory.deserialize(record.value());
+            this.subscriber.observe(msg, portNumber);
+            ack.acknowledge(); // At-least-once guarantee
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to process message" + record, e);
+        }
     }
 
     public boolean start() {
@@ -76,36 +80,26 @@ public class Consumer {
         if (container == null) {
             throw new IllegalStateException("No listener container found for ID: " + containerId);
         }
-        if (!container.isRunning()) {
-            container.start();
-        }
-//        else if (container.isContainerPaused()) {
-//            container.resume();
-//        }
-        return container.isRunning() && !container.isContainerPaused();
+        container.start();
+        return container.isRunning();
     }
 
     public boolean pause() {
         var container = registry.getListenerContainer(containerId);
         if (container == null) {
-            return true;
+            throw new IllegalStateException("No listener container found for ID: " + containerId);
         }
         container.stop();
         return !container.isRunning();
     }
 
-    // TODO: is pause really needed? heartbeats keep going
-//    public boolean pause() {
-//        var container = registry.getListenerContainer(containerId);
-//        if (container == null) {
-//            throw new IllegalStateException("No listener container found for ID: " + containerId);
-//        }
-//        container.pause();
-//        return container.isContainerPaused();
-//    }
-
     public boolean terminate() {
-       return pause();
+        var container = registry.getListenerContainer(containerId);
+        if (container == null) {
+            throw new IllegalStateException("No listener container found for ID: " + containerId);
+        }
+        registry.unregisterListenerContainer(containerId);
+        return registry.getListenerContainer(containerId) == null;
     }
 
     private KafkaListenerContainerFactory<?> createConsumerContainerFactory(String brokerUrl) {
@@ -115,7 +109,7 @@ public class Consumer {
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100); // Default is 500
-        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false); // Ensure at least once or exactly once guarantee
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false); // At-least-once guarantee
 
         ConsumerFactory<String, String> consumerFactory = new DefaultKafkaConsumerFactory<>(props);
 

@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import pipeline.Pipeline;
-import utils.LogUtil;
 
 import java.util.Map;
 
@@ -27,7 +26,6 @@ public class PipelineExecutionService {
             String instanceId = entry.getKey();
             String url = entry.getValue().getOrganizationHostURL() +
                     "/pipelineExecution/start/instance/" + instanceId;
-            LogUtil.info("Starting... PE " + entry.getValue().getTemplateID());
             HTTPResponse response = webClient.putSync(new HTTPRequest(url));
             if (!isSuccess(response.status())) {
                 throw new PipelineExecutionException("Failed to start PE " + instanceId);
