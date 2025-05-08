@@ -122,7 +122,7 @@ public class MessageSerializer implements MessageVisitor<String> {
         return pnmlString;
     }
 
-    public String serializePlace(Place p) {
+    private String serializePlace(Place p) {
         return "<place id=\""
                 + p.getID()
                 + "\"><initialMarking><text>"
@@ -130,11 +130,11 @@ public class MessageSerializer implements MessageVisitor<String> {
                 + "</text></initialMarking></place>";
     }
 
-    public String serializeTransition(Transition t) {
+    private String serializeTransition(Transition t) {
         return "<transition id=\"" + t.getID() + "\"></transition>";
     }
 
-    public String serializeArc(Arc a) {
+    private String serializeArc(Arc a) {
         String source;
         String target;
         if (a instanceof TransitionToPlaceArc tpa) {

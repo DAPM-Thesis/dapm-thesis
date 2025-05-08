@@ -13,23 +13,22 @@ import java.util.Collections;
 import java.util.Properties;
 
 
-public class Producer {
+public class Producer implements Publisher<Message> {
 
-    private KafkaProducer<String, String> kafkaProducer;
+    private final KafkaProducer<String, String> kafkaProducer;
     private final String topic;
+    private final MessageSerializer serializer = new MessageSerializer();
 
     public Producer(ProducerConfig config) {
         Properties props = KafkaConfiguration.getProducerProperties(config.brokerURL());
         this.kafkaProducer = new KafkaProducer<>(props);
-        this.topic = config.topic();
+        this.topic = config.topic(); // TODO: should topic maybe be created in the constructor? That way, we can make sure that if a topic already exists (with same UUID) we just generate a new one. Very unlikely to clash, sure, but still safer.
 
         createKafkaTopicIfNotExist(config.brokerURL());
     }
 
-    public void publish(Message message) {
-        // Arguably serializer should be refactored such that a new one is not created with every publish().
-        // On the other hand, we have established via performance testing that this is far from being the bottleneck
-        MessageSerializer serializer = new MessageSerializer();
+    @Override
+    public void publish(Message message) { // TODO: make Producer implement Publisher<O> and refactor anywhere Producer.publish() is used
         message.acceptVisitor(serializer);
         String serialization = serializer.getSerialization();
         kafkaProducer.send(new ProducerRecord<>(topic, serialization));

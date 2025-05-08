@@ -10,11 +10,7 @@ import java.util.Map;
 @Repository
 public class PEInstanceRepository {
 
-    public Map<String, ProcessingElement> instances;
-
-    public PEInstanceRepository() {
-        instances = new HashMap<>();
-    }
+    private final Map<String, ProcessingElement> instances = new HashMap<>();
 
     public String storeInstance(ProcessingElement instance) {
         String instanceID = IDGenerator.generateInstanceID();

@@ -20,7 +20,7 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
     }
 
     @Override
-    public Pair<Set<ProcessingElementReference>, Set<ChannelReference>> deserialize(String json) {
+    public Pair<Set<ProcessingElementReference>, Set<ChannelReference>> deserialize(String json) throws JsonSchemaMismatch {
         // The JSON schema validator below will take care of throwing errors if the JSON is not correctly formatted
         // according to the pipeline_draft_json_schema.json. We can therefore omit throwing those errors afterward.
         validator.validatePipelineCandidate(json);
@@ -46,13 +46,12 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
         return new Pair<>(elements, channels);
     }
 
-    // TODO: extract this file parsing stuff into its own class to keep single responsibility principle
-    private String toFilenameWithoutExtension(String... inputs) {
+    private String toFilenameWithoutExtension(String... subWords) {
         String illegalChars = "[\\\\/:*?\"<>|']";
 
         List<String> substrings = new ArrayList<>();
-        for (String s : inputs) {
-            String filename = s.replaceAll(illegalChars, "_");
+        for (String word : subWords) {
+            String filename = word.replaceAll(illegalChars, "_");
             filename = filename.replaceAll("\\s+", "_");
             filename = filename.replaceAll("^_+|_+$", ""); // remove underscores from start/end
             substrings.add(filename);
@@ -60,7 +59,7 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
 
         return String.join("_", substrings).toLowerCase();
     }
-    // TODO: same as above
+
     private String getConfigurationJSONString(Map<String, Object> elementMap) {
         Object configuration = elementMap.get("configuration");
         if (configuration == null) { throw new IllegalStateException("a processing element must have a configuration"); }

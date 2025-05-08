@@ -250,7 +250,7 @@ public class JSONParser {
         else { return jsonObject.toString(); }
     }
 
-    public static String unescapeString(String original) {
+    private static String unescapeString(String original) {
         if (original == null)
         { return null; }
         StringBuilder sb = new StringBuilder();

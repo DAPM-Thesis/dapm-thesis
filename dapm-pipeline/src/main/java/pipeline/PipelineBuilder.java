@@ -30,20 +30,21 @@ public class PipelineBuilder {
 
     public Pipeline buildPipeline(String organizationOwnerID, ValidatedPipeline validatedPipeline) {
         Pipeline pipeline = new Pipeline(organizationOwnerID);
-        this.DG = new DG<>();
-        initializeDG(validatedPipeline.getChannels());
+        this.DG = initializeDG(validatedPipeline.getChannels());
         buildPipeline(pipeline);
         return pipeline;
     }
 
-    private void initializeDG(Set<ChannelReference> channelReferences) {
+    private DG<ProcessingElementReference, Integer> initializeDG(Set<ChannelReference> channelReferences) {
+        DG<ProcessingElementReference, Integer> directedGraph = new DG<>();
         for (ChannelReference cr : channelReferences) {
-            ProcessingElementReference producer = cr.getProducer();
+            ProcessingElementReference producer = cr.getPublisher();
             for (SubscriberReference sr : cr.getSubscribers()) {
                 ProcessingElementReference consumer = sr.getElement();
-                DG.addEdgeWithAttribute(producer, consumer, sr.getPortNumber());
+                directedGraph.addEdgeWithAttribute(producer, consumer, sr.getPortNumber());
             }
         }
+        return directedGraph;
     }
 
     private void buildPipeline(Pipeline pipeline) {
