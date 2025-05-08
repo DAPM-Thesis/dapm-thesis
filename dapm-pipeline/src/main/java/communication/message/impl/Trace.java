@@ -1,5 +1,6 @@
 package communication.message.impl;
 
+import communication.message.AutoRegisterMessage;
 import communication.message.serialization.MessageVisitor;
 import communication.message.Message;
 import communication.message.impl.event.Event;
@@ -11,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+@AutoRegisterMessage(deserialization = TraceDeserializationStrategy.class)
 public class Trace extends Message implements Iterable<Event> {
 
     private final List<Event> trace;

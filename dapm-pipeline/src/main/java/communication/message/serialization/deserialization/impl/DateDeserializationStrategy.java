@@ -6,7 +6,7 @@ import communication.message.serialization.deserialization.DeserializationStrate
 
 import java.time.ZonedDateTime;
 
-public class DateTimeDeserializationStrategy implements DeserializationStrategy {
+public class DateDeserializationStrategy implements DeserializationStrategy {
     @Override
     public Message deserialize(String s) {
         return new Date(ZonedDateTime.parse(s));

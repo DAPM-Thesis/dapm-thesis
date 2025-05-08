@@ -1,13 +1,16 @@
 package communication.message.impl.event;
 
+import communication.message.AutoRegisterMessage;
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
 import communication.message.serialization.deserialization.DeserializationStrategy;
 import communication.message.serialization.deserialization.impl.EventDeserializationStrategy;
+import communication.message.serialization.deserialization.impl.TraceDeserializationStrategy;
 
 import java.util.Collection;
 import java.util.Set;
 
+@AutoRegisterMessage(deserialization = EventDeserializationStrategy.class)
 public class Event extends Message {
     private final String caseID;
     private final String activity;

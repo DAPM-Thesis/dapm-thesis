@@ -24,7 +24,7 @@ public class MessageTypeRegistry {
         register("Alignment", Alignment.class);
         register("Trace", Trace.class);
         register("Time", Date.class);
-        register("InstantTime", UTCTime.class);
+        register("UTCTime", UTCTime.class);
     }
 
     private static void register(String simpleClassName, Class<? extends Message> messageClass) {
