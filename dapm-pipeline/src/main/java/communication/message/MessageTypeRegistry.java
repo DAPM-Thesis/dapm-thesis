@@ -13,11 +13,6 @@ import java.util.Map;
 public class MessageTypeRegistry {
     private static final Map<String, Class<? extends Message>> nameToClass = new HashMap<>();
 
-    public static Class<? extends Message> getMessageType(String simpleClassName) {
-        if (!nameToClass.containsKey(simpleClassName)) { throw new IllegalArgumentException("Unknown message type: " + simpleClassName);}
-        return nameToClass.get(simpleClassName);
-    }
-
     static {
         register("Event", Event.class);
         register("PetriNet", PetriNet.class);
@@ -25,6 +20,11 @@ public class MessageTypeRegistry {
         register("Trace", Trace.class);
         register("Time", Date.class);
         register("UTCTime", UTCTime.class);
+    }
+
+    public static Class<? extends Message> getMessageType(String simpleClassName) {
+        if (!nameToClass.containsKey(simpleClassName)) { throw new IllegalArgumentException("Unknown message type: " + simpleClassName);}
+        return nameToClass.get(simpleClassName);
     }
 
     private static void register(String simpleClassName, Class<? extends Message> messageClass) {
