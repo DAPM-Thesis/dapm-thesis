@@ -70,10 +70,11 @@
         </dependency>
         <dependency>
             <groupId>com.github.dapm-thesis</groupId>
-            <artifactId>annotation-processors</artifactId>
+            <artifactId>annotation-processor</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+
     </dependencies>
 
     <!-- Test profile for setting flags, active for now -->
@@ -103,16 +104,24 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.5.4</version>
+                <version>3.4.3</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
+                    <release>21</release>
                     <debug>false</debug>
+
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.github.dapm-thesis</groupId>
+                            <artifactId>annotation-processor</artifactId>
+                            <version>1.0-SNAPSHOT</version>
+                        </path>
+                    </annotationProcessorPaths>
+
                 </configuration>
             </plugin>
         </plugins>

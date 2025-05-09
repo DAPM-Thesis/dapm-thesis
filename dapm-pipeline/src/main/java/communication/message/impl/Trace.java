@@ -1,5 +1,6 @@
 package communication.message.impl;
 
+import annotations.AutoRegisterMessage;
 import communication.message.serialization.MessageVisitor;
 import communication.message.Message;
 import communication.message.impl.event.Event;

@@ -1,5 +1,6 @@
 package communication.message.impl.time;
 
+import annotations.AutoRegisterMessage;
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
 import communication.message.serialization.deserialization.impl.UTCTimeDeserializationStrategy;
@@ -7,6 +8,7 @@ import communication.message.serialization.deserialization.impl.UTCTimeDeseriali
 import java.time.Instant;
 
 /** An absolute UTC time (a single instantaneous, unambiguous point on the time-line). */
+@AutoRegisterMessage
 public class UTCTime extends Message {
     private final Instant time;
 

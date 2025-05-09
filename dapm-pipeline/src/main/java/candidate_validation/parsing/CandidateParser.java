@@ -120,7 +120,7 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
         String outputClassString = (String) elementMap.get("output");
         if (outputClassString == null)
             { return null; }
-        return MessageTypeRegistry.getMessageType(outputClassString);
+        return MessageTypeRegistry.getMessageType(outputClassString); //return MessageTypeRegistry.getMessageType(outputClassString);
     }
 
     private List<Class<? extends Message>> extractInputs(List<String> stringInputs) throws InvalidCandidate {

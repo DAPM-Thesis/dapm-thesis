@@ -1,5 +1,6 @@
 package communication.message.impl.petrinet;
 
+import annotations.AutoRegisterMessage;
 import communication.message.Message;
 import communication.message.impl.petrinet.arc.Arc;
 import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
@@ -7,12 +8,11 @@ import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
 import communication.message.serialization.MessageVisitor;
 import communication.message.serialization.deserialization.DeserializationStrategy;
 import communication.message.serialization.deserialization.impl.PetriNetDeserializationStrategy;
-import communication.message.serialization.deserialization.impl.TraceDeserializationStrategy;
 
 import java.util.HashSet;
 import java.util.Set;
 
-
+@AutoRegisterMessage
 public class PetriNet extends Message {
     private final Set<Place> places;
     private final Set<Transition> transitions;

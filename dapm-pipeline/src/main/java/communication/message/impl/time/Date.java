@@ -1,5 +1,6 @@
 package communication.message.impl.time;
 
+import annotations.AutoRegisterMessage;
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
 import communication.message.serialization.deserialization.impl.DateDeserializationStrategy;
@@ -7,6 +8,7 @@ import communication.message.serialization.deserialization.impl.DateDeserializat
 import java.time.ZonedDateTime;
 
 /** A date (time) including time zone - so it is unambiguous. */
+@AutoRegisterMessage
 public class Date extends Message {
     private final ZonedDateTime time;
 
