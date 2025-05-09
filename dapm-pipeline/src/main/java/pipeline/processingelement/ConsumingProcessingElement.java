@@ -53,7 +53,6 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
         return terminated;
     }
 
-    @Override
     public void registerConsumer(Consumer consumer, int portNumber) {
         consumers.put(portNumber, consumer);
     }

@@ -11,7 +11,7 @@ public abstract class ProducerFactory {
     @Lookup
     protected abstract Producer createMessageProducer();
 
-    public void registerProducer(Publisher<Message> publisher, ProducerConfig producerConfig) {
+    public void registerProducer(ProducingProcessingElement publisher, ProducerConfig producerConfig) {
         Producer producer = createMessageProducer();
         producer.registerPublisher(producerConfig);
         publisher.registerProducer(producer);

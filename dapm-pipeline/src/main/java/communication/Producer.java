@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @Scope("prototype")
-public class Producer {
+public class Producer implements Publisher<Message> {
 
     private KafkaProducer<String, String> kafkaProducer;
     private String topic;
@@ -32,6 +32,7 @@ public class Producer {
         this.kafkaProducer = createProducer();
     }
 
+    @Override
     public void publish(Message message) {
         if (pausePublishing) return;
         MessageSerializer serializer = new MessageSerializer();
@@ -44,7 +45,6 @@ public class Producer {
             }
         });
     }
-
 
     public boolean pause() {
         try {

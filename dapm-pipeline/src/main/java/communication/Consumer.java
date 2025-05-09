@@ -20,6 +20,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
 import org.springframework.stereotype.Component;
 import utils.IDGenerator;
+import utils.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,18 +29,12 @@ import java.util.Map;
 @Component
 @Scope("prototype")
 public class Consumer {
-
     private final KafkaListenerEndpointRegistry registry;
     private final ApplicationContext applicationContext;
 
-    private Subscriber<Message> subscriber;
+    private Subscriber<Pair<Message, Integer>> subscriber;
     private int portNumber;
     private String containerId;
-    private final KafkaConsumer<String, String> kafkaConsumer;
-    private final Subscriber<Pair<Message, Integer>> subscriber;
-    private final String topic;
-    private final String brokerURL;
-    private final int portNumber;
 
     @Autowired
     public Consumer(KafkaListenerEndpointRegistry registry, ApplicationContext applicationContext) {
@@ -47,7 +42,7 @@ public class Consumer {
         this.applicationContext = applicationContext;
     }
 
-    public void registerListener(Subscriber<Message> subscriber, ConsumerConfig consumerConfig) {
+    public void registerListener(Subscriber<Pair<Message, Integer>> subscriber, ConsumerConfig consumerConfig) {
         this.subscriber = subscriber;
         this.portNumber = consumerConfig.portNumber();
         this.containerId = IDGenerator.generateKafkaContainerID();
@@ -59,7 +54,7 @@ public class Consumer {
             endpoint.setTopics(consumerConfig.topic());
             endpoint.setBean(this);
             endpoint.setMethod(
-                    Consumer.class.getDeclaredMethod("consume", ConsumerRecord.class, Acknowledgment.class)
+                    Consumer.class.getDeclaredMethod("observe", ConsumerRecord.class, Acknowledgment.class)
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("Failed to register Kafka listener endpoint", e);
@@ -70,10 +65,10 @@ public class Consumer {
         registry.registerListenerContainer(endpoint, factory, false);
     }
 
-    public void consume(ConsumerRecord<String, String> record, Acknowledgment ack) {
+    public void observe(ConsumerRecord<String, String> record, Acknowledgment ack) {
         try {
             Message msg = MessageFactory.deserialize(record.value());
-            this.subscriber.observe(msg, portNumber);
+            this.subscriber.observe(new Pair<>(msg, portNumber));
             ack.acknowledge(); // At-least-once guarantee
         } catch (Exception e) {
             throw new RuntimeException("Failed to process message" + record, e);
@@ -82,27 +77,21 @@ public class Consumer {
 
     public boolean start() {
         var container = registry.getListenerContainer(containerId);
-        if (container == null) {
-            throw new IllegalStateException("No listener container found for ID: " + containerId);
-        }
+        assert container != null;
         container.start();
         return container.isRunning();
     }
 
     public boolean pause() {
         var container = registry.getListenerContainer(containerId);
-        if (container == null) {
-            throw new IllegalStateException("No listener container found for ID: " + containerId);
-        }
+        assert container != null;
         container.stop();
         return !container.isRunning();
     }
 
     public boolean terminate() {
         var container = registry.getListenerContainer(containerId);
-        if (container == null) {
-            throw new IllegalStateException("No listener container found for ID: " + containerId);
-        }
+        assert container != null;
         registry.unregisterListenerContainer(containerId);
         return registry.getListenerContainer(containerId) == null;
     }

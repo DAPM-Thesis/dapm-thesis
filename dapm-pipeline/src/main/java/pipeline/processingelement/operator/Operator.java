@@ -1,6 +1,7 @@
 package pipeline.processingelement.operator;
 
 import communication.Producer;
+import communication.ProducingProcessingElement;
 import communication.message.Message;
 import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ConsumingProcessingElement;
@@ -10,7 +11,7 @@ import utils.Pair;
 import java.util.Map;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
-        implements Publisher<O> {
+        implements Publisher<O>, ProducingProcessingElement {
     private Producer producer;
 
     public Operator(Configuration configuration) { super(configuration); }
@@ -47,7 +48,6 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
         return terminated;
     }
 
-    @Override
     public void registerProducer(Producer producer) {
         this.producer = producer;
     }

@@ -1,12 +1,13 @@
 package pipeline.processingelement.source;
 
 import communication.Producer;
+import communication.ProducingProcessingElement;
 import communication.Publisher;
 import communication.message.Message;
 import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ProcessingElement;
 
-public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O> {
+public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O>, ProducingProcessingElement {
     private Producer producer; // Channel
 
     public Source(Configuration configuration) { super(configuration); }
@@ -31,7 +32,6 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
         return terminated;
     }
 
-    @Override
     public void registerProducer(Producer producer) {
         this.producer = producer;
     }
