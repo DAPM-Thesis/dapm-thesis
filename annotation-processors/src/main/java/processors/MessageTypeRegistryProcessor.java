@@ -1,7 +1,7 @@
 package processors;
 
+import annotations.AutoRegisterMessage;
 import com.google.auto.service.AutoService;
-import communication.message.AutoRegisterMessage;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -13,50 +13,69 @@ import javax.tools.JavaFileObject;
 import java.util.Set;
 
 @AutoService(Processor.class)
-@SupportedAnnotationTypes("communication.message.AutoRegisterMessage")
+@SupportedAnnotationTypes("annotations.AutoRegisterMessage")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public class MessageTypeRegistryProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(AutoRegisterMessage.class);
-        StringBuilder factoryCode = new StringBuilder();
-
-        factoryCode.append("package communication.message;\n\n");
-        factoryCode.append("import java.util.HashMap;\n");
-        factoryCode.append("import java.util.Map;\n\n");
-
-        factoryCode.append("public class MessageTypeFactory {\n");
-        factoryCode.append("    private static final Map<String, Class<? extends Message>> nameToClass = new HashMap<>();\n\n");
-
-        factoryCode.append("    static {\n");
-        for (Element element : elements) {
-            if (element.getKind() != ElementKind.CLASS) continue;
-            String fullyQualifiedClassName = ((TypeElement) element).getQualifiedName().toString();
-            String simpleClassName = element.getSimpleName().toString();
-            factoryCode.append("        register(\"" + simpleClassName + "\", " + fullyQualifiedClassName + ".class);\n");
-        }
-        factoryCode.append("    }\n\n");
-
-        factoryCode.append("    public static Class<? extends Message> getMessageType(String simpleClassName) {\n");
-        factoryCode.append("        if (!nameToClass.containsKey(simpleClassName)) { throw new IllegalArgumentException(\"Unknown message type: \" + simpleClassName);}\n");
-        factoryCode.append("        return nameToClass.get(simpleClassName);\n");
-        factoryCode.append("    }\n\n");
-
-        factoryCode.append("    private static void register(String simpleClassName, Class<? extends Message> messageClass) {\n");
-        factoryCode.append("        nameToClass.put(simpleClassName, messageClass);\n");
-        factoryCode.append("    }\n");
-        factoryCode.append("}\n");
+        // implemented based on https://www.baeldung.com/java-annotation-processing-builder
+        Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(AutoRegisterMessage.class);
+        String registryCode = buildRegistryFile(annotatedElements);
 
         try {
-            JavaFileObject file = processingEnv.getFiler().createSourceFile("communication.message.MessageTypeFactory");
+            JavaFileObject file = processingEnv.getFiler().createSourceFile("communication.message.MessageTypeRegistry");
             try (java.io.Writer writer = file.openWriter()) {
-                writer.write(factoryCode.toString());
+                writer.write(registryCode);
             }
-        } catch (Exception e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Failed to write MessageTypeFactory: " + e.getMessage());
-        }
-
+        } catch (Exception e) { processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Failed to write MessageTypeRegistry: " + e.getMessage()); }
 
         return true;
     }
+
+    private String buildRegistryFile(Set<? extends Element> annotatedElements) {
+        StringBuilder registryCode = new StringBuilder();
+
+        addPackageAndDependencies(registryCode);
+
+        registryCode.append("public class MessageTypeRegistry {\n");
+        registryCode.append("    private static final Map<String, Class<? extends Message>> nameToClass = new HashMap<>();\n\n");
+
+        addStaticRegistrationBlock(registryCode, annotatedElements);
+        addGetter(registryCode);
+        addRegisterMethod(registryCode);
+
+        registryCode.append("}\n");
+        return registryCode.toString();
+    }
+
+    private void addPackageAndDependencies(StringBuilder registryCode) {
+        registryCode.append("package communication.message;\n\n");
+        registryCode.append("import java.util.HashMap;\n");
+        registryCode.append("import java.util.Map;\n\n");
+    }
+
+    private void addStaticRegistrationBlock(StringBuilder registryCode, Set<? extends Element> annotatedElements) {
+        registryCode.append("    static {\n");
+        for (Element element : annotatedElements) {
+            if (element.getKind() != ElementKind.CLASS) continue;
+            String fullyQualifiedClassName = ((TypeElement) element).getQualifiedName().toString();
+            String simpleClassName = element.getSimpleName().toString();
+            registryCode.append("        register(\"" + simpleClassName + "\", " + fullyQualifiedClassName + ".class);\n");
+        }
+        registryCode.append("    }\n\n");
+    }
+
+    private void addGetter(StringBuilder registryCode) {
+        registryCode.append("    public static Class<? extends Message> getMessageType(String simpleClassName) {\n");
+        registryCode.append("        if (!nameToClass.containsKey(simpleClassName)) { throw new IllegalArgumentException(\"Unknown message type: \" + simpleClassName);}\n");
+        registryCode.append("        return nameToClass.get(simpleClassName);\n");
+        registryCode.append("    }\n\n");
+    }
+
+    private void addRegisterMethod(StringBuilder registryCode) {
+        registryCode.append("    private static void register(String simpleClassName, Class<? extends Message> messageClass) {\n");
+        registryCode.append("        nameToClass.put(simpleClassName, messageClass);\n");
+        registryCode.append("    }\n");
+    }
+
 }

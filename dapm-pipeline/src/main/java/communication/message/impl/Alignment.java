@@ -1,13 +1,10 @@
 package communication.message.impl;
 
-import communication.message.AutoRegisterMessage;
 import communication.message.serialization.MessageVisitor;
 import communication.message.Message;
 import communication.message.serialization.deserialization.impl.AlignmentDeserializationStrategy;
 import communication.message.serialization.deserialization.DeserializationStrategy;
-import communication.message.serialization.deserialization.impl.TraceDeserializationStrategy;
 
-@AutoRegisterMessage(deserialization = AlignmentDeserializationStrategy.class)
 public class Alignment extends Message {
     private final Trace logTrace;
     private final Trace modelTrace;

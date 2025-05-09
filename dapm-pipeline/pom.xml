@@ -69,15 +69,9 @@
             <version>2.18.3</version>
         </dependency>
         <dependency>
-            <groupId>com.google.auto.service</groupId>
-            <artifactId>auto-service</artifactId>
-            <version>1.1.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.github.dapm-thesis</groupId>
             <artifactId>annotation-processors</artifactId>
-            <version>1.0.0</version>
+            <version>1.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
