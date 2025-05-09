@@ -6,40 +6,40 @@ import java.util.Objects;
 import java.util.Set;
 
 public class ChannelReference {
-    private final ProcessingElementReference producer;
+    private final ProcessingElementReference publisher;
     private final Set<SubscriberReference> subscribers;
 
-    public ChannelReference(ProcessingElementReference producer, Set<SubscriberReference> subscribers) {
-        this.producer = producer;
+    public ChannelReference(ProcessingElementReference publisher, Set<SubscriberReference> subscribers) {
+        this.publisher = publisher;
         this.subscribers = subscribers;
     }
 
-    public ChannelReference(ProcessingElementReference producer, SubscriberReference singleSubscriber) {
-        this.producer = producer;
+    public ChannelReference(ProcessingElementReference publisher, SubscriberReference singleSubscriber) {
+        this.publisher = publisher;
         this.subscribers = Set.of(singleSubscriber);
     }
 
-    public ProcessingElementReference getProducer() { return producer; }
+    public ProcessingElementReference getPublisher() { return publisher; }
 
-    public Set<SubscriberReference> getSubscribers() { return subscribers; }
+    public Set<SubscriberReference> getSubscribers() { return Set.copyOf(subscribers); }
 
-    public Class<? extends Message> output() { return producer.getOutput(); }
+    public Class<? extends Message> output() { return publisher.getOutput(); }
 
     @Override
     public String toString() {
-        return "MC[" + producer + ", " + subscribers + "]";
+        return "MC[" + publisher + ", " + subscribers + "]";
     }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof ChannelReference otherChannel)) return false;
-        return producer.equals(otherChannel.producer) && subscribers.equals(otherChannel.subscribers);
+        return publisher.equals(otherChannel.publisher) && subscribers.equals(otherChannel.subscribers);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(producer, subscribers);
+        return Objects.hash(publisher, subscribers);
     }
 
 }

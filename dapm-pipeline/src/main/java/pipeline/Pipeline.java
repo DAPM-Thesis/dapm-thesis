@@ -5,19 +5,20 @@ import candidate_validation.ProcessingElementReference;
 import java.util.*;
 
 public class Pipeline {
-    private final String organizationOwnerID;
-    private Map<String, ProcessingElementReference> processingElements;
+    private final String owningOrganizationID;
+    private final Map<String, ProcessingElementReference> processingElements;
 
-    public Pipeline(String organizationOwnerID) {
+    public Pipeline(String owningOrganizationID) {
         processingElements = new HashMap<>();
-        this.organizationOwnerID = organizationOwnerID;
+        this.owningOrganizationID = owningOrganizationID;
     }
 
-    public String getOrganizationOwnerID() {
-        return organizationOwnerID;
+    public String getOwningOrganizationID() {
+        return owningOrganizationID;
     }
 
-    public Map<String, ProcessingElementReference> getProcessingElements() {return processingElements;}
+    // return an unmodifiable map to ensure that processing elements are only added via addProcessingElement()
+    public Map<String, ProcessingElementReference> getProcessingElements() {return Collections.unmodifiableMap(processingElements);}
 
     public void addProcessingElement(String instanceID, ProcessingElementReference processingElementReference) {
         processingElements.put(instanceID, processingElementReference);

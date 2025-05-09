@@ -35,6 +35,11 @@ public class Consumer {
     private Subscriber<Message> subscriber;
     private int portNumber;
     private String containerId;
+    private final KafkaConsumer<String, String> kafkaConsumer;
+    private final Subscriber<Pair<Message, Integer>> subscriber;
+    private final String topic;
+    private final String brokerURL;
+    private final int portNumber;
 
     @Autowired
     public Consumer(KafkaListenerEndpointRegistry registry, ApplicationContext applicationContext) {

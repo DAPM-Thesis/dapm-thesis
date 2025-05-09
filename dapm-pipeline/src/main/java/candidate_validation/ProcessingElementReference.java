@@ -46,7 +46,7 @@ public class ProcessingElementReference {
     public int getInstanceNumber() { return this.instanceNumber; }
 
     /** returns a copy of the inputs */
-    public List<Class<? extends Message>> getInputs() { return new ArrayList<>(inputs); }
+    public List<Class<? extends Message>> getInputs() { return List.copyOf(inputs); }
     public Class<? extends Message> getOutput() { return output; }
     public Configuration getConfiguration() { return configuration; }
 

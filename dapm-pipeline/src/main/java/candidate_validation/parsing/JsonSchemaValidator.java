@@ -7,36 +7,35 @@ import java.util.Set;
 
 // based on the NetworkNT readme: https://github.com/networknt/json-schema-validator
 public class JsonSchemaValidator {
-    private final String configSchemasFolderURI;
+    private final String configSchemasFolder;
     private final JsonSchemaFactory factory;
-    private static final SchemaValidatorsConfig.Builder builder = SchemaValidatorsConfig.builder();
-    private static final SchemaValidatorsConfig config = builder.build();
+    private static final SchemaValidatorsConfig config = SchemaValidatorsConfig.builder().build();
 
     public JsonSchemaValidator(URI configSchemasFolderURI) {
-        this.configSchemasFolderURI = configSchemasFolderURI.toString();
+        this.configSchemasFolder = configSchemasFolderURI.toString();
         this.factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012,
                 builder -> builder.schemaMappers(schemaMappers -> schemaMappers
-                        .mapPrefix("https://www.dapm.org/config/", this.configSchemasFolderURI)
+                        .mapPrefix("https://www.dapm.org/config/", this.configSchemasFolder)
                         .mapPrefix("https://www.dapm.org/", "classpath:jsonschemas/")));
     }
 
     /**
-     * Throws a RuntimeException if the provided JSON String does not adhere to the pipeline candidate JSON schema.
+     * Throws a JsonSchemaMismatch exception if the provided JSON String does not adhere to the pipeline candidate JSON schema.
      * Succeeds silently otherwise.
      */
-    public void validatePipelineCandidate(String inputJson) {
+    public void validatePipelineCandidate(String inputJson) throws JsonSchemaMismatch {
         validateJsonAgainstSchema(inputJson,
                 "https://www.dapm.org/pipeline_candidate_schema.json"
         );
     }
 
-    public void validateConfiguration(String configJson, String configFilenameWithExtension) {
+    public void validateConfiguration(String configJson, String configFilenameWithExtension) throws JsonSchemaMismatch {
         validateJsonAgainstSchema(configJson,
                 "https://www.dapm.org/config/" + configFilenameWithExtension
         );
     }
 
-    private void validateJsonAgainstSchema(String jsonInput, String schemaPath) {
+    private void validateJsonAgainstSchema(String jsonInput, String schemaPath) throws JsonSchemaMismatch {
         JsonSchema schema = factory.getSchema(SchemaLocation.of(schemaPath), config);
         Set<ValidationMessage> assertions = schema.validate(jsonInput, InputFormat.JSON,
                 executionContext -> executionContext.getExecutionConfig().setFormatAssertionsEnabled(true)
@@ -47,7 +46,7 @@ public class JsonSchemaValidator {
             for (ValidationMessage error : assertions) {
                 sb.append(" - ").append(error.getMessage()).append("\n");
             }
-            throw new RuntimeException(sb.toString());
+            throw new JsonSchemaMismatch(sb.toString());
         }
     }
 

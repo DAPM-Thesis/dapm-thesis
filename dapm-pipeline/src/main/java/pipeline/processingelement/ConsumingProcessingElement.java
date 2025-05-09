@@ -3,18 +3,17 @@ package pipeline.processingelement;
 import communication.Consumer;
 import communication.Subscriber;
 import communication.message.Message;
+import utils.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ConsumingProcessingElement extends ProcessingElement implements Subscriber<Message> {
-    /**
-     * Holds the input types and their multiplicities. So if processing element consumes Event's from two
-     * separate Channel's and Petri Net's from one Channel, it will have (key, value) pairs (Event.class, 2) and
-     * (PetriNet.class, 1).
-     */
+public abstract class ConsumingProcessingElement extends ProcessingElement implements Subscriber<Pair<Message, Integer>> {
+    /** Holds the input types and their multiplicities. So if processing element consumes Event's from two
+     *  separate Channel's and Petri Net's from one Channel, it will have (key, value) pairs (Event.class, 2) and
+     *  (PetriNet.class, 1).*/
     protected final Map<Class<? extends Message>, Integer> inputs;
-    private Map<Integer, Consumer> consumers = new HashMap<>();
+    private final Map<Integer, Consumer> consumers = new HashMap<>();
 
     public ConsumingProcessingElement(Configuration configuration) {
         super(configuration);

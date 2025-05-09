@@ -5,6 +5,7 @@ import communication.message.Message;
 import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ConsumingProcessingElement;
 import communication.Publisher;
+import utils.Pair;
 
 import java.util.Map;
 
@@ -15,8 +16,8 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public Operator(Configuration configuration) { super(configuration); }
 
     @Override
-    public void observe(Message input, int portNumber) {
-        AO algorithmOutput = process(input, portNumber);
+    public void observe(Pair<Message, Integer> inputAndPortNumber) {
+        AO algorithmOutput = process(inputAndPortNumber.first(), inputAndPortNumber.second());
         if (publishCondition(algorithmOutput)) {
             O output = convertAlgorithmOutput(algorithmOutput);
             publish(output);

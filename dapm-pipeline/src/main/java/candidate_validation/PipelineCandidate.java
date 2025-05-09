@@ -1,6 +1,7 @@
 package candidate_validation;
 
 import candidate_validation.parsing.CandidateParser;
+import candidate_validation.parsing.JsonSchemaMismatch;
 import utils.Pair;
 
 import java.net.URI;
@@ -20,15 +21,15 @@ public class PipelineCandidate {
      * @throws RuntimeException if parsing fails or json does not conform to the pipeline candidate and configuration
      *                          schemas.
      */
-    public PipelineCandidate(String json, URI configFolderPath) throws RuntimeException {
+    public PipelineCandidate(String json, URI configFolderPath) throws JsonSchemaMismatch {
         Pair<Set<ProcessingElementReference>, Set<ChannelReference>> elementsAndChannels
                 = (new CandidateParser(configFolderPath)).deserialize(json);
         this.elements = elementsAndChannels.first();
         this.channels = elementsAndChannels.second();
     }
 
-    public Set<ProcessingElementReference> getElements() { return elements; }
-    public Set<ChannelReference> getChannels() { return channels; }
+    public Set<ProcessingElementReference> getElements() { return Set.copyOf(elements); }
+    public Set<ChannelReference> getChannels() { return Set.copyOf(channels); }
 
     @Override
     public String toString() {
