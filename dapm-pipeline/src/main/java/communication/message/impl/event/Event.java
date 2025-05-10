@@ -4,12 +4,14 @@ import annotations.AutoRegisterMessage;
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
 import communication.message.serialization.deserialization.DeserializationStrategy;
+import communication.message.serialization.deserialization.DeserializationStrategyRegistration;
 import communication.message.serialization.deserialization.impl.EventDeserializationStrategy;
 
 import java.util.Collection;
 import java.util.Set;
 
 @AutoRegisterMessage
+@DeserializationStrategyRegistration(strategy = EventDeserializationStrategy.class)
 public class Event extends Message {
     private final String caseID;
     private final String activity;

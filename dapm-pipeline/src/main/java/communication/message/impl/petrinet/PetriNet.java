@@ -7,12 +7,14 @@ import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
 import communication.message.serialization.MessageVisitor;
 import communication.message.serialization.deserialization.DeserializationStrategy;
+import communication.message.serialization.deserialization.DeserializationStrategyRegistration;
 import communication.message.serialization.deserialization.impl.PetriNetDeserializationStrategy;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @AutoRegisterMessage
+@DeserializationStrategyRegistration(strategy = PetriNetDeserializationStrategy.class)
 public class PetriNet extends Message {
     private final Set<Place> places;
     private final Set<Transition> transitions;

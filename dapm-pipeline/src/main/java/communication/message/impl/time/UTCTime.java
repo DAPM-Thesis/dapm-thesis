@@ -3,12 +3,14 @@ package communication.message.impl.time;
 import annotations.AutoRegisterMessage;
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
+import communication.message.serialization.deserialization.DeserializationStrategyRegistration;
 import communication.message.serialization.deserialization.impl.UTCTimeDeserializationStrategy;
 
 import java.time.Instant;
 
 /** An absolute UTC time (a single instantaneous, unambiguous point on the time-line). */
 @AutoRegisterMessage
+@DeserializationStrategyRegistration(strategy = UTCTimeDeserializationStrategy.class)
 public class UTCTime extends Message {
     private final Instant time;
 
