@@ -32,24 +32,15 @@ public class PipelineExecutionController {
         return ResponseEntity.badRequest().body(null);
     }
 
-    @PutMapping("/pause/instance/{instanceID}")
-    public ResponseEntity<Void> stopProcessingElement(@PathVariable("instanceID") String instanceID) {
-        ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
-        if (processingElement != null) {
-            boolean paused = processingElement.pause();
-            if (paused) return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.badRequest().body(null);
-    }
-
     @PutMapping("/terminate/instance/{instanceID}")
     public ResponseEntity<Void> terminateProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
         if (processingElement != null) {
-            boolean terminated = processingElement.terminate();
-            if (terminated) {
-                peInstanceRepository.removeInstance(instanceID);
-                return ResponseEntity.ok().build();
+            if (processingElement.pause()) {
+                if (processingElement.terminate()) {
+                    peInstanceRepository.removeInstance(instanceID);
+                    return ResponseEntity.ok().build();
+                }
             }
         }
         return ResponseEntity.badRequest().body(null);

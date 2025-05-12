@@ -1,11 +1,12 @@
 package utils.graph;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DG<T, U> {
     private final Map<Edge<T>, U> adjacencyList = new HashMap<>();
 
-    public Set<T> getNeighbors(T node) {
+    public Set<T> getDownStream(T node) {
         Set<T> neighbors = new HashSet<>();
         for (Edge<T> edge : adjacencyList.keySet()) {
             if (edge.getFrom().equals(node)) {
@@ -22,6 +23,12 @@ public class DG<T, U> {
             nodes.add(edge.getTo());
         }
         return nodes;
+    }
+
+    public Set<T> getUpstream(T node) {
+        return getNodes().stream()
+                .filter(n -> getDownStream(n).contains(node))
+                .collect(Collectors.toSet());
     }
 
     public U getEdgeAttribute(T from, T to) {

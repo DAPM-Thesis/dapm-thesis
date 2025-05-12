@@ -11,7 +11,6 @@ import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pipeline.processingelement.Configuration;
 import utils.graph.DG;
 import utils.JsonUtil;
 
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 @Component
 public class PipelineBuilder {
     private final HTTPClient webClient;
-    private DG<ProcessingElementReference, Integer> DG;
 
     @Autowired
     public PipelineBuilder(HTTPClient webClient) {
@@ -29,8 +27,8 @@ public class PipelineBuilder {
     }
 
     public Pipeline buildPipeline(String organizationOwnerID, ValidatedPipeline validatedPipeline) {
-        Pipeline pipeline = new Pipeline(organizationOwnerID);
-        this.DG = initializeDG(validatedPipeline.getChannels());
+        DG<ProcessingElementReference, Integer> DG = initializeDG(validatedPipeline.getChannels());
+        Pipeline pipeline = new Pipeline(organizationOwnerID, DG);
         buildPipeline(pipeline);
         return pipeline;
     }
@@ -49,14 +47,15 @@ public class PipelineBuilder {
 
     private void buildPipeline(Pipeline pipeline) {
         Map<ProcessingElementReference, PEInstanceResponse> configuredInstances = new HashMap<>();
-        Set<ProcessingElementReference> currentLevel = findSources();
+        Set<ProcessingElementReference> currentLevel = pipeline.getSources();
+        DG<ProcessingElementReference, Integer> directedGraph = pipeline.getDirectedGraph();
 
         while (!currentLevel.isEmpty()) {
             Set<ProcessingElementReference> nextLevel = new HashSet<>();
             for (ProcessingElementReference pe : currentLevel) {
                 if (configuredInstances.containsKey(pe)) continue;
                 // Check if all upstream connections are configuredInstances yet
-                if (!allInputsReady(pe, configuredInstances)) {
+                if (!allInputsReady(directedGraph, configuredInstances, pe)) {
                     // Defer to next level if waiting for inputs
                     nextLevel.add(pe);
                     continue;
@@ -66,43 +65,30 @@ public class PipelineBuilder {
                     String instanceID = createSource(configuredInstances, pe);
                     pipeline.addProcessingElement(instanceID, pe);
                 } else if (pe.isOperator()) {
-                    String instanceID = createOperator(configuredInstances, pe);
+                    String instanceID = createOperator(directedGraph, configuredInstances, pe);
                     pipeline.addProcessingElement(instanceID, pe);
                 } else if (pe.isSink()) {
-                    String instanceID = createSink(configuredInstances, pe);
+                    String instanceID = createSink(directedGraph, configuredInstances, pe);
                     pipeline.addProcessingElement(instanceID, pe);
                 }
 
                 // Add all downstream nodes for the next level
-                nextLevel.addAll(DG.getNeighbors(pe));
+                nextLevel.addAll(pipeline.getDirectedGraph().getDownStream(pe));
             }
             currentLevel = nextLevel;
         }
     }
 
-    private Set<ProcessingElementReference> getUpstream(ProcessingElementReference pe) {
-        return DG.getNodes().stream()
-                .filter(node -> DG.getNeighbors(node).contains(pe))
-                .collect(Collectors.toSet());
+    private boolean allInputsReady(DG<ProcessingElementReference, Integer> directedGraph, Map<ProcessingElementReference, PEInstanceResponse> configured, ProcessingElementReference pe) {
+        return directedGraph.getUpstream(pe).stream().allMatch(configured::containsKey);
     }
 
-    private Set<ProcessingElementReference> findSources() {
-        return DG.getNodes()
-                .stream()
-                .filter(ProcessingElementReference::isSource)
-                .collect(Collectors.toSet());
-    }
-
-    private boolean allInputsReady(ProcessingElementReference pe, Map<ProcessingElementReference, PEInstanceResponse> configured) {
-        return getUpstream(pe).stream().allMatch(configured::containsKey);
-    }
-
-    private List<ConsumerConfig> getConsumerConfigs(ProcessingElementReference pe, Map<ProcessingElementReference, PEInstanceResponse> configured) {
-        return getUpstream(pe).stream()
+    private List<ConsumerConfig> getConsumerConfigs(DG<ProcessingElementReference, Integer> directedGraph, ProcessingElementReference pe, Map<ProcessingElementReference, PEInstanceResponse> configured) {
+        return directedGraph.getUpstream(pe).stream()
                 .filter(node -> {
                     PEInstanceResponse response = configured.get(node);
                     ProducerConfig producerConfig = response != null ? response.getProducerConfig() : null;
-                    boolean hasEdgeAttribute = DG.getEdgeAttribute(node, pe) != null;
+                    boolean hasEdgeAttribute = directedGraph.getEdgeAttribute(node, pe) != null;
                     return producerConfig != null
                             && hasEdgeAttribute
                             && producerConfig.brokerURL() != null && !producerConfig.brokerURL().isEmpty()
@@ -111,67 +97,67 @@ public class PipelineBuilder {
                 .map(node -> new ConsumerConfig(
                         configured.get(node).getProducerConfig().brokerURL(),
                         configured.get(node).getProducerConfig().topic(),
-                        DG.getEdgeAttribute(node, pe)))
+                        directedGraph.getEdgeAttribute(node, pe)))
                 .collect(Collectors.toList());
     }
 
     private String createSource(Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
-        PEInstanceResponse sourceResponse = sendCreateSourceRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), pe.getConfiguration());
+        PEInstanceResponse sourceResponse = sendCreateSourceRequest(pe);
         configuredInstances.put(pe, sourceResponse);
         return sourceResponse.getInstanceID();
     }
 
-    private String createOperator(Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
-        List<ConsumerConfig> consumerConfigs = getConsumerConfigs(pe, configuredInstances);
+    private String createOperator(DG<ProcessingElementReference, Integer> directedGraph, Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
+        List<ConsumerConfig> consumerConfigs = getConsumerConfigs(directedGraph, pe, configuredInstances);
         if (consumerConfigs == null || consumerConfigs.isEmpty()) {
             throw new IllegalStateException("No ConsumerConfigs found for operator: " + pe);
         }
-        PEInstanceResponse operatorResponse = sendCreateOperatorRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs, pe.getConfiguration());
+        PEInstanceResponse operatorResponse = sendCreateOperatorRequest(pe, consumerConfigs);
         configuredInstances.put(pe, operatorResponse);
         return operatorResponse.getInstanceID();
     }
 
-    private String createSink(Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
-        List<ConsumerConfig> consumerConfigs = getConsumerConfigs(pe, configuredInstances);
+    private String createSink(DG<ProcessingElementReference, Integer> directedGraph, Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
+        List<ConsumerConfig> consumerConfigs = getConsumerConfigs(directedGraph, pe, configuredInstances);
         if (consumerConfigs == null || consumerConfigs.isEmpty()) {
             throw new IllegalStateException("No ConsumerConfigs found for sink: " + pe);
         }
-        PEInstanceResponse sinkResponse = sendCreateSinkRequest(pe.getOrganizationHostURL(), pe.getTemplateID(), consumerConfigs, pe.getConfiguration());
+        PEInstanceResponse sinkResponse = sendCreateSinkRequest(pe, consumerConfigs);
         configuredInstances.put(pe, sinkResponse);
         return sinkResponse.getInstanceID();
     }
 
-    private PEInstanceResponse sendCreateSourceRequest(String hostURL, String templateID, Configuration configuration) {
-        String encodedTemplateID = JsonUtil.encode(templateID);
-        String url = hostURL + String.format(
+    private PEInstanceResponse sendCreateSourceRequest(ProcessingElementReference pe) {
+        String encodedTemplateID = JsonUtil.encode(pe.getTemplateID());
+        String url = pe.getOrganizationHostURL() + String.format(
                 "/pipelineBuilder/source/templateID/%s",
                 encodedTemplateID
         );
         PEInstanceRequest requestBody = new PEInstanceRequest();
-        requestBody.setConfiguration(configuration);
+        requestBody.setConfiguration(pe.getConfiguration());
         return sendPostRequest(url, requestBody);
     }
 
-    private PEInstanceResponse sendCreateOperatorRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Configuration configuration) {
-        String encodedTemplateID = JsonUtil.encode(templateID);
-        String url = hostURL + String.format(
+    private PEInstanceResponse sendCreateOperatorRequest(ProcessingElementReference pe, List<ConsumerConfig> consumerConfigs) {
+        String encodedTemplateID = JsonUtil.encode(pe.getTemplateID());
+        String url = pe.getOrganizationHostURL() + String.format(
                 "/pipelineBuilder/operator/templateID/%s",
                 encodedTemplateID
         );
         PEInstanceRequest requestBody = new PEInstanceRequest();
-        requestBody.setConfiguration(configuration);
+        requestBody.setConfiguration(pe.getConfiguration());
         requestBody.setConsumerConfigs(consumerConfigs);
         return sendPostRequest(url, requestBody);
     }
 
-    private PEInstanceResponse sendCreateSinkRequest(String hostURL, String templateID, List<ConsumerConfig> consumerConfigs, Configuration configuration) {
-        String encodedTemplateID = JsonUtil.encode(templateID);
-        String url = hostURL + String.format(
+    private PEInstanceResponse sendCreateSinkRequest(ProcessingElementReference pe, List<ConsumerConfig> consumerConfigs) {
+        String encodedTemplateID = JsonUtil.encode(pe.getTemplateID());
+        String url = pe.getOrganizationHostURL() + String.format(
                 "/pipelineBuilder/sink/templateID/%s",
                 encodedTemplateID
         );
         PEInstanceRequest requestBody = new PEInstanceRequest();
-        requestBody.setConfiguration(configuration);
+        requestBody.setConfiguration(pe.getConfiguration());
         requestBody.setConsumerConfigs(consumerConfigs);
         return sendPostRequest(url, requestBody);
     }

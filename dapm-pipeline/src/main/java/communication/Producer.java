@@ -50,7 +50,6 @@ public class Producer implements Publisher<Message> {
         try {
             pausePublishing = true; // Pause publishing while emptying topics
             kafkaProducer.flush();
-            emptyTopic();
             pausePublishing = false;
             return true;
         } catch (Exception e) {
@@ -103,15 +102,15 @@ public class Producer implements Publisher<Message> {
         }
     }
 
-    private void emptyTopic() {
-        deleteKafkaTopic();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new KafkaException("Failed to empty topic, " + topic, e);
-        }
-        createKafkaTopic();
-    }
+//    private void emptyTopic() {
+//        deleteKafkaTopic();
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            Thread.currentThread().interrupt();
+//            throw new KafkaException("Failed to empty topic, " + topic, e);
+//        }
+//        createKafkaTopic();
+//    }
 }
 

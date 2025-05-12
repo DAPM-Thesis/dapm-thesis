@@ -10,7 +10,10 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import pipeline.Pipeline;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class PipelineExecutionService {
@@ -33,27 +36,20 @@ public class PipelineExecutionService {
         }
     }
 
-    public void pause(Pipeline pipeline) {
-        for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
-            String instanceId = entry.getKey();
-            String url = entry.getValue().getOrganizationHostURL() +
-                    "/pipelineExecution/pause/instance/" + instanceId;
-            HTTPResponse response = webClient.putSync(new HTTPRequest(url));
-            if (!isSuccess(response.status())) {
-                throw new PipelineExecutionException("Failed to stop PE " + instanceId);
-            }
-        }
-    }
-
     public void terminate(Pipeline pipeline) {
-        for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
-            String instanceId = entry.getKey();
-            String url = entry.getValue().getOrganizationHostURL() +
-                    "/pipelineExecution/terminate/instance/" + instanceId;
-            HTTPResponse response = webClient.putSync(new HTTPRequest(url));
-            if (!isSuccess(response.status())) {
-                throw new PipelineExecutionException("Failed to terminate PE " + instanceId);
+        Set<ProcessingElementReference> currentLevel = pipeline.getSinks();
+        while (!currentLevel.isEmpty()) {
+            Set<ProcessingElementReference> nextLevel = new HashSet<>();
+            for( ProcessingElementReference pe : currentLevel ) {
+                String instanceID = pipeline.getInstanceID(pe);
+                String url = pe.getOrganizationHostURL() + "/pipelineExecution/terminate/instance/" + instanceID;
+                HTTPResponse response = webClient.putSync(new HTTPRequest(url));
+                if (!isSuccess(response.status())) {
+                    throw new PipelineExecutionException("Failed to terminate PE " + instanceID);
+                }
+                nextLevel.addAll(pipeline.getDirectedGraph().getUpstream(pe));
             }
+            currentLevel = nextLevel;
         }
     }
 

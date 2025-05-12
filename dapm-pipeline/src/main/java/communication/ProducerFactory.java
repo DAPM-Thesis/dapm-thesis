@@ -1,7 +1,6 @@
 package communication;
 
 import communication.config.ProducerConfig;
-import communication.message.Message;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.stereotype.Component;
 
