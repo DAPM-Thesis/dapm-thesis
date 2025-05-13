@@ -1,7 +1,6 @@
 package candidate_validation.parsing;
 
 import communication.message.Message;
-import communication.message.MessageTypeRegistry;
 import communication.message.serialization.parsing.JSONParser;
 import candidate_validation.ChannelReference;
 import candidate_validation.SubscriberReference;
