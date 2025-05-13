@@ -6,7 +6,7 @@ import communication.message.serialization.deserialization.DeserializationStrate
 
 import java.time.Instant;
 
-public class UTCTimeDeserializationStrategy implements DeserializationStrategy {
+public class InstantTimeDeserializationStrategy implements DeserializationStrategy {
     @Override
     public Message deserialize(String payload) {
         return new UTCTime(Instant.parse(payload));

@@ -1,10 +1,9 @@
 package communication.message.impl;
 
-import annotations.AutoRegisterMessage;
 import communication.message.serialization.MessageVisitor;
 import communication.message.Message;
 import communication.message.impl.event.Event;
-import communication.message.serialization.deserialization.DeserializationStrategyRegistration;
+import communication.message.serialization.deserialization.DeserializationStrategy;
 import communication.message.serialization.deserialization.impl.TraceDeserializationStrategy;
 
 import java.util.ArrayList;
@@ -12,14 +11,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-@AutoRegisterMessage
-@DeserializationStrategyRegistration(strategy=TraceDeserializationStrategy.class)
 public class Trace extends Message implements Iterable<Event> {
 
     private final List<Event> trace;
     private String caseID;
 
     public Trace(List<Event> trace) {
+        super(new TraceDeserializationStrategy());
         assert trace != null;
         this.trace = new ArrayList<>();
         for (Event event : trace) { add(event); }
@@ -31,6 +29,11 @@ public class Trace extends Message implements Iterable<Event> {
     @Override
     public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);
+    }
+
+    @Override
+    public DeserializationStrategy getDeserializationStrategy() {
+        return new TraceDeserializationStrategy();
     }
 
     public boolean add(Event event) {

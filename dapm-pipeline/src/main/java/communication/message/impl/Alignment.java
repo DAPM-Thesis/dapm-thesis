@@ -1,18 +1,17 @@
 package communication.message.impl;
 
-import annotations.AutoRegisterMessage;
 import communication.message.serialization.MessageVisitor;
 import communication.message.Message;
-import communication.message.serialization.deserialization.DeserializationStrategyRegistration;
 import communication.message.serialization.deserialization.impl.AlignmentDeserializationStrategy;
+import communication.message.serialization.deserialization.DeserializationStrategy;
 
-@AutoRegisterMessage
-@DeserializationStrategyRegistration(strategy = AlignmentDeserializationStrategy.class)
+
 public class Alignment extends Message {
     private final Trace logTrace;
     private final Trace modelTrace;
 
     public Alignment(Trace logTrace, Trace modelTrace) {
+        super(new AlignmentDeserializationStrategy());
         assert logTrace != null && modelTrace != null;
         assert !logTrace.isEmpty() && !modelTrace.isEmpty();
         assert logTrace.size() == modelTrace.size();
@@ -28,6 +27,9 @@ public class Alignment extends Message {
     public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);
     }
+
+    @Override
+    public DeserializationStrategy getDeserializationStrategy() { return new AlignmentDeserializationStrategy(); }
 
     @Override
     public boolean equals(Object other) {
