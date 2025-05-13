@@ -2,7 +2,6 @@ package processors;
 
 import annotations.AutoRegisterMessage;
 import com.google.auto.service.AutoService;
-import communication.message.serialization.deserialization.DeserializationStrategyRegistration;
 
 import javax.annotation.processing.*;
 import javax.lang.model.element.*;
@@ -20,15 +19,8 @@ public class MissingMessageAnnotationProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Set<TypeElement> nonAbstractMessageClasses = getNonAbstractMessageClasses(roundEnv);
         for (TypeElement inheritor : nonAbstractMessageClasses) {
-            boolean hasDeserializationAnnotation = false;
-            boolean hasAutoRegisterAnnotation = false;
-
-            for (AnnotationMirror mirror : inheritor.getAnnotationMirrors()) {
-                if (isDeserializationAnnotation(mirror)) { hasDeserializationAnnotation = true; }
-                if (isAutoRegisterAnnotation(mirror)) { hasAutoRegisterAnnotation = true; }
-            }
-
-            if (!hasDeserializationAnnotation || !hasAutoRegisterAnnotation) {
+            boolean hasAutoRegisterAnnotation = inheritor.getAnnotationMirrors().stream().anyMatch(this::isAutoRegisterAnnotation);
+            if (!hasAutoRegisterAnnotation) {
                 throwError(inheritor, roundEnv);
             }
         }
@@ -39,7 +31,7 @@ public class MissingMessageAnnotationProcessor extends AbstractProcessor {
     private void throwError(TypeElement messageClass, RoundEnvironment roundEnv) {
         processingEnv.getMessager().printMessage(
                 javax.tools.Diagnostic.Kind.ERROR,
-                "All non-abstract Message subclasses must have the @DeserializationStrategyRegistration and @AutoRegisterMessage annotations. " + messageClass.getQualifiedName() + " does not.",
+                "All non-abstract Message subclasses must have the @AutoRegisterMessage annotations. " + messageClass.getQualifiedName() + " does not.",
                 messageClass
         );
     }
@@ -54,10 +46,6 @@ public class MissingMessageAnnotationProcessor extends AbstractProcessor {
 
     private boolean isAutoRegisterAnnotation(AnnotationMirror mirror) {
         return mirror.getAnnotationType().toString().equals(AutoRegisterMessage.class.getCanonicalName());
-    }
-
-    private boolean isDeserializationAnnotation(AnnotationMirror mirror) {
-        return mirror.getAnnotationType().toString().equals(DeserializationStrategyRegistration.class.getCanonicalName());
     }
 
     private boolean isNonAbstractMessageInheritor(Element element) {

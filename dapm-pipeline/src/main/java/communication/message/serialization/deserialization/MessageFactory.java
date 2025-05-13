@@ -12,6 +12,21 @@ public class MessageFactory {
     // Use reflection to retrieve deserialization strategies from Message classes' annotation, and use it to populate the strategyMap
     static {
         Set<Class<? extends Message>> classes = getAllNonAbstractMessageClasses();
+        throwMissingAnnotationError(classes);
+        registerClasses(classes);
+
+    }
+
+    /** Throws a runtime exception if some non-abstract Message class does not have @DeserializationStrategyRegistration. */
+    private static void throwMissingAnnotationError(Set<Class<? extends Message>> nonAbstractMessageClasses) {
+        for (Class<? extends Message> messageClass : nonAbstractMessageClasses) {
+            if (!messageClass.isAnnotationPresent(DeserializationStrategyRegistration.class)) {
+                throw new IllegalStateException("Message class inheritor " + messageClass.getName() + " does not have a DeserializationStrategyRegistration annotation. All non-abstract Message inheritors must have this annotation.");
+            }
+        }
+    }
+
+    private static void registerClasses(Set<Class<? extends Message>> classes) {
         for (Class<? extends Message> messageClass : classes) {
             DeserializationStrategyRegistration annotation = messageClass.getAnnotation(DeserializationStrategyRegistration.class);
             if (annotation == null) { throw new IllegalStateException("Message class inheritor " + messageClass.getName() + " does not have a DeserializationStrategyRegistration annotation. All non-abstract Message inheritors must have this annotation."); }
