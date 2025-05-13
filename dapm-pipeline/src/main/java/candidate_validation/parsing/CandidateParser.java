@@ -1,6 +1,7 @@
 package candidate_validation.parsing;
 
 import communication.message.Message;
+import communication.message.MessageTypeRegistry;
 import communication.message.serialization.parsing.JSONParser;
 import candidate_validation.ChannelReference;
 import candidate_validation.SubscriberReference;
@@ -118,14 +119,14 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
     private Class<? extends Message> extractOutput(Map<String, Object> elementMap) throws InvalidCandidate {
         String outputClassString = (String) elementMap.get("output");
         if (outputClassString == null)
-            { return null; }
-        return MessageTypeRegistry.getMessageType(outputClassString);
+        { return null; }
+        return MessageTypeRegistry.getMessageType(outputClassString); //return MessageTypeRegistry.getMessageType(outputClassString);
     }
 
     private List<Class<? extends Message>> extractInputs(List<String> stringInputs) throws InvalidCandidate {
         List<Class<? extends Message>> messageClasses = new ArrayList<>();
         if (stringInputs.isEmpty())
-            { return messageClasses; }
+        { return messageClasses; }
         for (String classString : stringInputs) {
             messageClasses.add(MessageTypeRegistry.getMessageType(classString));
         }
