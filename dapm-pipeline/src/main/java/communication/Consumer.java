@@ -82,7 +82,7 @@ public class Consumer {
         return container.isRunning();
     }
 
-    public boolean pause() {
+    public boolean stop() {
         var container = registry.getListenerContainer(containerId);
         assert container != null;
         container.stop();

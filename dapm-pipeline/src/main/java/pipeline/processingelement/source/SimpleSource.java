@@ -27,25 +27,20 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
                     publish(output);
                 }
             });
-            return true;
+            return isRunning;
         } catch (Exception e) {
-            LogUtil.error(e, "Failed to start source.");
-            isRunning = false;
-            return false;
+            throw new RuntimeException("Exception in SimpleSource", e);
         }
     }
 
     protected abstract O process();
 
     @Override
-    public boolean pause() {
-        try {
-            isRunning = false;
-            executor.shutdown();
-            return super.pause();
-        } catch (Exception e) {
-            LogUtil.error(e, "Failed to pause source.");
-            return false;
-        }
+    public boolean stop() {
+        isRunning = false;
+        assert executor != null;
+        executor.shutdown();
+        executor = null;
+        return super.stop();
     }
 }

@@ -21,8 +21,8 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public abstract boolean start();
 
     @Override
-    public boolean pause() {
-        return producer.pause();
+    public boolean stop() {
+        return producer.stop();
     }
 
     @Override

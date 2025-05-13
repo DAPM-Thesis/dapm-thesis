@@ -26,8 +26,7 @@ public class PipelineExecutionController {
     public ResponseEntity<Void> startProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
         if (processingElement != null) {
-            boolean started = processingElement.start();
-            if (started) return ResponseEntity.ok().build();
+            if (processingElement.start()) return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().body(null);
     }
@@ -36,7 +35,7 @@ public class PipelineExecutionController {
     public ResponseEntity<Void> terminateProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
         if (processingElement != null) {
-            if (processingElement.pause()) {
+            if (processingElement.stop()) {
                 if (processingElement.terminate()) {
                     peInstanceRepository.removeInstance(instanceID);
                     return ResponseEntity.ok().build();

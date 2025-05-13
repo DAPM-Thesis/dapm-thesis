@@ -15,23 +15,19 @@ public abstract class WebSource<O extends Message> extends Source<O> {
     public boolean start() {
         try {
             subscription = process().subscribe(this::publish);
-            return true;
+            return !subscription.isDisposed();
         } catch (Exception e) {
-            LogUtil.error(e, "Failed to start source.");
-            return false;
+            throw new RuntimeException("Exception in WebSource", e);
         }
     }
 
     protected abstract Flux<O> process();
 
     @Override
-    public boolean pause() {
-        try {
-            subscription.dispose();
-            return super.pause();
-        } catch (Exception e) {
-            LogUtil.error(e, "Failed to pause source.");
-            return false;
-        }
+    public boolean stop() {
+        assert subscription != null;
+        subscription.dispose();
+        subscription = null;
+        return super.stop();
     }
 }

@@ -7,7 +7,7 @@ public abstract class ProcessingElement {
     public ProcessingElement(Configuration configuration) { this.configuration = configuration; }
 
     public abstract boolean start();
-    public abstract boolean pause();
+    public abstract boolean stop();
     public abstract boolean terminate();
 
 }

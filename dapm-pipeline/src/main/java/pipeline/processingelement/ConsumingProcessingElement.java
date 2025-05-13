@@ -35,12 +35,12 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
     }
 
     @Override
-    public boolean pause() {
-        boolean paused = true;
+    public boolean stop() {
+        boolean stopped = true;
         for (Consumer consumer : consumers.values()) {
-            paused &= consumer.pause();
+            stopped &= consumer.stop();
         }
-        return paused;
+        return stopped;
     }
 
     @Override

@@ -37,8 +37,8 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     }
 
     @Override
-    public boolean pause() {
-        return super.pause() && producer.pause();
+    public boolean stop() {
+        return super.stop() && producer.stop();
     }
 
     @Override

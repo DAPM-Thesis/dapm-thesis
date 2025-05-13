@@ -7,13 +7,16 @@ import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
+import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import utils.LogUtil;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 @Component
@@ -23,7 +26,7 @@ public class Producer implements Publisher<Message> {
     private KafkaProducer<String, String> kafkaProducer;
     private String topic;
     private String brokerUrl;
-    private volatile boolean pausePublishing = false;
+    private volatile boolean stopPublishing = false;
 
     public void registerPublisher(ProducerConfig producerConfig) {
         this.topic = producerConfig.topic();
@@ -34,7 +37,7 @@ public class Producer implements Publisher<Message> {
 
     @Override
     public void publish(Message message) {
-        if (pausePublishing) return;
+        if (stopPublishing) return;
         MessageSerializer serializer = new MessageSerializer();
         message.acceptVisitor(serializer);
         String serialization = serializer.getSerialization();
@@ -46,29 +49,17 @@ public class Producer implements Publisher<Message> {
         });
     }
 
-    public boolean pause() {
-        try {
-            pausePublishing = true; // Pause publishing while emptying topics
-            kafkaProducer.flush();
-            pausePublishing = false;
-            return true;
-        } catch (Exception e) {
-            LogUtil.error(e, "Failed to pause Kafka producer for topic {} ", topic);
-            return false;
-        }
+    public boolean stop() {
+        stopPublishing = true;
+        kafkaProducer.flush();
+        return stopPublishing;
     }
 
     public boolean terminate() {
-        try {
-            kafkaProducer.flush();
-            kafkaProducer.close();
-            kafkaProducer = null;
-            deleteKafkaTopic();
-            return true;
-        } catch (Exception e) {
-            LogUtil.error(e, "Failed to close Kafka producer for topic {} ", topic);
-            return false;
-        }
+        kafkaProducer.close();
+        kafkaProducer = null;
+        deleteKafkaTopic();
+        return !topicExists();
     }
 
     private KafkaProducer<String, String> createProducer() {
@@ -102,15 +93,18 @@ public class Producer implements Publisher<Message> {
         }
     }
 
-//    private void emptyTopic() {
-//        deleteKafkaTopic();
-//        try {
-//            Thread.sleep(1000);
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//            throw new KafkaException("Failed to empty topic, " + topic, e);
-//        }
-//        createKafkaTopic();
-//    }
+    private boolean topicExists() {
+        Properties props = new Properties();
+        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, brokerUrl);
+        try (AdminClient adminClient = AdminClient.create(props)) {
+            ListTopicsResult listTopicsResult = adminClient.listTopics(new ListTopicsOptions().listInternal(false));
+            KafkaFuture<Set<String>> topicsFuture = listTopicsResult.names();
+
+            Set<String> topics = topicsFuture.get(5, TimeUnit.SECONDS);
+            return topics.contains(topic);
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            throw new KafkaException("Failed to check if topic exists, " + topic, e);
+        }
+    }
 }
 
