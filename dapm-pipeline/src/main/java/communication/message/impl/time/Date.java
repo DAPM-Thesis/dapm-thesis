@@ -1,22 +1,24 @@
 package communication.message.impl.time;
 
+import annotations.AutoRegisterMessage;
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
-import communication.message.serialization.deserialization.impl.DateTimeDeserializationStrategy;
+import communication.message.serialization.deserialization.DeserializationStrategyRegistration;
+import communication.message.serialization.deserialization.impl.DateDeserializationStrategy;
 
 import java.time.ZonedDateTime;
 
-/** A date (time) including zone - so it is unambiguous. */
+/** A date (time) including time zone - so it is unambiguous. */
+@AutoRegisterMessage
+@DeserializationStrategyRegistration(strategy = DateDeserializationStrategy.class)
 public class Date extends Message {
     private final ZonedDateTime time;
 
     public Date(ZonedDateTime time) {
-        super(new DateTimeDeserializationStrategy());
         this.time = time;
     }
     
     public Date() {
-        super(new DateTimeDeserializationStrategy());
         time = ZonedDateTime.now();
     }
 
