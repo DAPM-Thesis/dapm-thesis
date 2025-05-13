@@ -3,7 +3,6 @@ package communication.message.impl.event;
 import annotations.AutoRegisterMessage;
 import communication.message.Message;
 import communication.message.serialization.MessageVisitor;
-import communication.message.serialization.deserialization.DeserializationStrategy;
 import communication.message.serialization.deserialization.DeserializationStrategyRegistration;
 import communication.message.serialization.deserialization.impl.EventDeserializationStrategy;
 
@@ -21,7 +20,6 @@ public class Event extends Message {
     // Note that there deliberately is no constructor other constructor than this one. This is to emphasize that an
     // event is atomic, and therefore e.g. attributes cannot be added after the event's digital twin's initialization.
     public Event(String caseID, String activity, String timestamp, Set<Attribute<?>> attributes) {
-        super(new EventDeserializationStrategy());
         assert caseID != null && activity != null && timestamp != null;
         this.caseID = caseID;
         this.activity = activity;
@@ -37,11 +35,6 @@ public class Event extends Message {
     @Override
     public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);
-    }
-
-    @Override
-    public DeserializationStrategy getDeserializationStrategy() {
-        return new EventDeserializationStrategy();
     }
 
     @Override

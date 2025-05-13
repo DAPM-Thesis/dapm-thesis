@@ -9,9 +9,9 @@ import java.util.*;
 public class MessageFactory {
     private static final HashMap<String, DeserializationStrategy> strategyMap = new HashMap<>();
 
+    // Use reflection to retrieve deserialization strategies from Message classes' annotation, and use it to populate the strategyMap
     static {
         Set<Class<? extends Message>> classes = getAllNonAbstractMessageClasses();
-
         for (Class<? extends Message> messageClass : classes) {
             DeserializationStrategyRegistration annotation = messageClass.getAnnotation(DeserializationStrategyRegistration.class);
             if (annotation == null) { throw new IllegalStateException("Message class inheritor " + messageClass.getName() + " does not have a DeserializationStrategyRegistration annotation. All non-abstract Message inheritors must have this annotation."); }
@@ -19,14 +19,8 @@ public class MessageFactory {
                 DeserializationStrategy strategy = annotation.strategy().getDeclaredConstructor().newInstance();
                 String name = messageClass.getName();
                 strategyMap.put(name, strategy);
-            } catch (Exception e) {
-                // TODO: FINISH THIS
-            }
+            } catch (Exception e) { throw new IllegalStateException("Could not instantiate " + messageClass.getName(), e); }
         }
-    }
-
-    private static void register(Message instance) {
-        strategyMap.put(instance.getName(), instance.getDeserializationStrategy());
     }
 
     public static Message deserialize(String serialization) {

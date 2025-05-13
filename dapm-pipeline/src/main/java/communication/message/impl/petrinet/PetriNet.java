@@ -6,7 +6,6 @@ import communication.message.impl.petrinet.arc.Arc;
 import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
 import communication.message.serialization.MessageVisitor;
-import communication.message.serialization.deserialization.DeserializationStrategy;
 import communication.message.serialization.deserialization.DeserializationStrategyRegistration;
 import communication.message.serialization.deserialization.impl.PetriNetDeserializationStrategy;
 
@@ -21,7 +20,6 @@ public class PetriNet extends Message {
     private final Set<Arc> flowRelation;
 
     public PetriNet() {
-        super(new PetriNetDeserializationStrategy());
         places = new HashSet<>();
         transitions = new HashSet<>();
         flowRelation = new HashSet<>();
@@ -66,11 +64,6 @@ public class PetriNet extends Message {
     @Override
     public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);
-    }
-
-    @Override
-    public DeserializationStrategy getDeserializationStrategy() {
-        return new PetriNetDeserializationStrategy();
     }
 
     @Override

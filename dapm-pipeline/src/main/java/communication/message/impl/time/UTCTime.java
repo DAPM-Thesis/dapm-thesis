@@ -15,12 +15,10 @@ public class UTCTime extends Message {
     private final Instant time;
 
     public UTCTime() {
-        super(new UTCTimeDeserializationStrategy());
         this.time = Instant.now();
     }
 
     public UTCTime(Instant instant) {
-        super(new UTCTimeDeserializationStrategy());
         this.time = instant;
     }
 

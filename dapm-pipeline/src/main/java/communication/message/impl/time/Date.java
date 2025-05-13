@@ -15,12 +15,10 @@ public class Date extends Message {
     private final ZonedDateTime time;
 
     public Date(ZonedDateTime time) {
-        super(new DateDeserializationStrategy());
         this.time = time;
     }
     
     public Date() {
-        super(new DateDeserializationStrategy());
         time = ZonedDateTime.now();
     }
 

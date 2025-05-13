@@ -21,7 +21,7 @@ public class MessageTypeRegistryProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (fileCreated)
-            { return true; }
+            { return false; }
         // implemented based on https://www.baeldung.com/java-annotation-processing-builder
         Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(AutoRegisterMessage.class);
         String registryCode = buildRegistryFile(annotatedElements);
@@ -34,7 +34,7 @@ public class MessageTypeRegistryProcessor extends AbstractProcessor {
             fileCreated = true;
         } catch (Exception e) { processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Failed to write MessageTypeRegistry: " + e.getMessage()); }
 
-        return true;
+        return false;
     }
 
     private String buildRegistryFile(Set<? extends Element> annotatedElements) {
