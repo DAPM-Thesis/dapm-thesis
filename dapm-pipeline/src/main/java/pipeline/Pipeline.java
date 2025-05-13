@@ -1,6 +1,8 @@
 package pipeline;
 
+import candidate_validation.ChannelReference;
 import candidate_validation.ProcessingElementReference;
+import candidate_validation.SubscriberReference;
 import utils.graph.DG;
 
 import java.util.*;
@@ -9,12 +11,12 @@ import java.util.stream.Collectors;
 public class Pipeline {
     private final String owningOrganizationID;
     private final Map<String, ProcessingElementReference> processingElements;
-    private final DG<ProcessingElementReference, Integer> directedGraph;
+    private DG<ProcessingElementReference, Integer> directedGraph;
 
-    public Pipeline(String owningOrganizationID, DG<ProcessingElementReference, Integer> directedGraph) {
+    public Pipeline(String owningOrganizationID, Set<ChannelReference> channelReferences) {
         processingElements = new HashMap<>();
-        this.directedGraph = directedGraph;
         this.owningOrganizationID = owningOrganizationID;
+        initializeDG(channelReferences);
     }
 
     public String getOwningOrganizationID() {
@@ -26,6 +28,17 @@ public class Pipeline {
 
     public void addProcessingElement(String instanceID, ProcessingElementReference processingElementReference) {
         processingElements.put(instanceID, processingElementReference);
+    }
+
+    private void initializeDG(Set<ChannelReference> channelReferences) {
+        directedGraph = new DG<>();
+        for (ChannelReference cr : channelReferences) {
+            ProcessingElementReference producer = cr.getPublisher();
+            for (SubscriberReference sr : cr.getSubscribers()) {
+                ProcessingElementReference consumer = sr.getElement();
+                directedGraph.addEdgeWithAttribute(producer, consumer, sr.getPortNumber());
+            }
+        }
     }
 
     public DG<ProcessingElementReference, Integer> getDirectedGraph() {

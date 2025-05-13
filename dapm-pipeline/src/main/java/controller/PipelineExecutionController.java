@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pipeline.processingelement.ProcessingElement;
 import repository.PEInstanceRepository;
-import utils.LogUtil;
 
 @RestController
 @RequestMapping("/pipelineExecution")

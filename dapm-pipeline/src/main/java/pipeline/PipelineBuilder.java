@@ -27,22 +27,9 @@ public class PipelineBuilder {
     }
 
     public Pipeline buildPipeline(String organizationOwnerID, ValidatedPipeline validatedPipeline) {
-        DG<ProcessingElementReference, Integer> DG = initializeDG(validatedPipeline.getChannels());
-        Pipeline pipeline = new Pipeline(organizationOwnerID, DG);
+        Pipeline pipeline = new Pipeline(organizationOwnerID, validatedPipeline.getChannels());
         buildPipeline(pipeline);
         return pipeline;
-    }
-
-    private DG<ProcessingElementReference, Integer> initializeDG(Set<ChannelReference> channelReferences) {
-        DG<ProcessingElementReference, Integer> directedGraph = new DG<>();
-        for (ChannelReference cr : channelReferences) {
-            ProcessingElementReference producer = cr.getPublisher();
-            for (SubscriberReference sr : cr.getSubscribers()) {
-                ProcessingElementReference consumer = sr.getElement();
-                directedGraph.addEdgeWithAttribute(producer, consumer, sr.getPortNumber());
-            }
-        }
-        return directedGraph;
     }
 
     private void buildPipeline(Pipeline pipeline) {
