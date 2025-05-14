@@ -1,5 +1,6 @@
 jdk:
   - openjdk21
 install:
-  - cd annotation-processor && mvn clean install -DskipTests
-  - cd ../dapm-pipeline && mvn clean install -DskipTests
+  - cd dapm-pipeline && mvn clean && cd ..
+  - cd annotation-processor && mvn clean install -DskipTests && cd ..
+  - cd dapm-pipeline && mvn clean install -DskipTests
