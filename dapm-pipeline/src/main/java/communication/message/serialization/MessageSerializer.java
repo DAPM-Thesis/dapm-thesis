@@ -1,5 +1,6 @@
 package communication.message.serialization;
 import communication.message.impl.Alignment;
+import communication.message.impl.Metrics;
 import communication.message.impl.time.UTCTime;
 import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
@@ -23,7 +24,7 @@ public class MessageSerializer implements MessageVisitor<String> {
 
     @Override
     public String visit(Event event) {
-        this.serialization = event.getName() + ":" + "{\"traces\": [{" +
+        this.serialization = event.getName() + ':' + "{\"traces\": [{" +
                                             "\"attrs\": {\"concept:name\": " + JSONParser.toJSONString(event.getCaseID()) + "}, " +
                                             "\"events\": [" + toJXES(event) + "]}]}";
         return getSerialization();
@@ -34,13 +35,13 @@ public class MessageSerializer implements MessageVisitor<String> {
      * the transitions, and the arcs. */
     @Override
     public String visit(PetriNet petriNet) {
-        this.serialization = petriNet.getName() + ":" + ToPNML(petriNet);
+        this.serialization = petriNet.getName() + ':' + ToPNML(petriNet);
         return getSerialization();
     }
 
     @Override
     public String visit(Trace trace) {
-        this.serialization = trace.getName() + ":" + "{\"traces\": [" + toJXES(trace) +"]}";
+        this.serialization = trace.getName() + ':' + "{\"traces\": [" + toJXES(trace) +"]}";
         return getSerialization();
     }
 
@@ -48,7 +49,7 @@ public class MessageSerializer implements MessageVisitor<String> {
      *  the first one being the log trace, and the second one being the model trace. */
     @Override
     public String visit(Alignment alignment) {
-        this.serialization = alignment.getName() + ":" + "{\"traces\": ["
+        this.serialization = alignment.getName() + ':' + "{\"traces\": ["
                 + toJXES(alignment.getLogTrace()) + ", "
                 + toJXES(alignment.getModelTrace())
                 + "]}";
@@ -57,13 +58,19 @@ public class MessageSerializer implements MessageVisitor<String> {
 
     @Override
     public String visit(Date time) {
-        this.serialization = time.getName() + ":" + time.getTime().toString();
+        this.serialization = time.getName() + ':' + time.getTime().toString();
         return getSerialization();
     }
 
     @Override
     public String visit(UTCTime UTCTime) {
-        this.serialization = UTCTime.getName() + ":" + UTCTime.getTime().toString();
+        this.serialization = UTCTime.getName() + ':' + UTCTime.getTime().toString();
+        return getSerialization();
+    }
+
+    @Override
+    public String visit(Metrics metrics) {
+        this.serialization = metrics.getName() + ':' + metrics;
         return getSerialization();
     }
 

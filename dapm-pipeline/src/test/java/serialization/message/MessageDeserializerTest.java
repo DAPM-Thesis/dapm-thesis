@@ -2,6 +2,7 @@ package serialization.message;
 
 import communication.message.Message;
 import communication.message.impl.Alignment;
+import communication.message.impl.Metrics;
 import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
@@ -228,11 +229,20 @@ class MessageDeserializerTest {
     }
 
     @Test
-    void timeInverse() {
+    void DateInverse() {
         Date expected = new Date();
         MessageSerializer serializer = new MessageSerializer();
         String timeStr = serializer.visit(expected);
         Message output = MessageFactory.deserialize(timeStr);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    void MetricInverse() {
+        Metrics expected = new Metrics(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        MessageSerializer serializer = new MessageSerializer();
+        String metricsStr = serializer.visit(expected);
+        Message output = MessageFactory.deserialize(metricsStr);
         assertEquals(expected, output);
     }
 
