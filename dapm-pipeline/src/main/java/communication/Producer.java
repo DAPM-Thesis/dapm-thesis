@@ -38,6 +38,8 @@ public class Producer implements Publisher<Message> {
     @Override
     public void publish(Message message) {
         if (stopPublishing) return;
+        if(message == null) return;
+
         MessageSerializer serializer = new MessageSerializer();
         message.acceptVisitor(serializer);
         String serialization = serializer.getSerialization();
