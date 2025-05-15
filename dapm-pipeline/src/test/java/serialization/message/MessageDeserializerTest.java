@@ -239,7 +239,7 @@ class MessageDeserializerTest {
 
     @Test
     void MetricInverse() {
-        Metrics expected = new Metrics(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        Metrics expected = new Metrics(1.0, 2.1221, 3.0, 4., 5.010101, 6.1234, 7., .8, 9., 10.);
         MessageSerializer serializer = new MessageSerializer();
         String metricsStr = serializer.visit(expected);
         Message output = MessageFactory.deserialize(metricsStr);

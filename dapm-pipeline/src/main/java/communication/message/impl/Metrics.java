@@ -11,11 +11,13 @@ import java.util.List;
 @AutoRegisterMessage
 @DeserializationStrategyRegistration(strategy = MetricsDeserializationStrategy.class)
 public class Metrics extends Message {
-    private final List<Integer> metrics;
+    private final List<Double> metrics;
 
-    public Metrics(Integer... metrics) { this.metrics = List.of(metrics); }
+    public Metrics(Double... metrics) { this.metrics = List.of(metrics); }
 
-    public Metrics(List<Integer> metrics) { this.metrics = metrics; }
+    public Metrics(List<Double> metrics) { this.metrics = metrics; }
+
+    public List<Double> getMetrics() { return List.copyOf(metrics); }
 
     @Override
     public void acceptVisitor(MessageVisitor<?> visitor) {

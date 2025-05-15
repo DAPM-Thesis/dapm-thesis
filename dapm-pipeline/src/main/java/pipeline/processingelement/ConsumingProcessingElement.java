@@ -23,6 +23,8 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
         }
     }
 
+    protected Map<Integer, Consumer> getConsumers() { return Map.copyOf(consumers);}
+
     protected abstract Map<Class<? extends Message>, Integer> setConsumedInputs(); // TODO: refactor with annotations
 
     @Override

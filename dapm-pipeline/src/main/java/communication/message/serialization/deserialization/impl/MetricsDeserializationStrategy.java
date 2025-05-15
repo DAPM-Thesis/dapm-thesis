@@ -13,11 +13,11 @@ public class MetricsDeserializationStrategy implements DeserializationStrategy {
         String listContents = payload.substring(1, payload.length() - 1); // "1, 2, 3, 4"
         String[] numbers = listContents.split(",");
 
-        List<Integer> deserialization = new ArrayList<>();
+        List<Double> deserialization = new ArrayList<>();
         for (String num : numbers) {
             num = num.trim();
             if (num.isEmpty()) throw new IllegalArgumentException("Empty metric value in metrics deserialization.");
-            deserialization.add(Integer.parseInt(num));
+            deserialization.add(Double.parseDouble(num));
         }
 
         return new Metrics(deserialization);

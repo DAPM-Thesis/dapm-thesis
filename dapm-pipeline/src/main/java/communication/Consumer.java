@@ -35,6 +35,8 @@ public class Consumer {
     private Subscriber<Pair<Message, Integer>> subscriber;
     private int portNumber;
     private String containerId;
+    private String brokerUrl;
+    private String topic;
 
     @Autowired
     public Consumer(KafkaListenerEndpointRegistry registry, ApplicationContext applicationContext) {
@@ -46,6 +48,8 @@ public class Consumer {
         this.subscriber = subscriber;
         this.portNumber = consumerConfig.portNumber();
         this.containerId = IDGenerator.generateKafkaContainerID();
+        this.brokerUrl = consumerConfig.brokerURL();
+        this.topic = consumerConfig.topic();
         MethodKafkaListenerEndpoint<String, String> endpoint = null;
         try {
             endpoint = new MethodKafkaListenerEndpoint<>();
@@ -114,6 +118,14 @@ public class Consumer {
         factory.getContainerProperties().setPollTimeout(1000);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return factory;
+    }
+
+    public String getBrokerUrl() {
+        return brokerUrl;
+    }
+
+    public String getTopic() {
+        return topic;
     }
 }
 
