@@ -21,12 +21,4 @@ public abstract class WebSource<O extends Message> extends Source<O> {
     }
 
     protected abstract Flux<O> process();
-
-    @Override
-    public boolean stop() {
-        assert subscription != null;
-        subscription.dispose();
-        subscription = null;
-        return super.stop();
-    }
 }

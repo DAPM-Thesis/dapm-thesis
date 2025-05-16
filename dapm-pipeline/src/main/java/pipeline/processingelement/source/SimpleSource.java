@@ -35,12 +35,4 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
 
     protected abstract O process();
 
-    @Override
-    public boolean stop() {
-        isRunning = false;
-        assert executor != null;
-        executor.shutdown();
-        executor = null;
-        return super.stop();
-    }
 }
