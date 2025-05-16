@@ -24,22 +24,17 @@ public class PipelineExecutionController {
     @PutMapping("/start/instance/{instanceID}")
     public ResponseEntity<Void> startProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
-        if (processingElement != null) {
-            if (processingElement.start()) return ResponseEntity.ok().build();
-        }
+        if (processingElement != null && processingElement.start())
+            { return ResponseEntity.ok().build(); }
         return ResponseEntity.badRequest().body(null);
     }
 
     @PutMapping("/terminate/instance/{instanceID}")
     public ResponseEntity<Void> terminateProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
-        if (processingElement != null) {
-            if (processingElement.stop()) {
-                if (processingElement.terminate()) {
-                    peInstanceRepository.removeInstance(instanceID);
-                    return ResponseEntity.ok().build();
-                }
-            }
+        if (processingElement != null && processingElement.terminate()) {
+                peInstanceRepository.removeInstance(instanceID);
+                return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().body(null);
     }

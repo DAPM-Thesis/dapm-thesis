@@ -37,16 +37,10 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
     }
 
     @Override
-    public boolean stop() {
-        boolean stopped = true;
-        for (Consumer consumer : consumers.values()) {
-            stopped &= consumer.stop();
-        }
-        return stopped;
-    }
-
-    @Override
     public boolean terminate() {
+        if (!stop())
+            { return false; }
+
         boolean terminated = true;
         for (Consumer consumer : consumers.values()) {
            terminated &= consumer.terminate();
@@ -55,7 +49,15 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
         return terminated;
     }
 
-    public void registerConsumer(Consumer consumer, int portNumber) {
+    private boolean stop() {
+        boolean stopped = true;
+        for (Consumer consumer : consumers.values()) {
+            stopped &= consumer.stop();
+        }
+        return stopped;
+    }
+
+    public final void registerConsumer(Consumer consumer, int portNumber) {
         consumers.put(portNumber, consumer);
     }
 }

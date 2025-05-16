@@ -13,7 +13,7 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public Source(Configuration configuration) { super(configuration); }
 
     @Override
-    public void publish(O data) {
+    public final void publish(O data) {
         producer.publish(data);
     }
 
@@ -21,18 +21,15 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     public abstract boolean start();
 
     @Override
-    public boolean stop() {
-        return producer.stop();
-    }
-
-    @Override
     public boolean terminate() {
+        if (!producer.stop())
+            { return false; }
         boolean terminated = producer.terminate();
         if (terminated) producer = null;
         return terminated;
     }
 
-    public void registerProducer(Producer producer) {
+    public final void registerProducer(Producer producer) {
         this.producer = producer;
     }
 }

@@ -17,7 +17,7 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     public Operator(Configuration configuration) { super(configuration); }
 
     @Override
-    public void observe(Pair<Message, Integer> inputAndPortNumber) {
+    public final void observe(Pair<Message, Integer> inputAndPortNumber) {
         AO algorithmOutput = process(inputAndPortNumber.first(), inputAndPortNumber.second());
         if (publishCondition(algorithmOutput)) {
             O output = convertAlgorithmOutput(algorithmOutput);
@@ -32,23 +32,20 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     protected abstract boolean publishCondition(AO algorithmOutput);
 
     @Override
-    public void publish(O data) {
+    public final void publish(O data) {
         producer.publish(data);
     }
 
     @Override
-    public boolean stop() {
-        return super.stop() && producer.stop();
-    }
-
-    @Override
     public boolean terminate() {
+        if (!super.terminate()) // terminate consumers
+            { return false; }
         boolean terminated = producer.terminate();
         if (terminated) producer = null;
         return terminated;
     }
 
-    public void registerProducer(Producer producer) {
+    public final void registerProducer(Producer producer) {
         this.producer = producer;
     }
 }
