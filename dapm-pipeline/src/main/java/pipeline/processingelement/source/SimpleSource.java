@@ -1,7 +1,6 @@
 package pipeline.processingelement.source;
 
 import communication.message.Message;
-import utils.LogUtil;
 import pipeline.processingelement.Configuration;
 
 import java.util.concurrent.Executors;
@@ -35,4 +34,12 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
 
     protected abstract O process();
 
+    @Override
+    public boolean terminate() {
+        isRunning = false;
+        assert executor != null;
+        executor.shutdown();
+        executor = null;
+        return super.terminate();
+    }
 }
