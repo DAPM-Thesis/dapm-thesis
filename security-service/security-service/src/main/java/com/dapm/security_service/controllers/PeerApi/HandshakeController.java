@@ -27,10 +27,7 @@ public  class HandshakeController {
         this.peRepository = peRepository;
     }
 
-    /**
-     * Temporary helper: returns a fresh handshake JWT.
-     * Call this from Org A’s Swagger UI.
-     */
+
     @GetMapping("/handshake/token")
     public ResponseEntity<String> getHandshakeToken() {
         String jwt = tokenService.generateHandshakeToken(300);  // 5 min TTL

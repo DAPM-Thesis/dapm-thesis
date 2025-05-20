@@ -15,5 +15,5 @@ public interface ProcessingElementRepository extends JpaRepository<ProcessingEle
     List<ProcessingElement> findByOwnerOrganization_NameOrVisibilityContaining(String ownerOrg, String visibleToOrg);
 
     // For POST: lookup specific PE by its ID
-    Optional<ProcessingElement> findById(UUID id); // Already inherited, but you can explicitly declare it if needed
+    Optional<ProcessingElement> findById(UUID id);
 }
