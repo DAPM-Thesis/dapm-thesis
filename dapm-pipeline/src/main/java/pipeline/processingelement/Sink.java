@@ -1,21 +1,14 @@
 package pipeline.processingelement;
 
-import communication.Consumer;
-import communication.Subscriber;
 import communication.message.Message;
+import utils.Pair;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.Map;
 
-public abstract class Sink extends ConsumingProcessingElement implements Subscriber<Message> {
+public abstract class Sink extends ConsumingProcessingElement {
 
-    private final Collection<Consumer> consumers = new HashSet<>();
-
-    @Override
-    public abstract void observe(Message input);
+    public Sink(Configuration configuration) { super(configuration); }
 
     @Override
-    public void registerConsumer(Consumer consumer) {
-        consumers.add(consumer);
-    }
+    public abstract void observe(Pair<Message, Integer> inputAndPortNumber);
 }

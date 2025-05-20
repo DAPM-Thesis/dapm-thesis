@@ -1,49 +1,168 @@
 package pipeline;
 
-import communication.Consumer;
-import communication.Producer;
-import communication.Publisher;
-import communication.Subscriber;
-import communication.message.Message;
-import pipeline.processingelement.ProcessingElement;
 
-import java.util.UUID;
+import candidate_validation.*;
+import communication.API.*;
+import communication.API.request.HTTPRequest;
+import communication.API.request.PEInstanceRequest;
+import communication.API.response.HTTPResponse;
+import communication.API.response.PEInstanceResponse;
+import communication.config.ConsumerConfig;
+import communication.config.ProducerConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import utils.graph.DG;
+import utils.JsonUtil;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Component
 public class PipelineBuilder {
-    private Pipeline currentPipeline;
+    private final HTTPClient webClient;
 
-    public PipelineBuilder createPipeline() {
-        currentPipeline = new Pipeline();
-        return this;
+    @Autowired
+    public PipelineBuilder(HTTPClient webClient) {
+        this.webClient = webClient;
     }
 
-    public PipelineBuilder addProcessingElement(ProcessingElement pe) {
-        if (pe == null) { throw new IllegalArgumentException("processingElement cannot be null"); }
-        currentPipeline.getProcessingElements().add(pe);
-        return this;
+    public Pipeline buildPipeline(String organizationOwnerID, ValidatedPipeline validatedPipeline) {
+        Pipeline pipeline = new Pipeline(organizationOwnerID, validatedPipeline.getChannels());
+        buildPipeline(pipeline);
+        return pipeline;
     }
 
-    public <O extends Message> PipelineBuilder connect(Publisher<O> from, Subscriber<Message> to) {
-        if (!currentPipeline.getProcessingElements().contains(from) || !currentPipeline.getProcessingElements().contains(to))
-        { throw new IllegalArgumentException("could not connect the two processing elements; they are not in the pipeline."); }
+    private void buildPipeline(Pipeline pipeline) {
+        Map<ProcessingElementReference, PEInstanceResponse> configuredInstances = new HashMap<>();
+        Set<ProcessingElementReference> currentLevel = pipeline.getSources();
+        DG<ProcessingElementReference, Integer> directedGraph = pipeline.getDirectedGraph();
 
-        // fetch from's output channel if it exists, and create a new one otherwise
-        Producer producer = currentPipeline.getReceivingChannels().get(from);
-        if (producer == null) {
-            String topic = "Topic" + UUID.randomUUID();
-            producer = new Producer(topic);
-            from.registerProducer(producer);
+        while (!currentLevel.isEmpty()) {
+            Set<ProcessingElementReference> nextLevel = new HashSet<>();
+            for (ProcessingElementReference pe : currentLevel) {
+                if (configuredInstances.containsKey(pe)) continue;
+                // Check if all upstream connections are configuredInstances yet
+                if (!allInputsReady(directedGraph, configuredInstances, pe)) {
+                    // Defer to next level if waiting for inputs
+                    nextLevel.add(pe);
+                    continue;
+                }
 
-            Consumer consumer = new Consumer(to, topic);
-            to.registerConsumer(consumer);
+                if (pe.isSource()) {
+                    String instanceID = createSource(configuredInstances, pe);
+                    pipeline.addProcessingElement(instanceID, pe);
+                } else if (pe.isOperator()) {
+                    String instanceID = createOperator(directedGraph, configuredInstances, pe);
+                    pipeline.addProcessingElement(instanceID, pe);
+                } else if (pe.isSink()) {
+                    String instanceID = createSink(directedGraph, configuredInstances, pe);
+                    pipeline.addProcessingElement(instanceID, pe);
+                }
 
-            currentPipeline.getReceivingChannels().put((ProcessingElement) from, producer);
-            currentPipeline.getChannels().add(producer);
+                // Add all downstream nodes for the next level
+                nextLevel.addAll(pipeline.getDirectedGraph().getDownStream(pe));
+            }
+            currentLevel = nextLevel;
         }
-        return this;
     }
 
-    public Pipeline getCurrentPipeline() {
-        return currentPipeline;
+    private boolean allInputsReady(DG<ProcessingElementReference, Integer> directedGraph, Map<ProcessingElementReference, PEInstanceResponse> configured, ProcessingElementReference pe) {
+        return directedGraph.getUpstream(pe).stream().allMatch(configured::containsKey);
+    }
+
+    private List<ConsumerConfig> getConsumerConfigs(DG<ProcessingElementReference, Integer> directedGraph, ProcessingElementReference pe, Map<ProcessingElementReference, PEInstanceResponse> configured) {
+        return directedGraph.getUpstream(pe).stream()
+                .filter(node -> {
+                    PEInstanceResponse response = configured.get(node);
+                    ProducerConfig producerConfig = response != null ? response.getProducerConfig() : null;
+                    boolean hasEdgeAttribute = directedGraph.getEdgeAttribute(node, pe) != null;
+                    return producerConfig != null
+                            && hasEdgeAttribute
+                            && producerConfig.brokerURL() != null && !producerConfig.brokerURL().isEmpty()
+                            && producerConfig.topic() != null && !producerConfig.topic().isEmpty();
+                })
+                .map(node -> new ConsumerConfig(
+                        configured.get(node).getProducerConfig().brokerURL(),
+                        configured.get(node).getProducerConfig().topic(),
+                        directedGraph.getEdgeAttribute(node, pe)))
+                .collect(Collectors.toList());
+    }
+
+    private String createSource(Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
+        PEInstanceResponse sourceResponse = sendCreateSourceRequest(pe);
+        configuredInstances.put(pe, sourceResponse);
+        return sourceResponse.getInstanceID();
+    }
+
+    private String createOperator(DG<ProcessingElementReference, Integer> directedGraph, Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
+        List<ConsumerConfig> consumerConfigs = getConsumerConfigs(directedGraph, pe, configuredInstances);
+        if (consumerConfigs == null || consumerConfigs.isEmpty()) {
+            throw new IllegalStateException("No ConsumerConfigs found for operator: " + pe);
+        }
+        PEInstanceResponse operatorResponse = sendCreateOperatorRequest(pe, consumerConfigs);
+        configuredInstances.put(pe, operatorResponse);
+        return operatorResponse.getInstanceID();
+    }
+
+    private String createSink(DG<ProcessingElementReference, Integer> directedGraph, Map<ProcessingElementReference, PEInstanceResponse> configuredInstances, ProcessingElementReference pe) {
+        List<ConsumerConfig> consumerConfigs = getConsumerConfigs(directedGraph, pe, configuredInstances);
+        if (consumerConfigs == null || consumerConfigs.isEmpty()) {
+            throw new IllegalStateException("No ConsumerConfigs found for sink: " + pe);
+        }
+        PEInstanceResponse sinkResponse = sendCreateSinkRequest(pe, consumerConfigs);
+        configuredInstances.put(pe, sinkResponse);
+        return sinkResponse.getInstanceID();
+    }
+
+    private PEInstanceResponse sendCreateSourceRequest(ProcessingElementReference pe) {
+        String encodedTemplateID = JsonUtil.encode(pe.getTemplateID());
+        String url = pe.getOrganizationHostURL() + String.format(
+                "/pipelineBuilder/source/templateID/%s",
+                encodedTemplateID
+        );
+        PEInstanceRequest requestBody = new PEInstanceRequest();
+        requestBody.setConfiguration(pe.getConfiguration());
+        return sendPostRequest(url, requestBody);
+    }
+
+    private PEInstanceResponse sendCreateOperatorRequest(ProcessingElementReference pe, List<ConsumerConfig> consumerConfigs) {
+        String encodedTemplateID = JsonUtil.encode(pe.getTemplateID());
+        String url = pe.getOrganizationHostURL() + String.format(
+                "/pipelineBuilder/operator/templateID/%s",
+                encodedTemplateID
+        );
+        PEInstanceRequest requestBody = new PEInstanceRequest();
+        requestBody.setConfiguration(pe.getConfiguration());
+        requestBody.setConsumerConfigs(consumerConfigs);
+        return sendPostRequest(url, requestBody);
+    }
+
+    private PEInstanceResponse sendCreateSinkRequest(ProcessingElementReference pe, List<ConsumerConfig> consumerConfigs) {
+        String encodedTemplateID = JsonUtil.encode(pe.getTemplateID());
+        String url = pe.getOrganizationHostURL() + String.format(
+                "/pipelineBuilder/sink/templateID/%s",
+                encodedTemplateID
+        );
+        PEInstanceRequest requestBody = new PEInstanceRequest();
+        requestBody.setConfiguration(pe.getConfiguration());
+        requestBody.setConsumerConfigs(consumerConfigs);
+        return sendPostRequest(url, requestBody);
+    }
+
+    private PEInstanceResponse sendPostRequest(String url, PEInstanceRequest body) {
+        HTTPResponse response = webClient.postSync(new HTTPRequest(url, JsonUtil.toJson(body)));
+
+        if (response == null || response.body() == null) {
+            throw new IllegalStateException("No response received from " + url);
+        }
+        PEInstanceResponse peInstanceResponse = JsonUtil.fromJson(response.body(), PEInstanceResponse.class);
+
+        if (peInstanceResponse.getTemplateID() == null ||
+                peInstanceResponse.getInstanceID() == null ||
+                peInstanceResponse.getTemplateID().isEmpty() ||
+                peInstanceResponse.getInstanceID().isEmpty()) {
+            throw new IllegalStateException("Received invalid response from " + url + ": " + response.body());
+        }
+        return peInstanceResponse;
     }
 }

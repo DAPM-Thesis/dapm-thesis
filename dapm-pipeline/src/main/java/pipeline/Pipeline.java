@@ -1,37 +1,69 @@
 package pipeline;
 
-import communication.Producer;
-import pipeline.processingelement.ProcessingElement;
-import pipeline.processingelement.Source;
+import candidate_validation.ChannelReference;
+import candidate_validation.ProcessingElementReference;
+import candidate_validation.SubscriberReference;
+import utils.graph.DG;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Pipeline {
-    private Set<ProcessingElement> processingElements;
-    private Set<Producer> channels;
-    private Map<ProcessingElement, Producer> receivingChannels;
+    private final String owningOrganizationID;
+    private final Map<String, ProcessingElementReference> processingElements;
+    private DG<ProcessingElementReference, Integer> directedGraph;
 
-    public Pipeline() {
-        processingElements = new HashSet<>();
-        channels = new HashSet<>();
-        receivingChannels = new HashMap<>();
+    public Pipeline(String owningOrganizationID, Set<ChannelReference> channelReferences) {
+        processingElements = new HashMap<>();
+        this.owningOrganizationID = owningOrganizationID;
+        initializeDG(channelReferences);
     }
 
-    public Set<ProcessingElement> getProcessingElements() { return processingElements; }
-    public Map<ProcessingElement, Producer> getReceivingChannels() { return receivingChannels; }
-    public Set<Producer> getChannels() { return channels; }
+    public String getOwningOrganizationID() {
+        return owningOrganizationID;
+    }
 
-    public void start() {
-        for(ProcessingElement pe : processingElements) {
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-            if(pe instanceof Source<?> source) {
-                executor.submit(() -> source.start());
+    // return an unmodifiable map to ensure that processing elements are only added via addProcessingElement()
+    public Map<String, ProcessingElementReference> getProcessingElements() {return Collections.unmodifiableMap(processingElements);}
+
+    public void addProcessingElement(String instanceID, ProcessingElementReference processingElementReference) {
+        processingElements.put(instanceID, processingElementReference);
+    }
+
+    private void initializeDG(Set<ChannelReference> channelReferences) {
+        directedGraph = new DG<>();
+        for (ChannelReference cr : channelReferences) {
+            ProcessingElementReference producer = cr.getPublisher();
+            for (SubscriberReference sr : cr.getSubscribers()) {
+                ProcessingElementReference consumer = sr.getElement();
+                directedGraph.addEdgeWithAttribute(producer, consumer, sr.getPortNumber());
             }
         }
+    }
+
+    public DG<ProcessingElementReference, Integer> getDirectedGraph() {
+        return directedGraph;
+    }
+
+    public String getInstanceID(ProcessingElementReference ref) {
+        return processingElements.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(ref))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Set<ProcessingElementReference> getSinks() {
+        return directedGraph.getNodes()
+                .stream()
+                .filter(ProcessingElementReference::isSink)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<ProcessingElementReference> getSources() {
+        return directedGraph.getNodes()
+                .stream()
+                .filter(ProcessingElementReference::isSource)
+                .collect(Collectors.toSet());
     }
 }

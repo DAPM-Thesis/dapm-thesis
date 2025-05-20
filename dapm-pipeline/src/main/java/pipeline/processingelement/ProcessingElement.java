@@ -1,21 +1,12 @@
 package pipeline.processingelement;
 
-import utils.IDGenerator;
 
 public abstract class ProcessingElement {
-    private int ID; // only used for illustrative toString purposes currently
-    private boolean isAvailable = true;
+    protected final Configuration configuration;
 
-    protected ProcessingElement() { ID = IDGenerator.generate(); }
+    public ProcessingElement(Configuration configuration) { this.configuration = configuration; }
 
-    public boolean isAvailable() {
-        return isAvailable;
-    }
+    public abstract boolean start();
+    public abstract boolean terminate();
 
-    public void setAvailable(boolean available) {
-        isAvailable = available;
-    }
-
-    @Override
-    public String toString() { return getClass().getSimpleName() + ' ' + ID; }
 }

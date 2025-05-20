@@ -1,47 +1,51 @@
 package pipeline.processingelement.operator;
 
 import communication.Producer;
+import communication.ProducingProcessingElement;
 import communication.message.Message;
+import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ConsumingProcessingElement;
-import algorithm.Algorithm;
-import communication.Consumer;
 import communication.Publisher;
-import communication.Subscriber;
+import utils.Pair;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.Map;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
-                                                      implements Subscriber<Message>, Publisher<O> {
-    private final Algorithm<Message, AO> algorithm;
-    private final Collection<Consumer> consumers = new HashSet<>();
+        implements Publisher<O>, ProducingProcessingElement {
     private Producer producer;
 
-    public Operator(Algorithm<Message, AO> algorithm) { this.algorithm = algorithm; }
+    public Operator(Configuration configuration) { super(configuration); }
 
     @Override
-    public void observe(Message input) {
-        AO algorithmOutput = algorithm.run(input);
+    public final void observe(Pair<Message, Integer> inputAndPortNumber) {
+        AO algorithmOutput = process(inputAndPortNumber.first(), inputAndPortNumber.second());
         if (publishCondition(algorithmOutput)) {
             O output = convertAlgorithmOutput(algorithmOutput);
             publish(output);
         }
     }
 
+    protected abstract AO process(Message input, int portNumber);
+
     protected abstract O convertAlgorithmOutput(AO algorithmOutput);
 
     protected abstract boolean publishCondition(AO algorithmOutput);
 
     @Override
-    public void publish(O output) { producer.publish(output); }
-
-    @Override
-    public void registerProducer(Producer producer) {
-        this.producer = producer;
+    public final void publish(O data) {
+        producer.publish(data);
     }
 
     @Override
-    public void registerConsumer(Consumer consumer) {
-        consumers.add(consumer);
+    public boolean terminate() {
+        if (!super.terminate()) // terminate consumers
+            { return false; }
+        boolean terminated = producer.terminate();
+        if (terminated) producer = null;
+        return terminated;
+    }
+
+    public final void registerProducer(Producer producer) {
+        this.producer = producer;
     }
 }

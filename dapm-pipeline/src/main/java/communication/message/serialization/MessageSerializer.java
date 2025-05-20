@@ -1,5 +1,8 @@
 package communication.message.serialization;
 import communication.message.impl.Alignment;
+import communication.message.impl.Metrics;
+import communication.message.impl.time.UTCTime;
+import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
 import communication.message.impl.event.Event;
@@ -9,10 +12,10 @@ import communication.message.impl.petrinet.Transition;
 import communication.message.impl.petrinet.arc.Arc;
 import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
+import communication.message.serialization.parsing.JSONParser;
 
 import java.util.Collection;
 
-// TODO: make serialization its own class? Sure it adds an extra step but it will make maintainability easier, and enforce the correct formatting. Should be considered if serialization format changes frequently.
 /** Class for serializing Message's. Note that any given instance of this class only is safe to use in a synchronous context. */
 public class MessageSerializer implements MessageVisitor<String> {
     private String serialization;
@@ -21,8 +24,8 @@ public class MessageSerializer implements MessageVisitor<String> {
 
     @Override
     public String visit(Event event) {
-        this.serialization = "event:" + "{\"traces\": [{" +
-                                            "\"attrs\": {\"concept:name\": \"" + event.getCaseID() + "\"}, " +
+        this.serialization = event.getName() + ':' + "{\"traces\": [{" +
+                                            "\"attrs\": {\"concept:name\": " + JSONParser.toJSONString(event.getCaseID()) + "}, " +
                                             "\"events\": [" + toJXES(event) + "]}]}";
         return getSerialization();
     }
@@ -32,13 +35,13 @@ public class MessageSerializer implements MessageVisitor<String> {
      * the transitions, and the arcs. */
     @Override
     public String visit(PetriNet petriNet) {
-        this.serialization = petriNet.getName() + ":" + ToPNML(petriNet);
+        this.serialization = petriNet.getName() + ':' + ToPNML(petriNet);
         return getSerialization();
     }
 
     @Override
     public String visit(Trace trace) {
-        this.serialization = trace.getName() + ":" + "{\"traces\": [" + toJXES(trace) +"]}";
+        this.serialization = trace.getName() + ':' + "{\"traces\": [" + toJXES(trace) +"]}";
         return getSerialization();
     }
 
@@ -46,10 +49,28 @@ public class MessageSerializer implements MessageVisitor<String> {
      *  the first one being the log trace, and the second one being the model trace. */
     @Override
     public String visit(Alignment alignment) {
-        this.serialization = alignment.getName() + ":" + "{\"traces\": ["
+        this.serialization = alignment.getName() + ':' + "{\"traces\": ["
                 + toJXES(alignment.getLogTrace()) + ", "
                 + toJXES(alignment.getModelTrace())
                 + "]}";
+        return getSerialization();
+    }
+
+    @Override
+    public String visit(Date time) {
+        this.serialization = time.getName() + ':' + time.getTime().toString();
+        return getSerialization();
+    }
+
+    @Override
+    public String visit(UTCTime UTCTime) {
+        this.serialization = UTCTime.getName() + ':' + UTCTime.getTime().toString();
+        return getSerialization();
+    }
+
+    @Override
+    public String visit(Metrics metrics) {
+        this.serialization = metrics.getName() + ':' + metrics;
         return getSerialization();
     }
 
@@ -64,15 +85,14 @@ public class MessageSerializer implements MessageVisitor<String> {
         if (!trace.isEmpty()) { sb.delete(sb.length() - 2, sb.length()); } // delete last ", "
         sb.append(']');
 
-        return "{\"attrs\": {\"concept:name\": \"" + trace.getCaseID() + "\"}, " +
-                    "\"events\": " + sb.toString() +"}";
+        return "{\"attrs\": {\"concept:name\": " + JSONParser.toJSONString(trace.getCaseID()) + "}, " +
+                    "\"events\": " + sb +"}";
     }
 
     private String toJXES(Event event) {
-        // TODO: append event attributes, i.e. the collection of additional (non-mining) attributes
-        return "{\"concept:name\": \"" + event.getActivity() +
-                "\", \"date\": \"" + event.getTimestamp() +
-                "\"" + commaSeparatedAttributesString(event.getAttributes()) + '}';
+        return "{\"concept:name\": " + JSONParser.toJSONString(event.getActivity()) +
+                ", \"date\": " + JSONParser.toJSONString(event.getTimestamp())
+                + commaSeparatedAttributesString(event.getAttributes()) + '}';
     }
 
 
@@ -80,7 +100,11 @@ public class MessageSerializer implements MessageVisitor<String> {
         if (attributes.isEmpty()) {return "";}
         StringBuilder sb = new StringBuilder();
         for (Attribute<?> attr : attributes) {
-            sb.append(", ").append(attr.toString());
+
+            sb.append(", ")
+                    .append(JSONParser.toJSONString(attr.getName()))
+                    .append(": ")
+                    .append(JSONParser.toJSONString(attr.getValue()));
         }
         return sb.toString();
     }
@@ -105,7 +129,7 @@ public class MessageSerializer implements MessageVisitor<String> {
         return pnmlString;
     }
 
-    public String serializePlace(Place p) {
+    private String serializePlace(Place p) {
         return "<place id=\""
                 + p.getID()
                 + "\"><initialMarking><text>"
@@ -113,11 +137,11 @@ public class MessageSerializer implements MessageVisitor<String> {
                 + "</text></initialMarking></place>";
     }
 
-    public String serializeTransition(Transition t) {
+    private String serializeTransition(Transition t) {
         return "<transition id=\"" + t.getID() + "\"></transition>";
     }
 
-    public String serializeArc(Arc a) {
+    private String serializeArc(Arc a) {
         String source;
         String target;
         if (a instanceof TransitionToPlaceArc tpa) {

@@ -1,18 +1,19 @@
 package pipeline.processingelement.operator;
 
-import algorithm.Algorithm;
 import communication.message.Message;
+import pipeline.processingelement.Configuration;
+
+import java.util.Map;
 
 public abstract class SimpleOperator<O extends Message> extends Operator<O, O> {
-    public SimpleOperator(Algorithm<Message, O> algorithm) {
-        super(algorithm);
-    }
+
+    public SimpleOperator(Configuration configuration) { super(configuration); }
 
     @Override
     protected O convertAlgorithmOutput(O algorithmOutput) { return algorithmOutput; }
 
     @Override
-    protected boolean publishCondition(O algorithmOutput) { return true; };
+    protected boolean publishCondition(O algorithmOutput) { return true; }
 
 }
 
