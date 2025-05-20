@@ -23,8 +23,7 @@ public class AuthenticationService2 {
 
     @Autowired private UserDetailsRepository repository;
     @Autowired private OrganizationRepository organizationRepository;
-    @Autowired private DepartmentRepository departmentRepository;
-    @Autowired private FacultyRepository facultyRepository;
+
     @Autowired private RoleRepository roleRepository;
 
     private final PasswordEncoder passwordEncoder;
@@ -42,13 +41,7 @@ public class AuthenticationService2 {
                 .orElseThrow(() -> new IllegalArgumentException("Organization not found"));
         newUser.setOrganization(organization);
 
-        Faculty faculty = facultyRepository.findByName(user.getFaculty())
-                .orElseThrow(() -> new IllegalArgumentException("Faculty not found"));
-        newUser.setFaculty(faculty);
 
-        Department department = departmentRepository.findByName(user.getDepartment())
-                .orElseThrow(() -> new IllegalArgumentException("Department not found"));
-        newUser.setDepartment(department);
 
         Set<Role> roles = user.getRoles().stream()
                 .map(roleName -> {

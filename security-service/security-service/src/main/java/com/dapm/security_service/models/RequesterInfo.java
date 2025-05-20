@@ -12,8 +12,6 @@ import java.util.UUID;
 public class RequesterInfo {
     private UUID requesterId;
     private String username;
-    private String faculty;
-    private String department;
     private String organization;
     private String role;
     private String permissions;

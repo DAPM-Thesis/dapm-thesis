@@ -104,8 +104,7 @@ public class PipelineProcessingElementRequestClientController {
         requester.setRequesterId(user.getId());
         requester.setUsername(user.getUsername());
         requester.setOrganization(user.getOrganization().getName());
-        requester.setFaculty(user.getFaculty().getName());
-        requester.setDepartment(user.getDepartment().getName());
+
 //        requester.setRole(String.valueOf(user.getRoles().stream().findFirst().orElse(null)));
 
         String firstRoleName = user.getRoles()
@@ -155,8 +154,6 @@ public class PipelineProcessingElementRequestClientController {
             infoDto.setRequesterId(entity.getRequesterInfo().getRequesterId());
             infoDto.setUsername(entity.getRequesterInfo().getUsername());
             infoDto.setOrganization(entity.getRequesterInfo().getOrganization());
-            infoDto.setFaculty(entity.getRequesterInfo().getFaculty());
-            infoDto.setDepartment(entity.getRequesterInfo().getDepartment());
             infoDto.setRole(entity.getRequesterInfo().getRole());
             infoDto.setPermissions(entity.getRequesterInfo().getPermissions());
             dto.setRequesterInfo(infoDto);

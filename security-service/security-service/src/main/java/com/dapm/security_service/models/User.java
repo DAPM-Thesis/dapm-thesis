@@ -34,16 +34,13 @@ public class User implements UserDetails {
     private String passwordHash;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "orgRole_id")
+    private OrgRole orgRole;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "faculty_id", nullable = false)
-    private Faculty faculty;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id", nullable = false)
-    private Department department;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

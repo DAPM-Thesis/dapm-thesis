@@ -30,9 +30,9 @@ public class AccessRequest {
 //    private ResourceType resourceType;
 
     // Reference the ActionType entity.
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "action_type_id", nullable = false)
-    private ActionType action;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "action_type_id", nullable = false)
+//    private ActionType action;
 
     @Column(name = "details", length = 1000)
     private String details;

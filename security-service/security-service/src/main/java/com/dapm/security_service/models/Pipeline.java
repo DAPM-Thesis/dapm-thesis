@@ -30,6 +30,11 @@ public class Pipeline {
     @Column(name = "description", length = 1000)
     private String description;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
+
+
     // Pipeline execution role (can be linked to the user later)
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "pipeline_role_id", nullable = true)

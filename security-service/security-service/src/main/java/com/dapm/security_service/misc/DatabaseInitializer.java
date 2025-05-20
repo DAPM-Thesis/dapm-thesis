@@ -17,13 +17,13 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     // Repositories
     @Autowired private OrganizationRepository organizationRepository;
-    @Autowired private FacultyRepository facultyRepository;
-    @Autowired private DepartmentRepository departmentRepository;
     @Autowired private PermissionRepository permissionRepository;
     @Autowired private RoleRepository roleRepository;
     @Autowired private UserRepository userRepository;
-    @Autowired private PolicyRepository policyRepository;
+    @Autowired private OrgRoleRepository orgRoleRepository;
     @Autowired private PipelineRepository pipelineRepository;
+    @Autowired private ProjectRepository projectRepository;
+
     @Autowired
     private ProcessingElementRepository processingElementRepository;
 
@@ -40,9 +40,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private static final UUID ORG_A_ID = UUID.fromString("3430e05b-3b59-48c2-ae8a-22a9a9232f18");
     private static final UUID ORG_B_ID = UUID.fromString("99999999-9999-9999-9999-999999999999");
 
-    // Faculty and Department for OrgA
-    private static final UUID FACULTY_CS_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final UUID DEPT_SE_ID    = UUID.fromString("22222222-2222-2222-2222-222222222222");
+
 
     // Permissions
     private static final UUID PERM_APPROVE_ACCESS_ID         = UUID.fromString("aaaaaaaa-1111-1111-1111-aaaaaaaaaaaa");
@@ -160,27 +158,6 @@ public class DatabaseInitializer implements CommandLineRunner {
 
 
 
-        // 2. Create Faculty "Computer Science" for OrgA.
-        Faculty faculty = facultyRepository.findByName("Computer Science")
-                .orElseGet(() -> {
-                    Faculty newFaculty = Faculty.builder()
-                            .id(FACULTY_CS_ID)
-                            .name("Computer Science")
-                            .organization(org)
-                            .build();
-                    return facultyRepository.save(newFaculty);
-                });
-
-// 3. Create Department "Software Engineering" under "Computer Science".
-        Department department = departmentRepository.findByName("Software Engineering")
-                .orElseGet(() -> {
-                    Department newDept = Department.builder()
-                            .id(DEPT_SE_ID)
-                            .name("Software Engineering")
-                            .faculty(faculty)
-                            .build();
-                    return departmentRepository.save(newDept);
-                });
 
 
         // 4. Define Permissions.
@@ -257,11 +234,20 @@ public class DatabaseInitializer implements CommandLineRunner {
 //        Role researcherRoleB = createRoleIfNotExistStatic("RESEARCHER", orgB, researcherPerms, ROLE_RESEARCHER_B_ID);
 //        Role pipelineRoleB = createRoleIfNotExistStatic("PIPELINE_ROLE", orgB, pipelinePerms, ROLE_PIPELINE_B_ID);
 
+        OrgRole defaultOrgRole = orgRoleRepository.findByName("DEFAULT_ORG_ROLE")
+                .orElseGet(() -> orgRoleRepository.save(
+                        OrgRole.builder()
+                                .id(UUID.randomUUID())
+                                .name("DEFAULT_ORG_ROLE")
+                                .organization(org)
+                                .build()
+                ));
+
         // 6. Create Users for OrgA.
-        createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, org, faculty, department, USER_ANNA_ID);
-        createUserIfNotExistStatic("anthoni", "anthoni@example.com", "dapm", depHeadRole, org, faculty, department, USER_ANTHONI_ID);
-        createUserIfNotExistStatic("alice", "alice@example.com", "dapm", researcherRole, org, faculty, department, USER_ALICE_ID);
-        createUserIfNotExistStatic("ashley", "ashley@example.com", "dapm", researcherRole, org, faculty, department, USER_ASHLEY_ID);
+        createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, defaultOrgRole,org, USER_ANNA_ID);
+        createUserIfNotExistStatic("anthoni", "anthoni@example.com", "dapm", depHeadRole,defaultOrgRole, org, USER_ANTHONI_ID);
+        createUserIfNotExistStatic("alice", "alice@example.com", "dapm", researcherRole,defaultOrgRole, org,  USER_ALICE_ID);
+        createUserIfNotExistStatic("ashley", "ashley@example.com", "dapm", researcherRole,defaultOrgRole, org,  USER_ASHLEY_ID);
 
         // 7. Create Users for OrgB.
 //        createUserIfNotExistStatic("brian", "brian@example.com", "dapm", adminRoleB, orgB, faculty, department, USER_BRIAN_ID);
@@ -270,9 +256,18 @@ public class DatabaseInitializer implements CommandLineRunner {
 //        createUserIfNotExistStatic("bobby", "bobby@example.com", "dapm", researcherRoleB, orgB, faculty, department, USER_BOBBY_ID);
 
         // 8. Create a Policy for EXECUTE_PIPELINE in OrgA.
-        createPolicyIfNotExistStatic(permissionMap.get("EXECUTE_PIPELINE"), department, faculty, "ALLOW", POLICY_EXEC_PIPELINE_ID);
+//        createPolicyIfNotExistStatic(permissionMap.get("EXECUTE_PIPELINE"), department, faculty, "ALLOW", POLICY_EXEC_PIPELINE_ID);
 
 
+        // 9. Create a Project for this pipeline
+        Project project = Project.builder()
+                .id(UUID.randomUUID())
+                .title("Cross-Org Project")
+                .organization(org)
+                .build();
+
+// Save it
+        project = projectRepository.save(project);
 
         // 10. Create a Pipeline (owned by OrgA).
         Pipeline pipeline = Pipeline.builder()
@@ -281,6 +276,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                 .ownerOrganization(org)
                 .description("Pipeline with processing elements from OrgA and OrgB")
                 .pipelineRole(pipelineRole)
+                .project(project)
                 .processingElements(new HashSet<>())  // Use processingElements field
                 .tokens(new HashSet<>())
                 .createdBy(CREATED_BY_ID)
@@ -378,8 +374,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         return role;
     }
 
-    private void createUserIfNotExistStatic(String username, String email, String rawPassword, Role role,
-                                            Organization organization, Faculty faculty, Department department, UUID id) {
+    private void createUserIfNotExistStatic(String username, String email, String rawPassword, Role role, OrgRole orgRole,
+                                            Organization organization, UUID id) {
         userRepository.findByUsername(username).orElseGet(() -> {
             String passwordHash = passwordEncoder.encode(rawPassword);
             User user = User.builder()
@@ -388,27 +384,12 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .email(email)
                     .passwordHash(passwordHash)
                     .organization(organization)
-                    .faculty(faculty)
-                    .department(department)
                     .roles(new HashSet<>(Collections.singletonList(role)))
+                    .orgRole(orgRole)
                     .build();
             return userRepository.save(user);
         });
     }
 
 
-    private void createPolicyIfNotExistStatic(Permission permission, Department allowedDepartment, Faculty allowedFaculty,
-                                              String effect, UUID id) {
-        Policy policy = policyRepository.findByPermission(permission);
-        if (policy == null) {
-            policy = Policy.builder()
-                    .id(id)
-                    .permission(permission)
-                    .allowedDepartment(allowedDepartment)
-                    .allowedFaculty(allowedFaculty)
-                    .effect(effect)
-                    .build();
-            policyRepository.save(policy);
-        }
-    }
 }

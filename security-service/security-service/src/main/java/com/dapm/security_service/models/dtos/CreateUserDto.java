@@ -17,8 +17,7 @@ public class CreateUserDto {
     private String email;
     private String passwordHash;
     private String organization;
-    private String faculty;
-    private String department;
+
     private Set<String> roles;
 
     public CreateUserDto(User u){
@@ -26,8 +25,6 @@ public class CreateUserDto {
         this.passwordHash=u.getPasswordHash();
         this.email=u.getEmail();
         this.organization=u.getOrganization().getName();
-        this.faculty=u.getFaculty().getName();
-        this.department=u.getDepartment().getName();
         this.roles = u.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toSet());

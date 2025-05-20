@@ -70,8 +70,6 @@ public class TokenService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", user.getUsername());
         claims.put("organization", user.getOrganization().getName());
-        claims.put("faculty", user.getFaculty().getName());
-        claims.put("department", user.getDepartment().getName());
         claims.put("roles", user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toList()));

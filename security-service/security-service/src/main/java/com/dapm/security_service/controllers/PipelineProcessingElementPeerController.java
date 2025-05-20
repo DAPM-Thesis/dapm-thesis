@@ -95,8 +95,6 @@ public class PipelineProcessingElementPeerController {
         RequesterInfo info = new RequesterInfo();
         info.setRequesterId(userDto.getRequesterId());
         info.setUsername(userDto.getUsername());
-        info.setFaculty(userDto.getFaculty());
-        info.setDepartment(userDto.getDepartment());
         info.setOrganization(userDto.getOrganization());
         info.setRole(userDto.getRole());
         info.setPermissions(userDto.getPermissions());
