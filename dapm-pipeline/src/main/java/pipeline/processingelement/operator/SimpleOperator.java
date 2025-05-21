@@ -3,8 +3,6 @@ package pipeline.processingelement.operator;
 import communication.message.Message;
 import pipeline.processingelement.Configuration;
 
-import java.util.Map;
-
 public abstract class SimpleOperator<O extends Message> extends Operator<O, O> {
 
     public SimpleOperator(Configuration configuration) { super(configuration); }

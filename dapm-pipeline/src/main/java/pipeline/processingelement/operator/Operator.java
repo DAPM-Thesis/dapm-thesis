@@ -8,8 +8,6 @@ import pipeline.processingelement.ConsumingProcessingElement;
 import communication.Publisher;
 import utils.Pair;
 
-import java.util.Map;
-
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
         implements Publisher<O>, ProducingProcessingElement {
     private Producer producer;
