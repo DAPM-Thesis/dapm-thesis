@@ -88,7 +88,7 @@ public class PipelineBuilderTest {
     }
 
     private void setUpFailedMockResponsesNullTemplateId() {
-        setUpMockResponses(url -> getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_TemplateID.json"));
+        setUpMockResponses(url -> getResponseFromFile("src/test/resources/pipeline_builder/fail/invalid_source_response_null_templateID.json"));
     }
 
     void setUpFailedMockResponsesNullInstanceID() {
