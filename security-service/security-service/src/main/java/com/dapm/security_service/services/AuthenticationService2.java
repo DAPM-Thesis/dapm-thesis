@@ -4,12 +4,15 @@ import com.dapm.security_service.config.JwtService;
 import com.dapm.security_service.models.*;
 import com.dapm.security_service.models.dtos.AuthRequest;
 import com.dapm.security_service.models.dtos.AuthResponse;
+import com.dapm.security_service.models.dtos.ChangePasswordDto;
 import com.dapm.security_service.models.dtos.CreateUserDto;
 import com.dapm.security_service.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,7 @@ public class AuthenticationService2 {
     @Autowired private OrganizationRepository organizationRepository;
 
     @Autowired private RoleRepository roleRepository;
+    @Autowired private OrgRoleRepository orgRoleRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -40,6 +44,12 @@ public class AuthenticationService2 {
         Organization organization = organizationRepository.findByName(user.getOrganization())
                 .orElseThrow(() -> new IllegalArgumentException("Organization not found"));
         newUser.setOrganization(organization);
+
+        OrgRole orgRole = orgRoleRepository.findByName(user.getOrgRole());
+        if (orgRole == null) {
+            throw new IllegalArgumentException("OrgRole not found");
+        }
+        newUser.setOrgRole(orgRole);
 
 
 
@@ -70,5 +80,22 @@ public class AuthenticationService2 {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         String jwtToken = jwtService.generateToken(user);
         return new AuthResponse(jwtToken);
+    }
+
+    public void changePassword(ChangePasswordDto request) {
+        // Get current logged-in user from SecurityContext
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = repository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // Check if old password matches
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Old password is incorrect");
+        }
+
+        // Encode new password and update
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        repository.save(user);
     }
 }

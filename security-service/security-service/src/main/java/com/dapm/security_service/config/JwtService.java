@@ -1,5 +1,7 @@
 package com.dapm.security_service.config;
 
+import com.dapm.security_service.models.User;
+import com.dapm.security_service.models.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -11,8 +13,10 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -73,6 +77,37 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+    public String generateToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+
+        claims.put("roles", user.getRoles()
+                .stream()
+                .map(Role::getName)
+                .collect(Collectors.toList()));
+
+        if (user.getOrgRole() != null) {
+            claims.put("orgRole", user.getOrgRole().getName());
+        }
+
+        if (user.getOrganization() != null) {
+            claims.put("organizationId", user.getOrganization().getId().toString());
+            claims.put("organizationName", user.getOrganization().getName());
+        }
+
+        return generateToken(claims, user);
+    }
+
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("roles", List.class);
+    }
+
+    public String extractOrgRole(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("orgRole", String.class);
+    }
+
 
 
 
