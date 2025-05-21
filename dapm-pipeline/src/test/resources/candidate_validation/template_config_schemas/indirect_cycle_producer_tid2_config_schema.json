@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://www.dapm.org/config/indirect_cycle_producer_TID2_config_schema.json",
+  "$id": "https://www.dapm.org/config/indirect_cycle_producer_tid2_config_schema.json",
   "title": "INDIRECT CYCLE PRODUCER TID2 Config",
   "type": "object",
   "properties": {},
