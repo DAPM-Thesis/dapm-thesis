@@ -1,6 +1,7 @@
 package com.dapm.security_service.misc;
 
 import com.dapm.security_service.models.*;
+import com.dapm.security_service.models.enums.OrgPermAction;
 import com.dapm.security_service.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Autowired private OrgRoleRepository orgRoleRepository;
     @Autowired private PipelineRepository pipelineRepository;
     @Autowired private ProjectRepository projectRepository;
+    @Autowired private OrgPermissionRepository orgPermissionRepository;
 
     @Autowired
     private ProcessingElementRepository processingElementRepository;
@@ -65,6 +67,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private static final UUID ROLE_DEPHEAD_ID      = UUID.fromString("dddddddd-2222-2222-2222-dddddddd2222");
     private static final UUID ROLE_RESEARCHER_ID   = UUID.fromString("eeeeeeee-3333-3333-3333-eeeeeeee3333");
     private static final UUID ROLE_PIPELINE_ID     = UUID.fromString("f17a2042-f9c8-4a46-83fc-5c83e1cb7aee"); // Given
+
 
     // Roles for OrgB
     private static final UUID ROLE_ADMIN_B_ID      = UUID.fromString("bbbbbbbb-1111-1111-1111-bbbbbbbb1111");
@@ -109,6 +112,26 @@ public class DatabaseInitializer implements CommandLineRunner {
     private static final UUID RESOURCE_B_ID = UUID.fromString("aaaaaaa1-3333-3333-3333-aaaaaaaaaaaa");
     // Resource for OrgB
     private static final UUID RESOURCE_C_ID = UUID.fromString("ccccccc0-5555-5555-5555-cccccccccccc");
+
+
+
+
+
+
+
+
+    // Hey there I am new
+    // Create a project uuid
+    private static final UUID PROJECT1_ID = UUID.fromString("99999999-0000-0000-0000-999999999999");
+    private static final UUID PROJECT2_ID = UUID.fromString("99999999-0000-0000-0000-199999999999");
+
+    // Hey there I am new
+    // Create a OrgRole
+    private static final UUID ADMIN_ID = UUID.fromString("99999999-0000-0000-0000-299999999999");
+    private static final UUID MEMBER_ID = UUID.fromString("99999999-0000-0000-0000-399999999999");
+
+
+
 
     @Transactional
     @Override
@@ -155,9 +178,6 @@ public class DatabaseInitializer implements CommandLineRunner {
             processingElementRepository.save(peB);
 
         }
-
-
-
 
 
         // 4. Define Permissions.
@@ -228,45 +248,31 @@ public class DatabaseInitializer implements CommandLineRunner {
         ));
         Role pipelineRole = createRoleIfNotExistStatic("PIPELINE_ROLE", org, pipelinePerms, ROLE_PIPELINE_ID);
 
-        // Create Roles for OrgB.
-//        Role adminRoleB = createRoleIfNotExistStatic("ADMIN", orgB, adminPerms, ROLE_ADMIN_B_ID);
-//        Role depHeadRoleB = createRoleIfNotExistStatic("DEPARTMENT_HEAD", orgB, depHeadPerms, ROLE_DEPHEAD_B_ID);
-//        Role researcherRoleB = createRoleIfNotExistStatic("RESEARCHER", orgB, researcherPerms, ROLE_RESEARCHER_B_ID);
-//        Role pipelineRoleB = createRoleIfNotExistStatic("PIPELINE_ROLE", orgB, pipelinePerms, ROLE_PIPELINE_B_ID);
+        // Hey there I am new
+        // Create Org Roles for OrgA.
+        OrgRole AdminOrgRole = createOrgRoleIfNotExistStatic("ADMIN_ORG_ROLE", org, ADMIN_ID);
+        OrgRole defaultOrgRole = createOrgRoleIfNotExistStatic("MEMBER_ORG_ROLE", org, MEMBER_ID);
 
-        OrgRole defaultOrgRole = orgRoleRepository.findByName("DEFAULT_ORG_ROLE")
-                .orElseGet(() -> orgRoleRepository.save(
-                        OrgRole.builder()
-                                .id(UUID.randomUUID())
-                                .name("DEFAULT_ORG_ROLE")
-                                .organization(org)
-                                .build()
-                ));
+        // Hey there I am new
+        // let's create the org permissions
+        OrgPermission orgPermission1 = createOrgPermissionIfNotExistStatic(OrgPermAction.CREATE_USER, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission2 = createOrgPermissionIfNotExistStatic(OrgPermAction.DELETE_USER, AdminOrgRole, UUID.randomUUID());
 
         // 6. Create Users for OrgA.
-        createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, defaultOrgRole,org, USER_ANNA_ID);
-        createUserIfNotExistStatic("anthoni", "anthoni@example.com", "dapm", depHeadRole,defaultOrgRole, org, USER_ANTHONI_ID);
+        createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, AdminOrgRole,org, USER_ANNA_ID);
+        createUserIfNotExistStatic("anthoni", "anthoni@example.com", "dapm", depHeadRole,AdminOrgRole, org, USER_ANTHONI_ID);
         createUserIfNotExistStatic("alice", "alice@example.com", "dapm", researcherRole,defaultOrgRole, org,  USER_ALICE_ID);
         createUserIfNotExistStatic("ashley", "ashley@example.com", "dapm", researcherRole,defaultOrgRole, org,  USER_ASHLEY_ID);
 
-        // 7. Create Users for OrgB.
-//        createUserIfNotExistStatic("brian", "brian@example.com", "dapm", adminRoleB, orgB, faculty, department, USER_BRIAN_ID);
-//        createUserIfNotExistStatic("barni", "barni@example.com", "dapm", depHeadRoleB, orgB, faculty, department, USER_BARNI_ID);
-//        createUserIfNotExistStatic("bob", "bob@example.com", "dapm", researcherRoleB, orgB, faculty, department, USER_BOB_ID);
-//        createUserIfNotExistStatic("bobby", "bobby@example.com", "dapm", researcherRoleB, orgB, faculty, department, USER_BOBBY_ID);
 
-        // 8. Create a Policy for EXECUTE_PIPELINE in OrgA.
-//        createPolicyIfNotExistStatic(permissionMap.get("EXECUTE_PIPELINE"), department, faculty, "ALLOW", POLICY_EXEC_PIPELINE_ID);
-
-
-        // 9. Create a Project for this pipeline
+        // Hey there I am new
         Project project = Project.builder()
                 .id(UUID.randomUUID())
                 .title("Cross-Org Project")
                 .organization(org)
                 .build();
 
-// Save it
+        // Hey there I am new
         project = projectRepository.save(project);
 
         // 10. Create a Pipeline (owned by OrgA).
@@ -304,39 +310,20 @@ public class DatabaseInitializer implements CommandLineRunner {
                 .outputs(new HashSet<>())
                 .build();
 
-//        ProcessingElement pe3 = ProcessingElement.builder()
-//                .id(NODE_B_ID)
-//                .nodeId("pe_discovery")  // This template represents an OrgB template
-//                .ownerOrganization(orgB)
-//                .inputs(new HashSet<>())
-//                .outputs(new HashSet<>())
-//                .build();
-
-
-//        // Associate allowed resources with nodes.
-//        node1.setAllowedResources(new HashSet<>(Arrays.asList(resourceA, resourceB)));
-//        node2.setAllowedResources(new HashSet<>());
-//        node3.setAllowedResources(new HashSet<>(Collections.singletonList(resourceC)));
-
         pe1 = processingElementRepository.save(pe1);
         pe2 = processingElementRepository.save(pe2);
-//        pe3 = processingElementRepository.save(pe3);
 
         // 12. Associate nodes with the pipeline (ManyToMany).
 
         // Set<Node> nodes = new HashSet<>(Arrays.asList(node1, node2, node3));
         // pipeline.setNodes(nodes);
         pipeline.getProcessingElements().clear();
-//        pipeline.getProcessingElements().addAll(Arrays.asList(pe1, pe2, pe3));
-
 
         // 13. Set tokens as empty for now.
         //pipeline.setTokens(new HashSet<>());
         pipeline.getTokens().clear();
 
         // 14. Create sample PE Templates for testing assembly stage.
-
-
 
 
         // Save the pipeline.
@@ -389,6 +376,33 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .build();
             return userRepository.save(user);
         });
+    }
+
+    private OrgPermission createOrgPermissionIfNotExistStatic(OrgPermAction action, OrgRole orgRole, UUID id) {
+        OrgPermission orgPermission = orgPermissionRepository.findByAction(action);
+        if (orgPermission == null) {
+            orgPermission = OrgPermission.builder()
+                    .id(id)
+                    .action(action)
+                    .orgRole(orgRole)
+                    .build();
+            orgPermission = orgPermissionRepository.save(orgPermission);
+        }
+        return orgPermission;
+    }
+
+    // create a creatOrgRoleIfNotExistStatic method
+    private OrgRole createOrgRoleIfNotExistStatic(String name, Organization organization, UUID id) {
+        OrgRole orgRole = orgRoleRepository.findByName(name);
+        if (orgRole == null) {
+            orgRole = OrgRole.builder()
+                    .id(id)
+                    .name(name)
+                    .organization(organization)
+                    .build();
+            orgRole = orgRoleRepository.save(orgRole);
+        }
+        return orgRole;
     }
 
 
