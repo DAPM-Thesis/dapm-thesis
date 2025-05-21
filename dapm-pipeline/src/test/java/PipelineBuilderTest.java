@@ -14,6 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import pipeline.Pipeline;
 import pipeline.PipelineBuilder;
+import repository.PipelineRepository;
 import testconfig.PipelineBuilderTestConfig;
 
 import java.io.IOException;
@@ -32,6 +33,8 @@ public class PipelineBuilderTest {
     private PipelineBuilder pipelineBuilder;
     @Autowired
     private HTTPClient httpClient;
+    @Autowired
+    private PipelineRepository pipelineRepository;
 
     @BeforeEach
     public void setUp() {
@@ -129,14 +132,15 @@ public class PipelineBuilderTest {
     @Test
     public void success() {
         setUpSuccessfulMockResponses();
-        String orgID = "org1";
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
 
-        Pipeline pipeline = pipelineBuilder.buildPipeline(orgID, validatedPipeline);
+        pipelineBuilder.buildPipeline(pipelineID, validatedPipeline);
+        Pipeline pipeline = pipelineRepository.getPipeline(pipelineID);
 
         assertNotNull(pipeline);
-        assertEquals(orgID, pipeline.getOwningOrganizationID());
+        assertEquals(pipelineID, pipeline.getPipelineID());
         assertEquals(3, pipeline.getProcessingElements().size());
         String instanceIDSource = "source-id";
         assertNotNull(pipeline.getProcessingElements().get(instanceIDSource));
@@ -149,54 +153,51 @@ public class PipelineBuilderTest {
     @Test
     public void fail_null_template_id() {
         setUpFailedMockResponsesNullTemplateId();
-        String orgID = "org1";
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
         assertThrows(
                 IllegalStateException.class,
-                () -> pipelineBuilder.buildPipeline(orgID, validatedPipeline)
+                () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
         );
     }
 
     @Test
     public void fail_null_instance_id() {
         setUpFailedMockResponsesNullInstanceID();
-        String orgID = "org1";
-
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
 
         assertThrows(
                 IllegalStateException.class,
-                () -> pipelineBuilder.buildPipeline(orgID, validatedPipeline)
+                () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
         );
     }
 
     @Test
     public void fail_null_producer_config() {
         setUpFailedMockResponsesNullProducerConfig();
-        String orgID = "org1";
-
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
 
         assertThrows(
                 IllegalStateException.class,
-                () -> pipelineBuilder.buildPipeline(orgID, validatedPipeline)
+                () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
         );
     }
 
     @Test
     public void fail_null_producer_configs() {
         setUpFailedMockResponsesNullProducerConfigs();
-        String orgID = "org1";
-
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
 
         assertThrows(
                 IllegalStateException.class,
-                () -> pipelineBuilder.buildPipeline(orgID, validatedPipeline)
+                () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
         );
     }
 
@@ -204,70 +205,65 @@ public class PipelineBuilderTest {
     @Test
     public void fail_empty_template_id() {
         setUpFailedMockResponsesEmptyTemplateID();
-        String orgID = "org1";
-
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
 
         assertThrows(
                 IllegalStateException.class,
-                () -> pipelineBuilder.buildPipeline(orgID, validatedPipeline)
+                () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
         );
     }
 
     @Test
     public void fail_empty_instance_id() {
         setUpFailedMockResponsesEmptyInstanceID();
-        String orgID = "org1";
-
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
 
         assertThrows(
                 IllegalStateException.class,
-                () -> pipelineBuilder.buildPipeline(orgID, validatedPipeline)
+                () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
         );
     }
 
     @Test
     public void fail_empty_producer_configs() {
         setUpFailedMockResponsesEmptyProducerConfigs();
-        String orgID = "org1";
-
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
 
         assertThrows(
                 IllegalStateException.class,
-                () -> pipelineBuilder.buildPipeline(orgID, validatedPipeline)
+                () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
         );
     }
 
     @Test
     public void fail_null_response_body() {
         setUpFailedMockResponsesNullResponseBody();
-        String orgID = "org1";
-
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
 
         assertThrows(
                 IllegalStateException.class,
-                () -> pipelineBuilder.buildPipeline(orgID, validatedPipeline)
+                () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
         );
     }
 
     @Test
     public void fail_null_response() {
         setUpFailedMockResponsesNullResponse();
-        String orgID = "org1";
-
+        String pipelineID = "pipeline1";
         PipelineCandidate candidate = getSimpleValid();
         ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
 
         assertThrows(
                 IllegalStateException.class,
-                () -> pipelineBuilder.buildPipeline(orgID, validatedPipeline)
+                () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
         );
     }
 }

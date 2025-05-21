@@ -9,22 +9,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import pipeline.Pipeline;
+import repository.PipelineRepository;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class PipelineExecutionService {
     private final HTTPClient webClient;
+    private final PipelineRepository pipelineRepository;
 
     @Autowired
-    public PipelineExecutionService(HTTPClient webClient) {
+    public PipelineExecutionService(HTTPClient webClient, PipelineRepository pipelineRepository) {
         this.webClient = webClient;
+        this.pipelineRepository = pipelineRepository;
     }
 
-    public void start(Pipeline pipeline) {
+    public void start(String pipelineID) {
+        Pipeline pipeline = pipelineRepository.getPipeline(pipelineID);
+        if( pipeline == null ) {
+            throw new PipelineExecutionException("Pipeline " + pipelineID + " not found");
+        }
         for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
             String instanceId = entry.getKey();
             String url = entry.getValue().getOrganizationHostURL() +
@@ -36,7 +42,11 @@ public class PipelineExecutionService {
         }
     }
 
-    public void terminate(Pipeline pipeline) {
+    public void terminate(String pipelineID) {
+        Pipeline pipeline = pipelineRepository.getPipeline(pipelineID);
+        if( pipeline == null ) {
+            throw new PipelineExecutionException("Pipeline " + pipelineID + " not found");
+        }
         Set<ProcessingElementReference> currentLevel = pipeline.getSinks();
         while (!currentLevel.isEmpty()) {
             Set<ProcessingElementReference> nextLevel = new HashSet<>();
@@ -51,6 +61,7 @@ public class PipelineExecutionService {
             }
             currentLevel = nextLevel;
         }
+        pipelineRepository.removePipeline(pipelineID);
     }
 
     private boolean isSuccess(HttpStatusCode status) {

@@ -4,7 +4,6 @@ import communication.config.ConsumerConfig;
 import pipeline.processingelement.Configuration;
 
 import java.util.List;
-import java.util.Map;
 
 public class PEInstanceRequest {
 
