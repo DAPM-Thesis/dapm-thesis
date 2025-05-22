@@ -1,4 +1,6 @@
 package com.dapm.security_service.controllers.ClientApi;
+import com.dapm.security_service.security.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.dapm.security_service.models.dtos.AuthRequest;
 import com.dapm.security_service.models.dtos.AuthResponse;
@@ -19,9 +21,9 @@ public class AuthenticationController {
     @PreAuthorize("hasAuthority('CREATE_USER')")
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(
-            @RequestBody CreateUserDto request
+            @RequestBody CreateUserDto request, @AuthenticationPrincipal CustomUserDetails userDetails
     ){
-        return ResponseEntity.ok(service.register(request));
+        return ResponseEntity.ok(service.register(request, userDetails));
     }
 
     @PostMapping("/authenticate")

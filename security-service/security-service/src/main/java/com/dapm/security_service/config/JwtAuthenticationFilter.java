@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
+// Checks every request to see if there's a valid JWT token.
+// If valid, it sets the logged-in user so Spring knows who is calling.
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

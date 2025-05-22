@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
+// Adds the "Authorize" button in Swagger so you can test APIs with JWT tokens.
+
 @Configuration
 @OpenAPIDefinition(
         info = @Info(title = "Demo API", version = "v1"),

@@ -1,6 +1,8 @@
 package com.dapm.security_service.services;
 
 import com.dapm.security_service.config.JwtService;
+import com.dapm.security_service.security.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.dapm.security_service.models.*;
 import com.dapm.security_service.models.dtos.AuthRequest;
 import com.dapm.security_service.models.dtos.AuthResponse;
@@ -34,15 +36,14 @@ public class AuthenticationService2 {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthResponse register(CreateUserDto user) {
+    public AuthResponse register(CreateUserDto user,  @AuthenticationPrincipal CustomUserDetails userDetails) {
         User newUser = new User();
         newUser.setId(UUID.randomUUID());
         newUser.setEmail(user.getEmail());
         newUser.setUsername(user.getUsername());
         newUser.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
 
-        Organization organization = organizationRepository.findByName(user.getOrganization())
-                .orElseThrow(() -> new IllegalArgumentException("Organization not found"));
+        Organization organization = userDetails.getUser().getOrganization();
         newUser.setOrganization(organization);
 
         OrgRole orgRole = orgRoleRepository.findByName(user.getOrgRole());
@@ -51,20 +52,6 @@ public class AuthenticationService2 {
         }
         newUser.setOrgRole(orgRole);
 
-
-
-        Set<Role> roles = user.getRoles().stream()
-                .map(roleName -> {
-                    Role role = roleRepository.findByName(roleName);
-                    if (role == null) {
-                        role = new Role();
-                        role.setName(roleName);
-                        role = roleRepository.save(role);
-                    }
-                    return role;
-                })
-                .collect(Collectors.toSet());
-        newUser.setRoles(roles);
 
         repository.save(newUser);
         String jwtToken = jwtService.generateToken(newUser);

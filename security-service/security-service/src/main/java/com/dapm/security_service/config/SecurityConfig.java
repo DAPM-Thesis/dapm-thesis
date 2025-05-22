@@ -13,6 +13,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
 
+// Decides which endpoints are public and which need login.
+// Attaches the JWT filter and makes sure sessions are stateless (like an API).
 @Configuration
 @EnableMethodSecurity  // allows @PreAuthorize etc.
 @RequiredArgsConstructor

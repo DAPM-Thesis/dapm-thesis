@@ -14,6 +14,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+// Sets up Spring Security basics:
+// How users are loaded, how passwords are checked, and who can log in.
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {

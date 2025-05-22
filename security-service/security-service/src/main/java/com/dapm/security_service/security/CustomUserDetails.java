@@ -8,6 +8,10 @@ import java.util.Collection;
 
 public class CustomUserDetails implements UserDetails {
 
+    // Wraps a User entity into Spring Security's UserDetails object.
+// Supplies authorities (permissions) and basic account status info.
+
+
     private final User user;
     private final Collection<? extends GrantedAuthority> authorities;
 

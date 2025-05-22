@@ -19,6 +19,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
     private final OrgPermissionRepository orgPermissionRepository;
 
+    // Loads user details by username for Spring Security during login.
+// Fetches user's org role and resolves its permissions to authorities.
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
