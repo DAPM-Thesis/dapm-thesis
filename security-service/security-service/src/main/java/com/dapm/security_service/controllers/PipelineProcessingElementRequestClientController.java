@@ -107,11 +107,7 @@ public class PipelineProcessingElementRequestClientController {
 
 //        requester.setRole(String.valueOf(user.getRoles().stream().findFirst().orElse(null)));
 
-        String firstRoleName = user.getRoles()
-                .stream()
-                .findFirst()
-                .map(r -> r.getName())  // or just Role::getName
-                .orElse(null);
+        String firstRoleName = "role to be removed";
 
         requester.setRole(firstRoleName);
 

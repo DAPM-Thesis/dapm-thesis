@@ -266,14 +266,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
 
         // Hey there I am new
-        Project project = Project.builder()
-                .id(UUID.randomUUID())
-                .title("Cross-Org Project")
-                .organization(org)
-                .build();
-
-        // Hey there I am new
-        project = projectRepository.save(project);
+        Project p=createProjectIfNotExistStatic("dapm",org,PROJECT1_ID);
 
         // 10. Create a Pipeline (owned by OrgA).
         Pipeline pipeline = Pipeline.builder()
@@ -282,7 +275,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                 .ownerOrganization(org)
                 .description("Pipeline with processing elements from OrgA and OrgB")
                 .pipelineRole(pipelineRole)
-                .project(project)
+                .project(p)
                 .processingElements(new HashSet<>())  // Use processingElements field
                 .tokens(new HashSet<>())
                 .createdBy(CREATED_BY_ID)
@@ -371,7 +364,6 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .email(email)
                     .passwordHash(passwordHash)
                     .organization(organization)
-                    .roles(new HashSet<>(Collections.singletonList(role)))
                     .orgRole(orgRole)
                     .build();
             return userRepository.save(user);
@@ -403,6 +395,22 @@ public class DatabaseInitializer implements CommandLineRunner {
             orgRole = orgRoleRepository.save(orgRole);
         }
         return orgRole;
+    }
+
+    private Project createProjectIfNotExistStatic(String name, Organization organization, UUID id) {
+        Optional<Project> optionalProject = projectRepository.findByTitle(name);
+        Project p;
+        if (optionalProject.isPresent()) {
+            p = optionalProject.get();
+        } else {
+            p = Project.builder()
+                    .id(id)
+                    .title(name)
+                    .organization(organization)
+                    .build();
+            p = projectRepository.save(p);
+        }
+        return p;
     }
 
 

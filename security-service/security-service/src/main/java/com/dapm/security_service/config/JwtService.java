@@ -81,11 +81,6 @@ public class JwtService {
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
 
-        claims.put("roles", user.getRoles()
-                .stream()
-                .map(Role::getName)
-                .collect(Collectors.toList()));
-
         if (user.getOrgRole() != null) {
             claims.put("orgRole", user.getOrgRole().getName());
         }
@@ -98,10 +93,7 @@ public class JwtService {
         return generateToken(claims, user);
     }
 
-    public List<String> extractRoles(String token) {
-        Claims claims = extractAllClaims(token);
-        return claims.get("roles", List.class);
-    }
+
 
     public String extractOrgRole(String token) {
         Claims claims = extractAllClaims(token);

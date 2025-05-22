@@ -15,14 +15,11 @@ public class UserDto {
     private String username;
     private String email;
     private String organization;
-    private Set<String> roles;
     public UserDto(User user) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.email = user.getEmail();
         this.organization = (user.getOrganization() != null) ? user.getOrganization().getName() : null;
-               this.roles = user.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
+
     }
 }

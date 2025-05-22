@@ -70,9 +70,7 @@ public class TokenService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", user.getUsername());
         claims.put("organization", user.getOrganization().getName());
-        claims.put("roles", user.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toList()));
+
 
         // Build and sign the JWT.
         return Jwts.builder()

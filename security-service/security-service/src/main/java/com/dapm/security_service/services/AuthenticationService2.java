@@ -2,6 +2,7 @@ package com.dapm.security_service.services;
 
 import com.dapm.security_service.config.JwtService;
 import com.dapm.security_service.security.CustomUserDetails;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.dapm.security_service.models.*;
 import com.dapm.security_service.models.dtos.AuthRequest;
@@ -18,6 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,14 +31,14 @@ public class AuthenticationService2 {
     @Autowired private UserDetailsRepository repository;
     @Autowired private OrganizationRepository organizationRepository;
 
-    @Autowired private RoleRepository roleRepository;
     @Autowired private OrgRoleRepository orgRoleRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthResponse register(CreateUserDto user,  @AuthenticationPrincipal CustomUserDetails userDetails) {
+    @Transactional
+    public void register(CreateUserDto user, CustomUserDetails userDetails) {
         User newUser = new User();
         newUser.setId(UUID.randomUUID());
         newUser.setEmail(user.getEmail());
@@ -50,12 +52,9 @@ public class AuthenticationService2 {
         if (orgRole == null) {
             throw new IllegalArgumentException("OrgRole not found");
         }
+
         newUser.setOrgRole(orgRole);
-
-
         repository.save(newUser);
-        String jwtToken = jwtService.generateToken(newUser);
-        return new AuthResponse(jwtToken);
     }
 
     public AuthResponse authenticate(AuthRequest request) {

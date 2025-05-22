@@ -26,7 +26,7 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('CREATE_PROJECT')")
     public ResponseEntity<ProjectDto> createProject(
             @RequestBody CreateProjectDto request,
-            CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         if (request.getTitle() == null || request.getTitle().isEmpty()) {
             return ResponseEntity.badRequest().body(null);

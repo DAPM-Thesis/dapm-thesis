@@ -25,7 +25,7 @@ public class OrgPermission {
     private OrgPermAction action;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "orgRole_id", nullable = false)
     private OrgRole orgRole;
 }

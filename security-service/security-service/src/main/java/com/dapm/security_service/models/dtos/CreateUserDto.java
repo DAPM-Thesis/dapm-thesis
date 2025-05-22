@@ -17,7 +17,7 @@ public class CreateUserDto {
     private String email;
     private String passwordHash;
 
-    private String orgRole;
+    private String orgRole="ADMIN_ORG_ROLE";
 
 
     public CreateUserDto(User u){

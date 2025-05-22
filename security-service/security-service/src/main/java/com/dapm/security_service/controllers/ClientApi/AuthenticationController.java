@@ -20,11 +20,14 @@ public class AuthenticationController {
 
     @PreAuthorize("hasAuthority('CREATE_USER')")
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
-            @RequestBody CreateUserDto request, @AuthenticationPrincipal CustomUserDetails userDetails
-    ){
-        return ResponseEntity.ok(service.register(request, userDetails));
+    public ResponseEntity<String> register(
+            @RequestBody CreateUserDto request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        service.register(request, userDetails);
+        return ResponseEntity.ok("User registered successfully.");
     }
+
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthResponse> register(
