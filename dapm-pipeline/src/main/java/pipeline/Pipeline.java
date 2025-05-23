@@ -9,19 +9,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Pipeline {
-    private final String owningOrganizationID;
+    private final String pipelineID;
     private final Map<String, ProcessingElementReference> processingElements;
     private DG<ProcessingElementReference, Integer> directedGraph;
 
-    public Pipeline(String owningOrganizationID, Set<ChannelReference> channelReferences) {
+    public Pipeline(String pipelineID, Set<ChannelReference> channelReferences) {
         processingElements = new HashMap<>();
-        this.owningOrganizationID = owningOrganizationID;
+        this.pipelineID = pipelineID;
         initializeDG(channelReferences);
     }
 
-    public String getOwningOrganizationID() {
-        return owningOrganizationID;
-    }
+    public String getPipelineID() {return pipelineID; }
 
     // return an unmodifiable map to ensure that processing elements are only added via addProcessingElement()
     public Map<String, ProcessingElementReference> getProcessingElements() {return Collections.unmodifiableMap(processingElements);}

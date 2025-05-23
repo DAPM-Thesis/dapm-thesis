@@ -1,42 +1,80 @@
 # dapm-thesis
-The shared GIT repo is for enabling collaboration between the three dapm groups:
-1. Reshma Zaman, Tama Sarker
-2. Christian Becke, Zou Yong Nan Klaassen
+This repository is a facet of the DAPM (Distributed Architecture for Process Mining) Online Data Streaming Pipelines theses. 
+
+The repository is shared by three DAPM groups:
+1. Christian Becke, Zou Yong Nan Klaassen
+2. Reshma Zaman, Tama Sarker
 3. Hussein Dirani, Raihanullah Mehran
 ## Projects
-Every folder is a separate project with its own pom.xml file!
-1. **dapm-pipeline**
-    - This project contains all the template code for creating processing elements: source, operator, sink. Pipeline and channel communication.
-2. **dapm-pipeline-execution**
-    - A project which uses the *dapm-pipeline* project as a dependency. It uses the templates to create the processing elements and connect them using the pipelinebuilder.
+Each folder is a separate Maven project with its own `pom.xml` file.
+
+### 1. **dapm-pipeline**
+Contains everything necessary to build pipelines and also includes template code for creating processing elements (source, operator, sink).
+
+### 2. **annotation-processor**
+Provides message annotation functionality. This project is included in **dapm-pipeline** as a dependency.
+
+## Building the JARs Locally
+Run these steps from the root directory:
+
+```
+cd dapm-pipeline
+mvn clean
+
+cd ../annotation-processor
+mvn clean install
+
+cd ../dapm-pipeline
+mvn clean install
+```
+
+Then include the local JAR build as a dependency in another project:
+```xml
+<dependency>
+  <groupId>com.github.dapm-thesis</groupId>
+    <artifactId>dapm-pipeline</artifactId>
+    <version>1.0-SNAPSHOT</version>
+</dependency>
+```
+
 
 ## Jitpack
-The [dapm-pipeline](#projects) project is a shared project between the groups. This project is available on [jitpack.io](https://jitpack.io/) and can be used as a dependency in other projects.
+Instead of using the local JAR builds, you can use [Jitpack](https://jitpack.io/#DAPM-Thesis/dapm-thesis), an easier way to add the latest version of **dapm-pipeline** as a dependency in other projects.
 
-The `jitpack.yml` in the root of the project ensures only the **dapm-pipeline** project folder will be included in the build.
-```
+A `jitpack.yml` in the project root ensures only the **dapm-pipeline** and **annotation-processor** folders are included in the build.
+
+```yml
 jdk:
   - openjdk21
 install:
-  cd dapm-pipeline && mvn install -DskipTests
+  - wget https://downloads.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+  - tar -xvzf apache-maven-3.9.6-bin.tar.gz
+  - export M2_HOME=$PWD/apache-maven-3.9.6
+  - export PATH=$M2_HOME/bin:$PATH
+  - mvn -version
+
+  - cd dapm-pipeline && mvn clean && cd ..
+  - cd annotation-processor && mvn clean install -DskipTests && cd ..
+  - cd dapm-pipeline && mvn clean install -DskipTests
   ```
 
-### Get started with Jitpack (build)
-If you want to be able to push new builds to jitpack, follow the following steps:
-1. To push a new build to jitpack, you have to use a tag. Run the following:
+### Get Started with Jitpack (Build)
+To push a new build to Jitpack, create and push a git tag:
+
 ```
 git tag v1.0.0
 git push origin v1.0.0
 ```
-Make sure to update the tag version with a newer version than the previous one. If there is no new tag set, there will be no new build pushed to jitpack.
+Use a new version tag for each release since Jitpack only builds on new tags.
 
-The new version is now available on jitpack <a href="https://jitpack.io/#DAPM-Thesis/dapm-thesis" target="_blank">View here</a>
+Find the latest Jitpack version [here](https://jitpack.io/#DAPM-Thesis/dapm-thesis).
+
 
 
 ### Get started with Jitpack (dependency)
-If you want to use the jitpack build in another project, follow the following steps:
-1. In your project's `pom.xml` maven file, add:
-```
+To use the Jitpack build in another project, add this to your project's `pom.xml`:
+
+```xml
 <repositories>
     <repository>
         <id>jitpack.io</id>
@@ -52,5 +90,4 @@ If you want to use the jitpack build in another project, follow the following st
     </dependency>
 </dependencies>
 ```
-Remember to update the version with the latest.
-Do a `mvn clean install` after.
+Update the version as needed. Then run: `mvn clean install`

@@ -11,6 +11,7 @@ import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import repository.PipelineRepository;
 import utils.graph.DG;
 import utils.JsonUtil;
 
@@ -20,16 +21,18 @@ import java.util.stream.Collectors;
 @Component
 public class PipelineBuilder {
     private final HTTPClient webClient;
+    private final PipelineRepository pipelineRepository;
 
     @Autowired
-    public PipelineBuilder(HTTPClient webClient) {
+    public PipelineBuilder(HTTPClient webClient, PipelineRepository pipelineRepository) {
         this.webClient = webClient;
+        this.pipelineRepository = pipelineRepository;
     }
 
-    public Pipeline buildPipeline(String organizationOwnerID, ValidatedPipeline validatedPipeline) {
-        Pipeline pipeline = new Pipeline(organizationOwnerID, validatedPipeline.getChannels());
+    public void buildPipeline(String pipelineID, ValidatedPipeline validatedPipeline) {
+        Pipeline pipeline = new Pipeline(pipelineID, validatedPipeline.getChannels());
         buildPipeline(pipeline);
-        return pipeline;
+        pipelineRepository.storePipeline(pipelineID, pipeline);
     }
 
     private void buildPipeline(Pipeline pipeline) {
