@@ -1,6 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 import com.dapm.security_service.models.Organization;
 import com.dapm.security_service.models.Project;
+import com.dapm.security_service.models.dtos.PipelineDto;
 import com.dapm.security_service.models.dtos.ProjectDto;
 import com.dapm.security_service.repositories.OrganizationRepository;
 import com.dapm.security_service.repositories.ProjectRepository;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import com.dapm.security_service.security.CustomUserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,6 +23,22 @@ public class ProjectController {
     private ProjectRepository projectRepository;
     @Autowired
     private OrganizationRepository organizationRepository;
+
+    @PreAuthorize("hasAuthority('READ_PROJECT')")
+    @GetMapping
+    public List<ProjectDto> getAllProjects() {
+        return projectRepository.findAll()
+                .stream()
+                .map(ProjectDto::new)
+                .toList();
+    }
+    @PreAuthorize("hasAuthority('READ_PROJECT')")
+    @GetMapping("/{title}")
+    public ResponseEntity<ProjectDto> getProjectById(@PathVariable String title) {
+        return projectRepository.findByTitle(title)
+                .map(project -> ResponseEntity.ok(new ProjectDto(project)))
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('CREATE_PROJECT')")
@@ -42,4 +60,29 @@ public class ProjectController {
         Project created =projectRepository.save(project);
         return ResponseEntity.ok(new ProjectDto(created));
     }
+    @PreAuthorize("hasAuthority('DELETE_PROJECT')")
+    @DeleteMapping("/{title}")
+    public ResponseEntity<Void> deleteProject(@PathVariable String title) {
+        Project project = projectRepository.findByTitle(title)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+        projectRepository.delete(project);
+        return ResponseEntity.noContent().build();
+    }
+    //update a project with createProjectDto
+    @PreAuthorize("hasAuthority('UPDATE_PROJECT')")
+    @PutMapping("/{title}")
+    public ResponseEntity<ProjectDto> updateProject(
+            @PathVariable String title,
+            @RequestBody CreateProjectDto request
+    ) {
+        Project project = projectRepository.findByTitle(title)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+        project.setTitle(request.getTitle());
+        Project updated = projectRepository.save(project);
+        return ResponseEntity.ok(new ProjectDto(updated));
+    }
+
+
+
+
 }

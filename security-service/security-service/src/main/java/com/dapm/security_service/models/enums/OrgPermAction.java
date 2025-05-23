@@ -8,8 +8,7 @@ public enum OrgPermAction {
     CREATE_PROJECT,
     DELETE_PROJECT,
     UPDATE_PROJECT,
-    CREATE_ROLE,
-    DELETE_ROLE,
-    UPDATE_ROLE,
-    ASSIGN_ROLE
+
+    ASSIGN_ROLE,
+    READ_PROJECT,
 }
