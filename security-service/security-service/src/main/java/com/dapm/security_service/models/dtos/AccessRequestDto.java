@@ -40,8 +40,8 @@ public class AccessRequestDto {
         this.id=accessrequest.getId();
         UserDto userDto=new UserDto(accessrequest.getRequester());
         this.requester=userDto;
-        this.resourceType=accessrequest.getResourceType().getId();
-        this.action=accessrequest.getAction().getName();
+//        this.resourceType=accessrequest.getResourceType().getId();
+//        this.action=accessrequest.getAction().getName();
         this.details=accessrequest.getDetails();
         this.durationInHours=accessrequest.getDurationInHours();
         this.requestTime=accessrequest.getRequestTime();

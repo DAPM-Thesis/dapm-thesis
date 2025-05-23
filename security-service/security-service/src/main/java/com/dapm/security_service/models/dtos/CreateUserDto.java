@@ -16,21 +16,17 @@ public class CreateUserDto {
     private String username;
     private String email;
     private String passwordHash;
-    private String organization;
-    private String faculty;
-    private String department;
-    private Set<String> roles;
+
+    private String orgRole="ADMIN_ORG_ROLE";
+
 
     public CreateUserDto(User u){
         this.username=u.getUsername();
         this.passwordHash=u.getPasswordHash();
         this.email=u.getEmail();
-        this.organization=u.getOrganization().getName();
-        this.faculty=u.getFaculty().getName();
-        this.department=u.getDepartment().getName();
-        this.roles = u.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
+
+        this.orgRole=u.getOrgRole().getName();
+
 
     }
 }

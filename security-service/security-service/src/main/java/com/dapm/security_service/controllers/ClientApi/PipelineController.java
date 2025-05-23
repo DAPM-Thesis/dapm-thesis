@@ -1,25 +1,39 @@
 package com.dapm.security_service.controllers.ClientApi;
 
-import com.dapm.security_service.models.Pipeline;
+import com.dapm.security_service.models.*;
+import com.dapm.security_service.models.dtos.CreatePipelineDto;
 import com.dapm.security_service.models.dtos.PipelineDto;
+import com.dapm.security_service.repositories.OrganizationRepository;
 import com.dapm.security_service.repositories.PipelineRepository;
+import com.dapm.security_service.repositories.ProcessingElementRepository;
+import com.dapm.security_service.repositories.TokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
 
+
+import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/pipelines")
 public class PipelineController {
 
-    @Autowired
-    private PipelineRepository pipelineRepository;
+    @Autowired private PipelineRepository pipelineRepository;
+    @Autowired private OrganizationRepository organizationRepository;
+    @Autowired private ProcessingElementRepository processingElementRepository;
+    @Autowired private TokenRepository tokenRepository;
 
     @GetMapping
     public List<PipelineDto> getAllPipelines() {
-        var pipelines =  pipelineRepository.findAll();
-        return pipelines.stream().map(PipelineDto::new).toList();
+        return pipelineRepository.findAll()
+                .stream()
+                .map(PipelineDto::new)
+                .toList();
     }
 
     @GetMapping("/{id}")
@@ -28,28 +42,30 @@ public class PipelineController {
     }
 
     @PostMapping
-    public PipelineDto createPipeline(@RequestBody Pipeline pipeline) {
-        if (pipeline.getId() == null) {
-            pipeline.setId(UUID.randomUUID());
-        }
+    public PipelineDto createPipeline(@RequestBody CreatePipelineDto pipeline) {
+        Pipeline p = new Pipeline();
+        p.setId(pipeline.getId() != null ? pipeline.getId() : UUID.randomUUID());
+        p.setName(pipeline.getName());
+        p.setDescription(pipeline.getDescription());
+        p.setCreatedBy(UUID.fromString("11111111-1111-1111-1111-111111111115"));
+        p.setCreatedAt(Instant.now());
+        p.setUpdatedAt(Instant.now());
+        p.setChannels(pipeline.getChannels());
 
-        if (pipeline.getNodes() != null) {
-            pipeline.getNodes().forEach(node -> {
-                if (node.getId() == null) {
-                    node.setId(UUID.randomUUID());
-                }
-            });
-        }
 
-        if (pipeline.getTokens() != null) {
-            pipeline.getTokens().forEach(token -> {
-                if (token.getId() == null) {
-                    token.setId(UUID.randomUUID());
-                }
-            });
-        }
+        Organization organization = organizationRepository.findByName(pipeline.getOwnerOrganization())
+                .orElseThrow(() -> new IllegalArgumentException("Organization not found"));
+        p.setOwnerOrganization(organization);
 
-        Pipeline savedPipeline = pipelineRepository.save(pipeline);
+        Set<ProcessingElement> processingElements = pipeline.getProcessingElements().stream()
+                .map(processingElementRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+
+        p.setProcessingElements(processingElements);
+
+        Pipeline savedPipeline = pipelineRepository.save(p);
         return new PipelineDto(savedPipeline);
     }
 

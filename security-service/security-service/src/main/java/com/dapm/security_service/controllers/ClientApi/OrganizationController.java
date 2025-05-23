@@ -1,4 +1,5 @@
 package com.dapm.security_service.controllers.ClientApi;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.dapm.security_service.models.Organization;
 import com.dapm.security_service.repositories.OrganizationRepository;

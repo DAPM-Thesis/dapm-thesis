@@ -1,5 +1,6 @@
 package com.dapm.security_service.services;
 
+import com.dapm.security_service.models.PipelineProcessingElementRequest;
 import com.dapm.security_service.models.Role;
 import com.dapm.security_service.models.User;
 import io.jsonwebtoken.Jwts;
@@ -28,6 +29,9 @@ public class TokenService {
     @Value("${org.private-key}")
     private String privateKeyString;
 
+    @Value("${dapm.defaultOrgName}")
+    private String orgId;
+
     @PostConstruct
     public void init() {
         try {
@@ -50,23 +54,6 @@ public class TokenService {
     }
 
 
-    /*
-    @PostConstruct
-    public void init() throws Exception {
-        // Remove PEM header/footer and whitespace.
-        String privateKeyPEM = privateKeyString
-                .replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s+", "");
-
-        byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        this.privateKey = keyFactory.generatePrivate(keySpec);
-    }
-
-     */
-
     /**
      * Generates a JWT for the given user including claims for username,
      * organization, faculty, department, and roles.
@@ -83,11 +70,7 @@ public class TokenService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", user.getUsername());
         claims.put("organization", user.getOrganization().getName());
-        claims.put("faculty", user.getFaculty().getName());
-        claims.put("department", user.getDepartment().getName());
-        claims.put("roles", user.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toList()));
+
 
         // Build and sign the JWT.
         return Jwts.builder()
@@ -95,6 +78,40 @@ public class TokenService {
                 .setSubject(user.getId().toString())
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusMillis(expirationMillis)))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
+    }
+
+    public String generateTokenForNodeRequest(PipelineProcessingElementRequest request){
+        Instant now = Instant.now();
+
+        Map<String, Object> claims = new HashMap<>();
+
+        claims.put("pipelineId", request.getPipelineId().toString());
+        claims.put("pipelineNodeId", request.getPipelineNode().getId().toString());
+
+        claims.put("requesterIdUsername", request.getRequesterInfo().getRequesterId());
+
+        claims.put("allowedExecutions", request.getRequestedExecutionCount());
+        claims.put("allowedDurationHours", request.getRequestedDurationHours());
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(request.getId().toString())
+                //.setIssuer("OrgB")
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plusMillis(request.getAllowedDurationHours())))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
+    }
+
+    public String generateHandshakeToken(long ttlSeconds) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .setIssuer(orgId)
+                .setSubject("handshake")
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plusSeconds(ttlSeconds)))
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }

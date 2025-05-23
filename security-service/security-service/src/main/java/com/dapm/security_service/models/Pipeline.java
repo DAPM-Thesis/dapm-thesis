@@ -2,9 +2,9 @@ package com.dapm.security_service.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -30,19 +30,32 @@ public class Pipeline {
     @Column(name = "description", length = 1000)
     private String description;
 
-    // Pipeline execution role
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
+
+
+    // Pipeline execution role (can be linked to the user later)
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "pipeline_role_id", nullable = false)
+    @JoinColumn(name = "pipeline_role_id", nullable = true)
     private Role pipelineRole;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    // Instead of nodes, we reference processing elements
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
-            name = "pipeline_node_mapping",
+            name = "pipeline_processing_element_mapping",
             joinColumns = @JoinColumn(name = "pipeline_id"),
-            inverseJoinColumns = @JoinColumn(name = "node_id")
+            inverseJoinColumns = @JoinColumn(name = "processing_element_id")
     )
     @Builder.Default
-    private Set<Node> nodes = new HashSet<>();
+    private Set<ProcessingElement> processingElements = new HashSet<>();
+
+
+
+    @ElementCollection
+    @CollectionTable(name = "pipeline_channels", joinColumns = @JoinColumn(name = "pipeline_id"))
+    private List<Channel> channels;
+
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

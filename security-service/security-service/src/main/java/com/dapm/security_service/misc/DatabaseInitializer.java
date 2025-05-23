@@ -1,6 +1,7 @@
 package com.dapm.security_service.misc;
 
 import com.dapm.security_service.models.*;
+import com.dapm.security_service.models.enums.OrgPermAction;
 import com.dapm.security_service.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,16 +18,17 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     // Repositories
     @Autowired private OrganizationRepository organizationRepository;
-    @Autowired private FacultyRepository facultyRepository;
-    @Autowired private DepartmentRepository departmentRepository;
     @Autowired private PermissionRepository permissionRepository;
     @Autowired private RoleRepository roleRepository;
     @Autowired private UserRepository userRepository;
-    @Autowired private PolicyRepository policyRepository;
-    @Autowired private ResourceTypeRepository resourceTypeRepository;
-    @Autowired private ResourceRepository resourceRepository;
-    @Autowired private NodeRepository nodeRepository;
+    @Autowired private OrgRoleRepository orgRoleRepository;
     @Autowired private PipelineRepository pipelineRepository;
+    @Autowired private ProjectRepository projectRepository;
+    @Autowired private OrgPermissionRepository orgPermissionRepository;
+
+    @Autowired
+    private ProcessingElementRepository processingElementRepository;
+
 
     // BCrypt encoder
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -40,9 +42,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private static final UUID ORG_A_ID = UUID.fromString("3430e05b-3b59-48c2-ae8a-22a9a9232f18");
     private static final UUID ORG_B_ID = UUID.fromString("99999999-9999-9999-9999-999999999999");
 
-    // Faculty and Department for OrgA
-    private static final UUID FACULTY_CS_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final UUID DEPT_SE_ID    = UUID.fromString("22222222-2222-2222-2222-222222222222");
+
 
     // Permissions
     private static final UUID PERM_APPROVE_ACCESS_ID         = UUID.fromString("aaaaaaaa-1111-1111-1111-aaaaaaaaaaaa");
@@ -67,6 +67,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private static final UUID ROLE_DEPHEAD_ID      = UUID.fromString("dddddddd-2222-2222-2222-dddddddd2222");
     private static final UUID ROLE_RESEARCHER_ID   = UUID.fromString("eeeeeeee-3333-3333-3333-eeeeeeee3333");
     private static final UUID ROLE_PIPELINE_ID     = UUID.fromString("f17a2042-f9c8-4a46-83fc-5c83e1cb7aee"); // Given
+
 
     // Roles for OrgB
     private static final UUID ROLE_ADMIN_B_ID      = UUID.fromString("bbbbbbbb-1111-1111-1111-bbbbbbbb1111");
@@ -112,48 +113,72 @@ public class DatabaseInitializer implements CommandLineRunner {
     // Resource for OrgB
     private static final UUID RESOURCE_C_ID = UUID.fromString("ccccccc0-5555-5555-5555-cccccccccccc");
 
+
+
+
+
+
+
+
+    // Hey there I am new
+    // Create a project uuid
+    private static final UUID PROJECT1_ID = UUID.fromString("99999999-0000-0000-0000-999999999999");
+    private static final UUID PROJECT2_ID = UUID.fromString("99999999-0000-0000-0000-199999999999");
+
+    // Hey there I am new
+    // Create a OrgRole
+    private static final UUID ADMIN_ID = UUID.fromString("99999999-0000-0000-0000-299999999999");
+    private static final UUID MEMBER_ID = UUID.fromString("99999999-0000-0000-0000-399999999999");
+
+
+
+
     @Transactional
     @Override
     public void run(String... args) throws Exception {
-        // 1. Create Organizations.
-        Organization orgA = organizationRepository.findByName("OrgA");
-        if (orgA == null) {
-            orgA = Organization.builder()
-                    .id(ORG_A_ID)
-                    .name("OrgA")
+        System.out.println("Default Org Name: " + orgName);
+
+        Organization org;
+
+
+//TODO: orgB IS  hardcoded , chnage later to be dynamic
+        if (orgName.equals("OrgA")) {
+            org = organizationRepository.findByName("OrgA")
+                    .orElseGet(() -> organizationRepository.save(
+                            Organization.builder()
+                                    .id(ORG_A_ID)
+                                    .name("OrgA")
+                                    .build()
+                            ));
+//            organizationRepository.findByName("OrgB")
+//                                    .orElseGet(() -> organizationRepository.save(
+//                                            Organization.builder()
+//                                                    .id(ORG_B_ID)
+//                                                    .name("OrgB")
+//                                                    .build()
+//                    ));
+        } else {
+            org = organizationRepository.findByName("OrgB")
+                    .orElseGet(() -> organizationRepository.save(
+                            Organization.builder()
+                                    .id(ORG_B_ID)
+                                    .name("OrgB")
+                                    .build()
+                    ));
+            // 👇 Add this only inside the OrgB block
+            ProcessingElement peB = ProcessingElement.builder()
+                    .id(NODE_B_ID)
+                    .templateId("pe_discovery")
+                    .ownerOrganization(org)
+                    .inputs(Set.of("Event"))
+                    .outputs(Set.of("Model"))
+                    .visibility(Set.of("OrgA"))
                     .build();
-            orgA = organizationRepository.save(orgA);
-        }
-        Organization orgB = organizationRepository.findByName("OrgB");
-        if (orgB == null) {
-            orgB = Organization.builder()
-                    .id(ORG_B_ID)
-                    .name("OrgB")
-                    .build();
-            orgB = organizationRepository.save(orgB);
+
+            processingElementRepository.save(peB);
+
         }
 
-        // 2. Create Faculty "Computer Science" for OrgA.
-        Faculty faculty = facultyRepository.findByName("Computer Science");
-        if (faculty == null) {
-            faculty = Faculty.builder()
-                    .id(FACULTY_CS_ID)
-                    .name("Computer Science")
-                    .organization(orgA)
-                    .build();
-            faculty = facultyRepository.save(faculty);
-        }
-
-        // 3. Create Department "Software Engineering" under "Computer Science".
-        Department department = departmentRepository.findByName("Software Engineering");
-        if (department == null) {
-            department = Department.builder()
-                    .id(DEPT_SE_ID)
-                    .name("Software Engineering")
-                    .faculty(faculty)
-                    .build();
-            department = departmentRepository.save(department);
-        }
 
         // 4. Define Permissions.
         Map<String, Permission> permissionMap = new HashMap<>();
@@ -191,7 +216,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                 permissionMap.get("EXCHANGE_PUBLIC_KEYS"),
                 permissionMap.get("ROLE_MANAGEMENT")
         ));
-        Role adminRole = createRoleIfNotExistStatic("ADMIN", orgA, adminPerms, ROLE_ADMIN_ID);
+        Role adminRole = createRoleIfNotExistStatic("ADMIN", org, adminPerms, ROLE_ADMIN_ID);
 
         Set<Permission> depHeadPerms = new HashSet<>(Arrays.asList(
                 permissionMap.get("APPROVE_ACCESS"),
@@ -200,7 +225,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                 permissionMap.get("EXECUTE_PIPELINE"),
                 permissionMap.get("REQUEST_ACCESS")
         ));
-        Role depHeadRole = createRoleIfNotExistStatic("DEPARTMENT_HEAD", orgA, depHeadPerms, ROLE_DEPHEAD_ID);
+        Role depHeadRole = createRoleIfNotExistStatic("DEPARTMENT_HEAD", org, depHeadPerms, ROLE_DEPHEAD_ID);
 
         Set<Permission> researcherPerms = new HashSet<>(Arrays.asList(
                 permissionMap.get("REQUEST_ACCESS"),
@@ -213,7 +238,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                 permissionMap.get("EDIT_RESOURCE"),
                 permissionMap.get("DOWNLOAD_RESOURCE")
         ));
-        Role researcherRole = createRoleIfNotExistStatic("RESEARCHER", orgA, researcherPerms, ROLE_RESEARCHER_ID);
+        Role researcherRole = createRoleIfNotExistStatic("RESEARCHER", org, researcherPerms, ROLE_RESEARCHER_ID);
 
         Set<Permission> pipelinePerms = new HashSet<>(Arrays.asList(
                 permissionMap.get("READ_RESOURCE"),
@@ -221,144 +246,84 @@ public class DatabaseInitializer implements CommandLineRunner {
                 permissionMap.get("MODIFY_RESOURCE"),
                 permissionMap.get("DELETE_RESOURCE")
         ));
-        Role pipelineRole = createRoleIfNotExistStatic("PIPELINE_ROLE", orgA, pipelinePerms, ROLE_PIPELINE_ID);
+        Role pipelineRole = createRoleIfNotExistStatic("PIPELINE_ROLE", org, pipelinePerms, ROLE_PIPELINE_ID);
 
-        // Create Roles for OrgB.
-        Role adminRoleB = createRoleIfNotExistStatic("ADMIN", orgB, adminPerms, ROLE_ADMIN_B_ID);
-        Role depHeadRoleB = createRoleIfNotExistStatic("DEPARTMENT_HEAD", orgB, depHeadPerms, ROLE_DEPHEAD_B_ID);
-        Role researcherRoleB = createRoleIfNotExistStatic("RESEARCHER", orgB, researcherPerms, ROLE_RESEARCHER_B_ID);
-        Role pipelineRoleB = createRoleIfNotExistStatic("PIPELINE_ROLE", orgB, pipelinePerms, ROLE_PIPELINE_B_ID);
+        // Hey there I am new
+        // Create Org Roles for OrgA.
+        OrgRole AdminOrgRole = createOrgRoleIfNotExistStatic("ADMIN_ORG_ROLE", org, ADMIN_ID);
+        OrgRole defaultOrgRole = createOrgRoleIfNotExistStatic("MEMBER_ORG_ROLE", org, MEMBER_ID);
+
+        // Hey there I am new
+        // let's create the org permissions
+        OrgPermission orgPermission1 = createOrgPermissionIfNotExistStatic(OrgPermAction.CREATE_USER, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission2 = createOrgPermissionIfNotExistStatic(OrgPermAction.DELETE_USER, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission3 = createOrgPermissionIfNotExistStatic(OrgPermAction.CREATE_PROJECT, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission4 = createOrgPermissionIfNotExistStatic(OrgPermAction.READ_PROJECT, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission5 = createOrgPermissionIfNotExistStatic(OrgPermAction.UPDATE_PROJECT, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission6 = createOrgPermissionIfNotExistStatic(OrgPermAction.ASSIGN_ROLE, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission7 = createOrgPermissionIfNotExistStatic(OrgPermAction.DELETE_PROJECT, AdminOrgRole, UUID.randomUUID());
+
 
         // 6. Create Users for OrgA.
-        createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, orgA, faculty, department, USER_ANNA_ID);
-        createUserIfNotExistStatic("anthoni", "anthoni@example.com", "dapm", depHeadRole, orgA, faculty, department, USER_ANTHONI_ID);
-        createUserIfNotExistStatic("alice", "alice@example.com", "dapm", researcherRole, orgA, faculty, department, USER_ALICE_ID);
-        createUserIfNotExistStatic("ashley", "ashley@example.com", "dapm", researcherRole, orgA, faculty, department, USER_ASHLEY_ID);
+        createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, AdminOrgRole,org, USER_ANNA_ID);
+        createUserIfNotExistStatic("anthoni", "anthoni@example.com", "dapm", depHeadRole,AdminOrgRole, org, USER_ANTHONI_ID);
+        createUserIfNotExistStatic("alice", "alice@example.com", "dapm", researcherRole,defaultOrgRole, org,  USER_ALICE_ID);
+        createUserIfNotExistStatic("ashley", "ashley@example.com", "dapm", researcherRole,defaultOrgRole, org,  USER_ASHLEY_ID);
 
-        // 7. Create Users for OrgB.
-        createUserIfNotExistStatic("brian", "brian@example.com", "dapm", adminRoleB, orgB, faculty, department, USER_BRIAN_ID);
-        createUserIfNotExistStatic("barni", "barni@example.com", "dapm", depHeadRoleB, orgB, faculty, department, USER_BARNI_ID);
-        createUserIfNotExistStatic("bob", "bob@example.com", "dapm", researcherRoleB, orgB, faculty, department, USER_BOB_ID);
-        createUserIfNotExistStatic("bobby", "bobby@example.com", "dapm", researcherRoleB, orgB, faculty, department, USER_BOBBY_ID);
 
-        // 8. Create a Policy for EXECUTE_PIPELINE in OrgA.
-        createPolicyIfNotExistStatic(permissionMap.get("EXECUTE_PIPELINE"), department, faculty, "ALLOW", POLICY_EXEC_PIPELINE_ID);
-
-        // 9.0 Create Resource Types:
-        ResourceType resourceTypeA = ResourceType.builder()
-                .id(RESOURCETYPE_A_ID)
-                .name("DataSource")
-                .description("Data source type for OrgA")
-                .build();
-        resourceTypeA = resourceTypeRepository.save(resourceTypeA);
-
-        ResourceType resourceTypeB = ResourceType.builder()
-                .id(RESOURCETYPE_B_ID)
-                .name("Algorithm")
-                .description("Data source type for OrgA + OrgB")
-                .build();
-        resourceTypeA = resourceTypeRepository.save(resourceTypeB);
-
-        // 9.1 Create Resources.
-        // Resource A for OrgA.
-        Resource resourceA = Resource.builder()
-                .id(RESOURCE_A_ID)
-                .name("Resource A")
-                .description("Data source A")
-                .resourceType(ResourceType.builder()
-                        .id(RESOURCETYPE_A_ID)
-                        .name("DataSource")
-                        .description("Data source type for OrgA")
-                        .build())
-                .organization(orgA)
-                .build();
-        resourceA = resourceRepository.save(resourceA);
-
-        // Resource B for OrgA.
-        Resource resourceB = Resource.builder()
-                .id(RESOURCE_B_ID)
-                .name("Resource B")
-                .description("Data source B")
-                .resourceType(ResourceType.builder()
-                        .id(RESOURCETYPE_A_ID)
-                        .name("DataSource")
-                        .description("Data source type for OrgA")
-                        .build())
-                .organization(orgA)
-                .build();
-        resourceB = resourceRepository.save(resourceB);
-
-        // Resource C for OrgB.
-        Resource resourceC = Resource.builder()
-                .id(RESOURCE_C_ID)
-                .name("Resource C")
-                .description("Data source C")
-                .resourceType(ResourceType.builder()
-                        .id(RESOURCETYPE_B_ID)
-                        .name("DataSource")
-                        .description("Data source type for OrgB")
-                        .build())
-                .organization(orgB)
-                .build();
-        resourceC = resourceRepository.save(resourceC);
+        // Hey there I am new
+        Project p=createProjectIfNotExistStatic("dapm",org,PROJECT1_ID);
 
         // 10. Create a Pipeline (owned by OrgA).
         Pipeline pipeline = Pipeline.builder()
                 .id(PIPELINE_ID)
                 .name("Cross-Org Pipeline")
-                .ownerOrganization(orgA)
-                .description("Pipeline with nodes from OrgA and OrgB")
+                .ownerOrganization(org)
+                .description("Pipeline with processing elements from OrgA and OrgB")
                 .pipelineRole(pipelineRole)
-                .nodes(new HashSet<>())
+                .project(p)
+                .processingElements(new HashSet<>())  // Use processingElements field
                 .tokens(new HashSet<>())
                 .createdBy(CREATED_BY_ID)
                 .createdAt(Instant.parse("2025-03-11T13:45:07.455Z"))
                 .updatedAt(Instant.parse("2025-03-11T13:45:07.455Z"))
                 .build();
 
-        // 11. Create Nodes.
-        Node node1 = Node.builder()
-                .id(NODE_A1_ID)
-                .name("OrgA Node 1")
-                .ownerOrganization(orgA)
-                .defaultExecutionCount(10)
-                .defaultDurationHours(1)
+
+        // 11. Create Processing Elements.
+// You can use your existing node IDs for processing element IDs if desired,
+// or generate new ones. Here, we're reusing the constants.
+        ProcessingElement pe1 = ProcessingElement.builder()
+                .id(NODE_A1_ID)  // or UUID.randomUUID() if you prefer
+                .templateId("pe_filter")  // This template represents an OrgA template
+                .ownerOrganization(org)
+                .inputs(new HashSet<>())   // Set default inputs as needed
+                .outputs(new HashSet<>())  // Set default outputs as needed
                 .build();
-        Node node2 = Node.builder()
+
+        ProcessingElement pe2 = ProcessingElement.builder()
                 .id(NODE_A2_ID)
-                .name("OrgA Node 2")
-                .ownerOrganization(orgA)
-                .defaultExecutionCount(10)
-                .defaultDurationHours(1)
-                .build();
-        Node node3 = Node.builder()
-                .id(NODE_B_ID)
-                .name("OrgB Node")
-                .ownerOrganization(orgB)
-                .defaultExecutionCount(5)
-                .defaultDurationHours(1)
+                .templateId("pe_filter")
+                .ownerOrganization(org)
+                .inputs(new HashSet<>())
+                .outputs(new HashSet<>())
                 .build();
 
-        // Associate allowed resources with nodes.
-        node1.setAllowedResources(new HashSet<>(Arrays.asList(resourceA, resourceB)));
-        node2.setAllowedResources(new HashSet<>());
-        node3.setAllowedResources(new HashSet<>(Collections.singletonList(resourceC)));
-
-        // Save nodes.
-        node1 = nodeRepository.save(node1);
-        node2 = nodeRepository.save(node2);
-        node3 = nodeRepository.save(node3);
+        pe1 = processingElementRepository.save(pe1);
+        pe2 = processingElementRepository.save(pe2);
 
         // 12. Associate nodes with the pipeline (ManyToMany).
 
         // Set<Node> nodes = new HashSet<>(Arrays.asList(node1, node2, node3));
         // pipeline.setNodes(nodes);
-        pipeline.getNodes().clear();
-        pipeline.getNodes().addAll(Arrays.asList(node1,node2,node3));
+        pipeline.getProcessingElements().clear();
 
         // 13. Set tokens as empty for now.
         //pipeline.setTokens(new HashSet<>());
         pipeline.getTokens().clear();
+
+        // 14. Create sample PE Templates for testing assembly stage.
+
 
         // Save the pipeline.
         pipeline = pipelineRepository.save(pipeline);
@@ -395,10 +360,9 @@ public class DatabaseInitializer implements CommandLineRunner {
         return role;
     }
 
-    private void createUserIfNotExistStatic(String username, String email, String rawPassword, Role role,
-                                            Organization organization, Faculty faculty, Department department, UUID id) {
-        User existingUser = userRepository.findByUsername(username);
-        if (existingUser == null) {
+    private void createUserIfNotExistStatic(String username, String email, String rawPassword, Role role, OrgRole orgRole,
+                                            Organization organization, UUID id) {
+        userRepository.findByUsername(username).orElseGet(() -> {
             String passwordHash = passwordEncoder.encode(rawPassword);
             User user = User.builder()
                     .id(id)
@@ -406,26 +370,54 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .email(email)
                     .passwordHash(passwordHash)
                     .organization(organization)
-                    .faculty(faculty)
-                    .department(department)
-                    .roles(new HashSet<>(Collections.singletonList(role)))
+                    .orgRole(orgRole)
                     .build();
-            userRepository.save(user);
-        }
+            return userRepository.save(user);
+        });
     }
 
-    private void createPolicyIfNotExistStatic(Permission permission, Department allowedDepartment, Faculty allowedFaculty,
-                                              String effect, UUID id) {
-        Policy policy = policyRepository.findByPermission(permission);
-        if (policy == null) {
-            policy = Policy.builder()
+    private OrgPermission createOrgPermissionIfNotExistStatic(OrgPermAction action, OrgRole orgRole, UUID id) {
+        OrgPermission orgPermission = orgPermissionRepository.findByAction(action);
+        if (orgPermission == null) {
+            orgPermission = OrgPermission.builder()
                     .id(id)
-                    .permission(permission)
-                    .allowedDepartment(allowedDepartment)
-                    .allowedFaculty(allowedFaculty)
-                    .effect(effect)
+                    .action(action)
+                    .orgRole(orgRole)
                     .build();
-            policyRepository.save(policy);
+            orgPermission = orgPermissionRepository.save(orgPermission);
         }
+        return orgPermission;
     }
+
+    // create a creatOrgRoleIfNotExistStatic method
+    private OrgRole createOrgRoleIfNotExistStatic(String name, Organization organization, UUID id) {
+        OrgRole orgRole = orgRoleRepository.findByName(name);
+        if (orgRole == null) {
+            orgRole = OrgRole.builder()
+                    .id(id)
+                    .name(name)
+                    .organization(organization)
+                    .build();
+            orgRole = orgRoleRepository.save(orgRole);
+        }
+        return orgRole;
+    }
+
+    private Project createProjectIfNotExistStatic(String name, Organization organization, UUID id) {
+        Optional<Project> optionalProject = projectRepository.findByTitle(name);
+        Project p;
+        if (optionalProject.isPresent()) {
+            p = optionalProject.get();
+        } else {
+            p = Project.builder()
+                    .id(id)
+                    .title(name)
+                    .organization(organization)
+                    .build();
+            p = projectRepository.save(p);
+        }
+        return p;
+    }
+
+
 }
