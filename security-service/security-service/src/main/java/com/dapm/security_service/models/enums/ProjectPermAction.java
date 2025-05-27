@@ -5,5 +5,6 @@ public enum ProjectPermAction {
     READ,
     WRITE,
     DELETE,
-    MANAGE
+    MANAGE,
+    CREATE_PIPELINE
 }

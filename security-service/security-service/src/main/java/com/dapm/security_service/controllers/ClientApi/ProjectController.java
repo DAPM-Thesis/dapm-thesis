@@ -1,11 +1,11 @@
 package com.dapm.security_service.controllers.ClientApi;
 import com.dapm.security_service.models.Organization;
 import com.dapm.security_service.models.Project;
-import com.dapm.security_service.models.dtos.PipelineDto;
-import com.dapm.security_service.models.dtos.ProjectDto;
+import com.dapm.security_service.models.ProjectRole;
+import com.dapm.security_service.models.dtos.*;
 import com.dapm.security_service.repositories.OrganizationRepository;
 import com.dapm.security_service.repositories.ProjectRepository;
-import com.dapm.security_service.models.dtos.CreateProjectDto;
+import com.dapm.security_service.repositories.ProjectsRolesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +24,9 @@ public class ProjectController {
     @Autowired
     private OrganizationRepository organizationRepository;
 
+    @Autowired
+    private ProjectsRolesRepository projectsRolesRepository;
+
     @PreAuthorize("hasAuthority('READ_PROJECT')")
     @GetMapping
     public List<ProjectDto> getAllProjects() {
@@ -39,7 +42,6 @@ public class ProjectController {
                 .map(project -> ResponseEntity.ok(new ProjectDto(project)))
                 .orElse(ResponseEntity.notFound().build());
     }
-
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('CREATE_PROJECT')")
     public ResponseEntity<ProjectDto> createProject(
@@ -60,6 +62,19 @@ public class ProjectController {
         Project created =projectRepository.save(project);
         return ResponseEntity.ok(new ProjectDto(created));
     }
+
+    @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
+    @PutMapping("/{title}/assignrole")
+    public ResponseEntity<ProjectDto> assignRoleToProject(@PathVariable String title, @RequestBody ProjectRolesAssignmentDto projectRolesAssignmentDto) {
+        Project project= projectRepository.findByTitle(title).orElse(null);
+        ProjectRole projectRole=projectsRolesRepository.findByName(projectRolesAssignmentDto.getRole());
+
+        project.getProjectRoles().add(projectRole);
+
+        Project updated =projectRepository.save(project);
+        return ResponseEntity.ok(new ProjectDto(updated));
+    }
+
     @PreAuthorize("hasAuthority('DELETE_PROJECT')")
     @DeleteMapping("/{title}")
     public ResponseEntity<Void> deleteProject(@PathVariable String title) {
@@ -81,7 +96,6 @@ public class ProjectController {
         Project updated = projectRepository.save(project);
         return ResponseEntity.ok(new ProjectDto(updated));
     }
-
 
 
 

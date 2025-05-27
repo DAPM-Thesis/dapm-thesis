@@ -43,4 +43,5 @@ public class Project {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<ProjectRole> projectRoles;
+
 }

@@ -22,6 +22,8 @@ public class PipelineDto {
 
     private List<Channel> channels;
 
+    private String project;
+
 
     //    private UUID pipelineRoleId;
     private String pipelineRoleName;
@@ -64,6 +66,7 @@ public class PipelineDto {
 //        this.tokenIds = pipeline.getTokens() != null
 //                ? pipeline.getTokens().stream().map(Token::getId).collect(Collectors.toSet())
 //                : Collections.emptySet();
+        this.project= pipeline.getProject().getTitle();
 
         this.createdBy = pipeline.getCreatedBy();
         this.createdAt = pipeline.getCreatedAt();

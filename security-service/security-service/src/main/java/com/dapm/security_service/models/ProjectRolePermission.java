@@ -16,7 +16,6 @@ import java.util.UUID;
 public class ProjectRolePermission {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -30,4 +29,8 @@ public class ProjectRolePermission {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "permission_id", nullable = false)
     private ProjectPermission permission;
+
+    // Add this version field to enable optimistic locking:
+    @Version
+    private Long version;
 }

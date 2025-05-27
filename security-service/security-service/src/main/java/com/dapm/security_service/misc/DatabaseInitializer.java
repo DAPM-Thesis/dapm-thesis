@@ -2,6 +2,7 @@ package com.dapm.security_service.misc;
 
 import com.dapm.security_service.models.*;
 import com.dapm.security_service.models.enums.OrgPermAction;
+import com.dapm.security_service.models.enums.ProjectPermAction;
 import com.dapm.security_service.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,13 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Autowired private PipelineRepository pipelineRepository;
     @Autowired private ProjectRepository projectRepository;
     @Autowired private OrgPermissionRepository orgPermissionRepository;
+    @Autowired private ProjectsRolesRepository projectsRolesRepository;
+    @Autowired private ProjPermissionRepository projectPermActionRepository;
+    @Autowired private ProjectRolePermissionRepository projectRolePermissionRepository;
+    @Autowired private UserRoleAssignmentRepository userRoleAssignmentRepository;
+
+
+
 
     @Autowired
     private ProcessingElementRepository processingElementRepository;
@@ -129,6 +137,11 @@ public class DatabaseInitializer implements CommandLineRunner {
     // Create a OrgRole
     private static final UUID ADMIN_ID = UUID.fromString("99999999-0000-0000-0000-299999999999");
     private static final UUID MEMBER_ID = UUID.fromString("99999999-0000-0000-0000-399999999999");
+
+    // Hey there I am new
+    // Create a Role for Project level
+    private static final UUID RESEARCHER_ID = UUID.fromString("99999999-0001-0000-0000-299999999999");
+    private static final UUID LEADER_ID = UUID.fromString("99999999-0031-0000-0000-299999999999");
 
 
 
@@ -258,11 +271,11 @@ public class DatabaseInitializer implements CommandLineRunner {
         OrgPermission orgPermission1 = createOrgPermissionIfNotExistStatic(OrgPermAction.CREATE_USER, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission2 = createOrgPermissionIfNotExistStatic(OrgPermAction.DELETE_USER, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission3 = createOrgPermissionIfNotExistStatic(OrgPermAction.CREATE_PROJECT, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission8 = createOrgPermissionIfNotExistStatic(OrgPermAction.ASSIGN_PROJECT_ROLES, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission4 = createOrgPermissionIfNotExistStatic(OrgPermAction.READ_PROJECT, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission5 = createOrgPermissionIfNotExistStatic(OrgPermAction.UPDATE_PROJECT, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission6 = createOrgPermissionIfNotExistStatic(OrgPermAction.ASSIGN_ROLE, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission7 = createOrgPermissionIfNotExistStatic(OrgPermAction.DELETE_PROJECT, AdminOrgRole, UUID.randomUUID());
-
 
         // 6. Create Users for OrgA.
         createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, AdminOrgRole,org, USER_ANNA_ID);
@@ -271,6 +284,10 @@ public class DatabaseInitializer implements CommandLineRunner {
         createUserIfNotExistStatic("ashley", "ashley@example.com", "dapm", researcherRole,defaultOrgRole, org,  USER_ASHLEY_ID);
 
 
+        // Hey there I am new
+        // Create roles on project level
+        ProjectRole projectRole1 = createProjectRoleIfNotExistStatic("researcher",RESEARCHER_ID);
+        ProjectRole projectRole2 = createProjectRoleIfNotExistStatic("leader",LEADER_ID);
         // Hey there I am new
         Project p=createProjectIfNotExistStatic("dapm",org,PROJECT1_ID);
 
@@ -327,6 +344,17 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         // Save the pipeline.
         pipeline = pipelineRepository.save(pipeline);
+
+        // Hey there I am new
+        // create a project permission
+        ProjectPermission projectPermission1=createProjectPermissionIfNotExistStatic(ProjectPermAction.READ,pipeline,UUID.randomUUID());
+
+        ProjectRolePermission projectRolePermission=createProjectRolePermissionIfNotExistStatic(p,projectPermission1,projectRole2);
+
+        User user = userRepository.findByUsername("anna")
+                .orElseThrow(() -> new RuntimeException("User 'anna' not found"));
+
+        UserRoleAssignment userRoleAssignment = createUserRoleAssignmentIfNotExist(user, p, projectRole2);
 
         System.out.println("Database initialization complete.");
     }
@@ -418,6 +446,58 @@ public class DatabaseInitializer implements CommandLineRunner {
         }
         return p;
     }
+
+    private ProjectRole createProjectRoleIfNotExistStatic(String name, UUID id) {
+        ProjectRole proRole = projectsRolesRepository.findByName(name);
+        if (proRole == null) {
+            proRole = ProjectRole.builder()
+                    .id(id)
+                    .name(name)
+                    .build();
+            proRole = projectsRolesRepository.save(proRole);
+        }
+        return proRole;
+    }
+
+    private ProjectPermission createProjectPermissionIfNotExistStatic(ProjectPermAction action, Pipeline p, UUID id) {
+        ProjectPermission projectPermission = projectPermActionRepository.findByAction(action);
+        if (projectPermission == null) {
+            projectPermission = ProjectPermission.builder()
+                    .id(id)
+                    .action(action)
+                    .pipeline(p)
+                    .build();
+            projectPermission = projectPermActionRepository.save(projectPermission);
+        }
+        return projectPermission;
+    }
+
+    private ProjectRolePermission createProjectRolePermissionIfNotExistStatic(Project project, ProjectPermission projectPermission, ProjectRole projectRole) {
+        return projectRolePermissionRepository.findByProjectAndPermissionAndRole(project, projectPermission, projectRole)
+                .orElseGet(() -> {
+                    ProjectRolePermission newPermission = ProjectRolePermission.builder()
+                            .id(UUID.randomUUID())
+                            .permission(projectPermission)
+                            .project(project)
+                            .role(projectRole)
+                            .build();
+                    System.out.println(newPermission + " yooooooooo");
+                    return projectRolePermissionRepository.save(newPermission);
+                });
+    }
+
+    private UserRoleAssignment createUserRoleAssignmentIfNotExist(User user, Project project, ProjectRole role) {
+        return userRoleAssignmentRepository.findByUserAndProject(user, project)
+                .orElseGet(() -> {
+                    UserRoleAssignment newAssignment = UserRoleAssignment.builder()
+                            .user(user)
+                            .project(project)
+                            .role(role)
+                            .build();
+                    return userRoleAssignmentRepository.save(newAssignment);
+                });
+    }
+
 
 
 }
