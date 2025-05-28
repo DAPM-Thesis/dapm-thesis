@@ -6,6 +6,7 @@ import communication.message.Message;
 import utils.Pair;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class ConsumingProcessingElement extends ProcessingElement implements Subscriber<Pair<Message, Integer>> {
@@ -14,6 +15,7 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
      *  (PetriNet.class, 1).*/
     protected final Map<Class<? extends Message>, Integer> inputs;
     private final Map<Integer, Consumer> consumers = new HashMap<>();
+    private List<String> upstreaminstanceIds = List.of();
 
     public ConsumingProcessingElement(Configuration configuration) {
         super(configuration);
@@ -33,6 +35,24 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
         for (Consumer consumer : consumers.values()) {
             started &= consumer.start();
         }
+
+        if(started) {
+            String brokerUrl = consumers.values().iterator().next().getBrokerUrl();
+            initHeartbeat(brokerUrl);
+
+            for (String upstreamId : upstreaminstanceIds) {
+            if (upstreamId == null || upstreamId.isEmpty()) {
+                System.err.println("Upstream instance ID is null or empty, skipping heartbeat link creation.");
+                continue;
+            }
+              String sendTopic = "hb-up-" + getInstanceId() + "-to-" + upstreamId;
+              String receiveTopic = "hb-down-" + upstreamId + "-to-" + getInstanceId();
+              heartbeatManager.addLink(upstreamId, sendTopic, receiveTopic);
+            }
+
+            heartbeatManager.start();
+        }
+
         return started;
     }
 
@@ -41,6 +61,8 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
         if (!stop())
             { return false; }
 
+        stopHeartbeat();
+        
         boolean terminated = true;
         for (Consumer consumer : consumers.values()) {
            terminated &= consumer.terminate();
@@ -49,12 +71,23 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
         return terminated;
     }
 
+    public final void setUpstreaminstanceIds(List<String> ids) {
+        this.upstreaminstanceIds = List.copyOf(ids);
+    }
+
     private boolean stop() {
         boolean stopped = true;
         for (Consumer consumer : consumers.values()) {
             stopped &= consumer.stop();
         }
         return stopped;
+    }
+
+    private boolean stopHeartbeat() {
+        if(heartbeatManager != null) {
+            heartbeatManager.stop();
+        }
+        return true;
     }
 
     public final void registerConsumer(Consumer consumer, int portNumber) {

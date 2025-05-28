@@ -26,6 +26,9 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
                     publish(output);
                 }
             });
+
+            if(isRunning) startHeartbeat();
+
             return isRunning;
         } catch (Exception e) {
             throw new RuntimeException("Exception in SimpleSource", e);

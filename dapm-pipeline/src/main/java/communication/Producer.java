@@ -108,5 +108,9 @@ public class Producer implements Publisher<Message> {
             throw new KafkaException("Failed to check if topic exists, " + topic, e);
         }
     }
+
+    public String getBrokerUrl() {
+        return brokerUrl;
+    }
 }
 

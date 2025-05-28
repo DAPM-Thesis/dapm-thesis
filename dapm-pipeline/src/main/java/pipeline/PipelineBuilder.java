@@ -9,6 +9,8 @@ import communication.API.response.HTTPResponse;
 import communication.API.response.PEInstanceResponse;
 import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
+import pipeline.processingelement.HeartbeatConfiguration;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repository.PipelineRepository;
@@ -33,6 +35,7 @@ public class PipelineBuilder {
         Pipeline pipeline = new Pipeline(pipelineID, validatedPipeline.getChannels());
         buildPipeline(pipeline);
         pipelineRepository.storePipeline(pipelineID, pipeline);
+        configureHeartbeats(pipeline);
     }
 
     private void buildPipeline(Pipeline pipeline) {
@@ -115,6 +118,53 @@ public class PipelineBuilder {
         PEInstanceResponse sinkResponse = sendCreateSinkRequest(pe, consumerConfigs);
         configuredInstances.put(pe, sinkResponse);
         return sinkResponse.getInstanceID();
+    }
+
+    private void configureHeartbeats(Pipeline pipeline) {
+        DG<ProcessingElementReference, Integer> dag = pipeline.getDirectedGraph();
+
+        for (var entry : pipeline.getProcessingElements().entrySet()) {
+            String instanceID = entry.getKey();
+            ProcessingElementReference ref = entry.getValue();
+
+            List<String> upstream = dag.getUpstream(ref).stream()
+                .map(pipeline::getInstanceID)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+            List<String> downstream = dag.getDownStream(ref).stream()
+                .map(pipeline::getInstanceID)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+            if (upstream.isEmpty() && downstream.isEmpty()) {
+                continue;
+            }
+
+            HeartbeatConfiguration cfg = new HeartbeatConfiguration();
+            cfg.setUpstreamInstanceIds(upstream);
+            cfg.setDownstreamInstanceIds(downstream);
+
+            String url = ref.getOrganizationHostURL()
+                       + "/pipelineBuilder/heartbeat/instance/"
+                       + instanceID;
+            HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(cfg));
+            HTTPResponse resp = webClient.putSync(req);
+
+            if (resp == null) {
+                throw new IllegalStateException(
+                    "No response when configuring heartbeat for " + instanceID + " at " + url
+                );
+            }
+            if (!resp.status().is2xxSuccessful()) {
+                throw new IllegalStateException(
+                    "Failed to configure heartbeat for " + instanceID +
+                    " at " + url +
+                    " → HTTP " + resp.status() +
+                    " / body=" + resp.body()
+                );
+            }
+        }
     }
 
     private PEInstanceResponse sendCreateSourceRequest(ProcessingElementReference pe) {

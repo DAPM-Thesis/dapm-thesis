@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import pipeline.Pipeline;
@@ -67,6 +68,16 @@ public class PipelineBuilderTest {
                     Mockito.when(mockResponse.body()).thenReturn(bodyForUrl.apply(url));
                     return mockResponse;
                 });
+        
+        Mockito.when(httpClient.putSync(Mockito.any(HTTPRequest.class)))
+           .thenAnswer(invocation -> {
+               HTTPRequest req = invocation.getArgument(0);
+               String url = req.getUrl();
+               HTTPResponse mock = Mockito.mock(HTTPResponse.class);
+               Mockito.when(mock.body()).thenReturn(bodyForUrl.apply(url));
+               Mockito.when(mock.status()).thenReturn(HttpStatus.OK);
+               return mock;
+           });
     }
 
     private String getResponseFromFile(String path) {

@@ -14,6 +14,7 @@ public abstract class WebSource<O extends Message> extends Source<O> {
     public boolean start() {
         try {
             subscription = process().subscribe(this::publish);
+            startHeartbeat();
             return !subscription.isDisposed();
         } catch (Exception e) {
             throw new RuntimeException("Exception in WebSource", e);

@@ -7,10 +7,14 @@ import communication.ProducerFactory;
 import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
 import communication.message.Message;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import pipeline.processingelement.HeartbeatConfiguration;
+import pipeline.processingelement.ProcessingElement;
 import pipeline.processingelement.Sink;
 import pipeline.processingelement.operator.Operator;
 import pipeline.processingelement.source.Source;
@@ -103,5 +107,36 @@ public class PipelineBuilderController {
                     .build());
         }
         return ResponseEntity.badRequest().body(null);
+    }
+
+    @PutMapping("/heartbeat/instance/{instanceID}")
+    public ResponseEntity<Void> configureHeartbeat(
+        @PathVariable("instanceID") String instanceID,
+        @RequestBody HeartbeatConfiguration heartbeatConfig) {
+
+        ProcessingElement pe = peInstanceRepository.getInstance(instanceID);
+        if (pe == null) {
+          return ResponseEntity.notFound().build();
+        }
+
+        if (pe instanceof Sink sink && heartbeatConfig.getUpstreamInstanceIds() != null) {
+            System.out.println("Configuring heartbeat for Sink: " + instanceID + " with upstreams: " + heartbeatConfig.getUpstreamInstanceIds());
+            sink.setUpstreaminstanceIds(heartbeatConfig.getUpstreamInstanceIds());
+        }
+
+        if (pe instanceof Source<?> src && heartbeatConfig.getDownstreamInstanceIds() != null) {
+            System.out.println("Configuring heartbeat for Source: " + instanceID + " with downstreams: " + heartbeatConfig.getDownstreamInstanceIds());
+            src.setDownstreaminstanceIds(heartbeatConfig.getDownstreamInstanceIds());
+        }
+        
+        if (pe instanceof Operator<?,?> op) {
+            System.out.println("Configuring heartbeat for Operator: " + instanceID + 
+                                " with downstreams: " + heartbeatConfig.getDownstreamInstanceIds() + 
+                                " and upstreams: " + heartbeatConfig.getUpstreamInstanceIds());
+            if (heartbeatConfig.getUpstreamInstanceIds() != null)   op.setUpstreaminstanceIds(heartbeatConfig.getUpstreamInstanceIds());
+            if (heartbeatConfig.getDownstreamInstanceIds() != null) op.setDownstreaminstanceIds(heartbeatConfig.getDownstreamInstanceIds());
+        }
+
+        return ResponseEntity.ok().build();
     }
 }

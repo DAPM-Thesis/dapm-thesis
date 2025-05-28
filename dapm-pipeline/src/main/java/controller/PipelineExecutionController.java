@@ -24,6 +24,7 @@ public class PipelineExecutionController {
     @PutMapping("/start/instance/{instanceID}")
     public ResponseEntity<Void> startProcessingElement(@PathVariable("instanceID") String instanceID) {
         ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
+        processingElement.setInstanceId(instanceID);
         if (processingElement != null && processingElement.start())
             { return ResponseEntity.ok().build(); }
         return ResponseEntity.badRequest().body(null);
