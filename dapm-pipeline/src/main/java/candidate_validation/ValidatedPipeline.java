@@ -1,7 +1,9 @@
 package candidate_validation;
 
 import candidate_validation.parsing.InvalidCandidate;
+import candidate_validation.parsing.JsonSchemaMismatch;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
@@ -20,6 +22,10 @@ public class ValidatedPipeline {
 
         this.elements = candidate.getElements();
         this.channels = candidate.getChannels();
+    }
+
+    public ValidatedPipeline(String json, URI configFolderPath) throws JsonSchemaMismatch, InvalidCandidate {
+        this(new PipelineCandidate(json, configFolderPath));
     }
 
     public Set<ProcessingElementReference> getElements() { return Set.copyOf(elements); }
