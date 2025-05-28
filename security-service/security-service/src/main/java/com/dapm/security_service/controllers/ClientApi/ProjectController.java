@@ -36,9 +36,9 @@ public class ProjectController {
                 .toList();
     }
     @PreAuthorize("hasAuthority('READ_PROJECT')")
-    @GetMapping("/{title}")
-    public ResponseEntity<ProjectDto> getProjectById(@PathVariable String title) {
-        return projectRepository.findByTitle(title)
+    @GetMapping("/{name}")
+    public ResponseEntity<ProjectDto> getProjectById(@PathVariable String name) {
+        return projectRepository.findByName(name)
                 .map(project -> ResponseEntity.ok(new ProjectDto(project)))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -48,13 +48,13 @@ public class ProjectController {
             @RequestBody CreateProjectDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (request.getTitle() == null || request.getTitle().isEmpty()) {
+        if (request.getName() == null || request.getName().isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }
 
         Project project = new Project();
         project.setId( UUID.randomUUID());
-        project.setTitle(request.getTitle());
+        project.setName(request.getName());
         Organization organization = userDetails.getUser().getOrganization();
 
         project.setOrganization(organization);
@@ -64,9 +64,9 @@ public class ProjectController {
     }
 
     @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
-    @PutMapping("/{title}/assignrole")
-    public ResponseEntity<ProjectDto> assignRoleToProject(@PathVariable String title, @RequestBody ProjectRolesAssignmentDto projectRolesAssignmentDto) {
-        Project project= projectRepository.findByTitle(title).orElse(null);
+    @PutMapping("/{name}/create-role")
+    public ResponseEntity<ProjectDto> assignRoleToProject(@PathVariable String name, @RequestBody ProjectRolesAssignmentDto projectRolesAssignmentDto) {
+        Project project= projectRepository.findByName(name).orElse(null);
         ProjectRole projectRole=projectsRolesRepository.findByName(projectRolesAssignmentDto.getRole());
 
         project.getProjectRoles().add(projectRole);
@@ -76,23 +76,23 @@ public class ProjectController {
     }
 
     @PreAuthorize("hasAuthority('DELETE_PROJECT')")
-    @DeleteMapping("/{title}")
-    public ResponseEntity<Void> deleteProject(@PathVariable String title) {
-        Project project = projectRepository.findByTitle(title)
+    @DeleteMapping("/{name}")
+    public ResponseEntity<Void> deleteProject(@PathVariable String name) {
+        Project project = projectRepository.findByName(name)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
         projectRepository.delete(project);
         return ResponseEntity.noContent().build();
     }
     //update a project with createProjectDto
     @PreAuthorize("hasAuthority('UPDATE_PROJECT')")
-    @PutMapping("/{title}")
+    @PutMapping("/{name}/update")
     public ResponseEntity<ProjectDto> updateProject(
-            @PathVariable String title,
+            @PathVariable String name,
             @RequestBody CreateProjectDto request
     ) {
-        Project project = projectRepository.findByTitle(title)
+        Project project = projectRepository.findByName(name)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
-        project.setTitle(request.getTitle());
+        project.setName(request.getName());
         Project updated = projectRepository.save(project);
         return ResponseEntity.ok(new ProjectDto(updated));
     }

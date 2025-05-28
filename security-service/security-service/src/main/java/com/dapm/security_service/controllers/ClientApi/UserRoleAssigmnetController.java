@@ -1,4 +1,4 @@
-package com.dapm.security_service.controllers;
+package com.dapm.security_service.controllers.ClientApi;
 
 import com.dapm.security_service.models.Project;
 import com.dapm.security_service.models.ProjectRole;
@@ -34,7 +34,7 @@ public class UserRoleAssigmnetController {
             return ResponseEntity.badRequest().body("User not found");
         }
 
-        Optional<Project> projectOpt = projectRepository.findByTitle(request.getProject());
+        Optional<Project> projectOpt = projectRepository.findByName(request.getProject());
         if (projectOpt.isEmpty()) {
             return ResponseEntity.badRequest().body("Project not found");
         }
@@ -77,7 +77,7 @@ public class UserRoleAssigmnetController {
         return new AssignUserRoleDto(
                 assignment.getUser().getUsername(),
                 assignment.getRole().getName(),
-                assignment.getProject().getTitle()
+                assignment.getProject().getName()
 
         );
     }

@@ -263,8 +263,8 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         // Hey there I am new
         // Create Org Roles for OrgA.
-        OrgRole AdminOrgRole = createOrgRoleIfNotExistStatic("ADMIN_ORG_ROLE", org, ADMIN_ID);
-        OrgRole defaultOrgRole = createOrgRoleIfNotExistStatic("MEMBER_ORG_ROLE", org, MEMBER_ID);
+        OrgRole AdminOrgRole = createOrgRoleIfNotExistStatic("ADMIN", org, ADMIN_ID);
+        OrgRole defaultOrgRole = createOrgRoleIfNotExistStatic("MEMBER", org, MEMBER_ID);
 
         // Hey there I am new
         // let's create the org permissions
@@ -432,14 +432,14 @@ public class DatabaseInitializer implements CommandLineRunner {
     }
 
     private Project createProjectIfNotExistStatic(String name, Organization organization, UUID id) {
-        Optional<Project> optionalProject = projectRepository.findByTitle(name);
+        Optional<Project> optionalProject = projectRepository.findByName(name);
         Project p;
         if (optionalProject.isPresent()) {
             p = optionalProject.get();
         } else {
             p = Project.builder()
                     .id(id)
-                    .title(name)
+                    .name(name)
                     .organization(organization)
                     .build();
             p = projectRepository.save(p);

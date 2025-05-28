@@ -66,7 +66,7 @@ public class PipelineDto {
 //        this.tokenIds = pipeline.getTokens() != null
 //                ? pipeline.getTokens().stream().map(Token::getId).collect(Collectors.toSet())
 //                : Collections.emptySet();
-        this.project= pipeline.getProject().getTitle();
+        this.project= pipeline.getProject().getName();
 
         this.createdBy = pipeline.getCreatedBy();
         this.createdAt = pipeline.getCreatedAt();

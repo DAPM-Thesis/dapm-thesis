@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class ProjectDto {
     private UUID id;
-    private String title;
+    private String name;
     private String organizationName;
     private Set<String> roles;
 
     public ProjectDto(Project project) {
         this.id = project.getId();
-        this.title = project.getTitle();
+        this.name = project.getName();
         this.organizationName = project.getOrganization().getName();
         this.roles = project.getProjectRoles() != null
                 ? project.getProjectRoles().stream().map(ProjectRole::getName).collect(Collectors.toSet())

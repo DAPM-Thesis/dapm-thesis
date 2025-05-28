@@ -21,8 +21,8 @@ public class Project {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "title", nullable = false, unique = true)
-    private String title;
+    @Column(name = "name", nullable = false, unique = true)
+    private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "org_id", nullable = false)

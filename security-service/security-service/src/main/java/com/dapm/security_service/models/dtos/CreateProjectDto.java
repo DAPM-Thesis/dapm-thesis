@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateProjectDto {
 
-    private String title;
+    private String name;
 
 
     public CreateProjectDto(Project project) {
-        this.title = project.getTitle();
+        this.name = project.getName();
 
     }
 
