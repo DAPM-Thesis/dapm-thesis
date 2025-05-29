@@ -13,6 +13,7 @@ public enum OrgPermAction {
     UPDATE_ROLE,
     ASSIGN_ROLE,
     ASSIGN_PROJECT_ROLES,
+    ASSIGN_USER_ROLE,
 
     READ_PROJECT,
 }

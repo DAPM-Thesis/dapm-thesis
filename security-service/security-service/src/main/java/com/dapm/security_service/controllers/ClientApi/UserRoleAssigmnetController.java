@@ -11,6 +11,7 @@ import com.dapm.security_service.repositories.UserRepository;
 import com.dapm.security_service.repositories.UserRoleAssignmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -26,7 +27,10 @@ public class UserRoleAssigmnetController {
     @Autowired
     private UserRoleAssignmentRepository userRoleAssignmentRepository;
 
+
+
     @PostMapping("/assign")
+    @PreAuthorize("hasAuthority('ASSIGN_USER_ROLE')")
     public ResponseEntity<?> assignUserRole(@RequestBody AssignUserRoleDto request) {
 
         Optional<User> userOpt = userRepository.findByUsername(request.getUsername());

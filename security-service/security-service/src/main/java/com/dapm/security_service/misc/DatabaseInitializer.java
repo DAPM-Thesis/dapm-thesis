@@ -276,6 +276,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         OrgPermission orgPermission5 = createOrgPermissionIfNotExistStatic(OrgPermAction.UPDATE_PROJECT, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission6 = createOrgPermissionIfNotExistStatic(OrgPermAction.ASSIGN_ROLE, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission7 = createOrgPermissionIfNotExistStatic(OrgPermAction.DELETE_PROJECT, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission9 = createOrgPermissionIfNotExistStatic(OrgPermAction.CREATE_ROLE, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission10 = createOrgPermissionIfNotExistStatic(OrgPermAction.ASSIGN_USER_ROLE, AdminOrgRole, UUID.randomUUID());
 
         // 6. Create Users for OrgA.
         createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, AdminOrgRole,org, USER_ANNA_ID);
