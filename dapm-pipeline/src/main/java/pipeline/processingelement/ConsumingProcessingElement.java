@@ -1,12 +1,13 @@
 package pipeline.processingelement;
 
 import communication.Consumer;
+import communication.ProducingProcessingElement;
 import communication.Subscriber;
 import communication.message.Message;
+import utils.LogUtil;
 import utils.Pair;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public abstract class ConsumingProcessingElement extends ProcessingElement implements Subscriber<Pair<Message, Integer>> {
@@ -15,7 +16,6 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
      *  (PetriNet.class, 1).*/
     protected final Map<Class<? extends Message>, Integer> inputs;
     private final Map<Integer, Consumer> consumers = new HashMap<>();
-    private List<String> upstreaminstanceIds = List.of();
 
     public ConsumingProcessingElement(Configuration configuration) {
         super(configuration);
@@ -31,64 +31,57 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
 
     @Override
     public boolean start() {
-        boolean started = true;
-        for (Consumer consumer : consumers.values()) {
-            started &= consumer.start();
+        LogUtil.info("[CPE] {} Instance {}: Starting data consumers...", this.getClass().getSimpleName(), getInstanceId());
+        boolean allConsumersStarted = true;
+        if (consumers.isEmpty() && !(this instanceof ProducingProcessingElement) && (inputs != null && !inputs.isEmpty())) {
+            LogUtil.info("[CPE WARN] {} Instance {}: No Kafka data consumers registered despite defined inputs. This might be a configuration error.", this.getClass().getSimpleName(), getInstanceId());
+        } else if (consumers.isEmpty()) {
+            LogUtil.info("[CPE] {} Instance {}: No Kafka data consumers to start.", this.getClass().getSimpleName(), getInstanceId());
         }
 
-        if(started) {
-            String brokerUrl = consumers.values().iterator().next().getBrokerUrl();
-            initHeartbeat(brokerUrl);
-
-            for (String upstreamId : upstreaminstanceIds) {
-            if (upstreamId == null || upstreamId.isEmpty()) {
-                System.err.println("Upstream instance ID is null or empty, skipping heartbeat link creation.");
-                continue;
+        for (Map.Entry<Integer, Consumer> entry : consumers.entrySet()) {
+            Consumer consumer = entry.getValue();
+            if (!consumer.start()) {
+                LogUtil.info("[CPE ERR] {} Instance {}: Failed to start data consumer for port {} on topic {}.",
+                             this.getClass().getSimpleName(), getInstanceId(), entry.getKey(), consumer.getTopic());
+                allConsumersStarted = false;
+                break; 
+            } else {
+                LogUtil.info("[CPE] {} Instance {}: Started data consumer for port {} on topic {}.",
+                             this.getClass().getSimpleName(), getInstanceId(), entry.getKey(), consumer.getTopic());
             }
-              String sendTopic = "hb-up-" + getInstanceId() + "-to-" + upstreamId;
-              String receiveTopic = "hb-down-" + upstreamId + "-to-" + getInstanceId();
-              heartbeatManager.addLink(upstreamId, sendTopic, receiveTopic);
-            }
-
-            heartbeatManager.start();
         }
 
-        return started;
+        if (!allConsumersStarted) {
+            LogUtil.info("[CPE ERR] {} Instance {}: Not all data consumers started. CPE start failed.", this.getClass().getSimpleName(), getInstanceId());
+            setAvailable(false);
+            consumers.values().forEach(c -> { c.stop(); c.terminate(); });
+            return false;
+        }
+        setAvailable(true);
+        LogUtil.info("[CPE] {} Instance {}: Data consumers started. Heartbeat to be handled by concrete type.", this.getClass().getSimpleName(), getInstanceId());
+        return true;
     }
 
     @Override
     public boolean terminate() {
-        if (!stop())
-            { return false; }
-
-        stopHeartbeat();
+        LogUtil.info("[CPE] {} Instance {}: Terminating ConsumingProcessingElement's data consumers...", this.getClass().getSimpleName(), getInstanceId());
+        boolean allDataConsumersStopped = true;
+        for (Consumer consumer : consumers.values()) {
+            if (!consumer.stop()) allDataConsumersStopped = false;
+        }
+        boolean allDataConsumersTerminated = true;
+        for (Consumer consumer : consumers.values()) {
+            if (!consumer.terminate()) allDataConsumersTerminated = false;
+        }
+        if (allDataConsumersTerminated) consumers.clear();
         
-        boolean terminated = true;
-        for (Consumer consumer : consumers.values()) {
-           terminated &= consumer.terminate();
-        }
-        if(terminated) consumers.clear();
-        return terminated;
+        boolean superTerminated = super.terminate();
+        return allDataConsumersStopped && allDataConsumersTerminated && superTerminated;
     }
 
-    public final void setUpstreaminstanceIds(List<String> ids) {
-        this.upstreaminstanceIds = List.copyOf(ids);
-    }
-
-    private boolean stop() {
-        boolean stopped = true;
-        for (Consumer consumer : consumers.values()) {
-            stopped &= consumer.stop();
-        }
-        return stopped;
-    }
-
-    private boolean stopHeartbeat() {
-        if(heartbeatManager != null) {
-            heartbeatManager.stop();
-        }
-        return true;
-    }
+    @Override
+    public abstract void observe(Pair<Message, Integer> inputAndPortNumber);
 
     public final void registerConsumer(Consumer consumer, int portNumber) {
         consumers.put(portNumber, consumer);

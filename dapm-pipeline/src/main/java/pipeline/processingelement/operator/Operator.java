@@ -1,19 +1,18 @@
 package pipeline.processingelement.operator;
 
-import java.util.List;
-
 import communication.Producer;
 import communication.ProducingProcessingElement;
 import communication.message.Message;
 import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ConsumingProcessingElement;
+import pipeline.processingelement.heartbeat.HeartbeatManager_Phase1;
 import communication.Publisher;
+import utils.LogUtil;
 import utils.Pair;
 
 public abstract class Operator<AO, O extends Message> extends ConsumingProcessingElement
         implements Publisher<O>, ProducingProcessingElement {
-    private Producer producer;
-    private List<String> downstreaminstanceIds = List.of();
+    private Producer dataProducer;
 
     public Operator(Configuration configuration) { super(configuration); }
 
@@ -34,45 +33,71 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
 
     @Override
     public final void publish(O data) {
-        producer.publish(data);
+        dataProducer.publish(data);
+    }
+
+    public final void registerProducer(Producer producer) {
+        this.dataProducer = producer;
+    }
+
+    @Override
+    public boolean start() {
+        LogUtil.info("[OP] {} Instance {}: Starting Operator...", this.getClass().getSimpleName(), getInstanceId());
+        if (!super.start()) { // Starts data consumers
+            LogUtil.info("[OP ERR] {} Instance {}: super.start() (CPE) failed.", getClass().getSimpleName(), getInstanceId());
+            return false;
+        }
+
+        String hbBrokerUrl = null;
+        if (dataProducer != null && dataProducer.getBrokerUrl() != null) {
+            hbBrokerUrl = dataProducer.getBrokerUrl();
+        } else if (!getConsumers().isEmpty()) {
+            hbBrokerUrl = getConsumers().values().iterator().next().getBrokerUrl();
+        }
+
+        if (hbBrokerUrl == null && this.internalHeartbeatTopicConfig != null &&
+             (this.internalHeartbeatTopicConfig.getUpstreamHeartbeatPublishTopic() != null ||
+              this.internalHeartbeatTopicConfig.getDownstreamHeartbeatPublishTopic() != null ||
+              !this.internalHeartbeatTopicConfig.getUpstreamNeighborHeartbeatTopicsToSubscribeTo().isEmpty() ||
+              !this.internalHeartbeatTopicConfig.getDownstreamNeighborHeartbeatTopicsToSubscribeTo().isEmpty() )) {
+            LogUtil.info("[OP WARN] {} Instance {}: No Kafka broker URL for heartbeats, but HB config exists. HB might be non-operational.",
+                         this.getClass().getSimpleName(), getInstanceId());
+        }
+
+        if (this.internalHeartbeatTopicConfig == null) {
+            LogUtil.info("[OP WARN PH1] {} Instance {}: HeartbeatTopicSetupConfig not set. Heartbeats inactive.",
+                         this.getClass().getSimpleName(), getInstanceId());
+        } else if (hbBrokerUrl != null) {
+             this.heartbeatManager_Phase1 = new HeartbeatManager_Phase1(
+                    this,
+                    hbBrokerUrl,
+                    this.internalHeartbeatTopicConfig
+            );
+            this.heartbeatManager_Phase1.start();
+            LogUtil.info("[OP HB PH1] {} Instance {}: HeartbeatManager_Phase1 started.", getClass().getSimpleName(), getInstanceId());
+        } else if (this.internalHeartbeatTopicConfig.getUpstreamHeartbeatPublishTopic()!=null || 
+                   this.internalHeartbeatTopicConfig.getDownstreamHeartbeatPublishTopic()!=null ||
+                   !this.internalHeartbeatTopicConfig.getUpstreamNeighborHeartbeatTopicsToSubscribeTo().isEmpty() ||
+                   !this.internalHeartbeatTopicConfig.getDownstreamNeighborHeartbeatTopicsToSubscribeTo().isEmpty()){
+             LogUtil.info("[OP ERR PH1] {} Instance {}: HB Config present but no broker URL. HB Manager not started.", getClass().getSimpleName(), getInstanceId());
+             setAvailable(false); return false; 
+        }
+        
+        LogUtil.info("[OP] {} Instance {}: Operator started.", this.getClass().getSimpleName(), getInstanceId());
+        return isAvailable();
     }
 
     @Override
     public boolean terminate() {
-        if (!super.terminate()) // terminate consumers
-            { return false; }
-        
-        if (heartbeatManager != null) heartbeatManager.stop();
-        boolean terminated = producer.terminate();
-        if (terminated) producer = null;
-        return terminated;
-    }
-
-     @Override
-    public boolean start() {
-        boolean ok = super.start(); // starts consumers
-        if (ok) {
-            // now start heartbeats for each downstream
-            initHeartbeat(producer.getBrokerUrl());
-            for (String downstreamId : downstreaminstanceIds) {
-                if (downstreamId == null || downstreamId.isEmpty()) {
-                    System.err.println("Downstream instance ID is null or empty, skipping heartbeat link creation.");
-                    continue;
-                }
-                String sendTopic = "hb-down-" + getInstanceId() + "-to-" + downstreamId;
-                String receiveTopic = "hb-up-" + downstreamId + "-to-" + getInstanceId();
-                heartbeatManager.addLink(downstreamId, sendTopic, receiveTopic);
-            }
-            heartbeatManager.start();
+        LogUtil.info("[OP] {} Instance {}: Terminating Operator...", this.getClass().getSimpleName(), getInstanceId());
+        boolean dataProducerStopped = true;
+        if (dataProducer != null) dataProducerStopped = dataProducer.stop();
+        boolean superTerminated = super.terminate(); 
+        boolean dataProducerTerminated = true;
+        if (dataProducer != null) {
+            dataProducerTerminated = dataProducer.terminate();
+            if(dataProducerTerminated) dataProducer = null;
         }
-        return ok;
-    }    
-
-    public final void registerProducer(Producer producer) {
-        this.producer = producer;
-    }
-
-    public final void setDownstreaminstanceIds(List<String> ids) {
-        this.downstreaminstanceIds = List.copyOf(ids);
+        return dataProducerStopped && superTerminated && dataProducerTerminated;
     }
 }

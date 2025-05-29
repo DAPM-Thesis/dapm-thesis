@@ -9,13 +9,14 @@ import communication.API.response.HTTPResponse;
 import communication.API.response.PEInstanceResponse;
 import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
-import pipeline.processingelement.HeartbeatConfiguration;
+import pipeline.processingelement.heartbeat.HeartbeatTopicConfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repository.PipelineRepository;
 import utils.graph.DG;
 import utils.JsonUtil;
+import utils.LogUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -121,50 +122,71 @@ public class PipelineBuilder {
     }
 
     private void configureHeartbeats(Pipeline pipeline) {
-        DG<ProcessingElementReference, Integer> dag = pipeline.getDirectedGraph();
+        DG<ProcessingElementReference, Integer> dg = pipeline.getDirectedGraph();
+        LogUtil.info("[BUILDER HB] Starting Phase 1 Heartbeat configuration for pipeline: {}", pipeline.getPipelineID());
 
-        for (var entry : pipeline.getProcessingElements().entrySet()) {
-            String instanceID = entry.getKey();
-            ProcessingElementReference ref = entry.getValue();
+        if (pipeline.getProcessingElements().isEmpty()) {
+            LogUtil.info("[BUILDER HB] No processing elements in the pipeline '{}' to configure heartbeats for.", pipeline.getPipelineID());
+            return;
+        }
 
-            List<String> upstream = dag.getUpstream(ref).stream()
-                .map(pipeline::getInstanceID)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
+            String currentInstanceID = entry.getKey();
+            ProcessingElementReference currentPERef = entry.getValue();
 
-            List<String> downstream = dag.getDownStream(ref).stream()
-                .map(pipeline::getInstanceID)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            HeartbeatTopicConfig configForCurrentPE = new HeartbeatTopicConfig();
 
-            if (upstream.isEmpty() && downstream.isEmpty()) {
-                continue;
+            // 1. Define PE's OWN PUBLISH topics
+            if (currentPERef.isOperator() || currentPERef.isSink()) {
+                configForCurrentPE.setUpstreamHeartbeatPublishTopic("hb-upstream-" + currentInstanceID);
+            }
+            if (currentPERef.isSource() || currentPERef.isOperator()) {
+                configForCurrentPE.setDownstreamHeartbeatPublishTopic("hb-downstream-" + currentInstanceID);
             }
 
-            HeartbeatConfiguration cfg = new HeartbeatConfiguration();
-            cfg.setUpstreamInstanceIds(upstream);
-            cfg.setDownstreamInstanceIds(downstream);
+            // 2. Determine topics of NEIGHBORS PE should subscribe to
+            List<String> upstreamTopicsToLog = new ArrayList<>();
+            for (ProcessingElementReference upstreamNeighborRef : dg.getUpstream(currentPERef)) {
+                String upstreamNeighborID = pipeline.getInstanceID(upstreamNeighborRef);
+                if (upstreamNeighborID == null) continue;
+                if (upstreamNeighborRef.isSource() || upstreamNeighborRef.isOperator()) { // These publish a downstream-facing heartbeat
+                    upstreamTopicsToLog.add("hb-downstream-" + upstreamNeighborID);
+                }
+            }
+            configForCurrentPE.setUpstreamNeighborHeartbeatTopicsToSubscribeTo(upstreamTopicsToLog);
 
-            String url = ref.getOrganizationHostURL()
-                       + "/pipelineBuilder/heartbeat/instance/"
-                       + instanceID;
-            HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(cfg));
+            List<String> downstreamTopicsToLog = new ArrayList<>();
+            for (ProcessingElementReference downstreamNeighborRef : dg.getDownStream(currentPERef)) {
+                String downstreamNeighborID = pipeline.getInstanceID(downstreamNeighborRef);
+                if (downstreamNeighborID == null) continue;
+                if (downstreamNeighborRef.isOperator() || downstreamNeighborRef.isSink()) { // These publish an upstream-facing heartbeat
+                    downstreamTopicsToLog.add("hb-upstream-" + downstreamNeighborID);
+                }
+            }
+            configForCurrentPE.setDownstreamNeighborHeartbeatTopicsToSubscribeTo(downstreamTopicsToLog);
+            
+            String url = currentPERef.getOrganizationHostURL() + "/pipelineBuilder/heartbeat/instance/" + currentInstanceID;
+            HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(configForCurrentPE));
+            LogUtil.info("[BUILDER HB] Sending config to PE {} ({}) at {}: UpPubT={}, DownPubT={}, MonUp#={}, MonDown#={}",
+                    currentPERef.getTemplateID(), currentInstanceID, url,
+                    configForCurrentPE.getUpstreamHeartbeatPublishTopic(), configForCurrentPE.getDownstreamHeartbeatPublishTopic(),
+                    configForCurrentPE.getUpstreamNeighborHeartbeatTopicsToSubscribeTo().size(),
+                    configForCurrentPE.getDownstreamNeighborHeartbeatTopicsToSubscribeTo().size());
+            
             HTTPResponse resp = webClient.putSync(req);
-
-            if (resp == null) {
-                throw new IllegalStateException(
-                    "No response when configuring heartbeat for " + instanceID + " at " + url
-                );
-            }
-            if (!resp.status().is2xxSuccessful()) {
-                throw new IllegalStateException(
-                    "Failed to configure heartbeat for " + instanceID +
-                    " at " + url +
-                    " → HTTP " + resp.status() +
-                    " / body=" + resp.body()
-                );
+            if (resp == null || !resp.status().is2xxSuccessful()) {
+                String errorDetails = String.format("Status: %s, Body: %s, Sent: %s",
+                    resp != null ? resp.status() : "N/A",
+                    resp != null ? resp.body() : "N/A",
+                    JsonUtil.toJson(configForCurrentPE));
+                LogUtil.info("[BUILDER HB ERR] Failed to config HB for {} ({}). {}",
+                        currentPERef.getTemplateID(), currentInstanceID, errorDetails);
+                throw new IllegalStateException("Failed to configure Phase 1 heartbeat for " + currentInstanceID + ". " + errorDetails);
+            } else {
+                LogUtil.info("[BUILDER HB] Successfully configured Phase 1 heartbeat for PE {} ({})", currentPERef.getTemplateID(), currentInstanceID);
             }
         }
+        LogUtil.info("[BUILDER HB] Phase 1 Heartbeat configuration dispatch completed for pipeline: {}", pipeline.getPipelineID());
     }
 
     private PEInstanceResponse sendCreateSourceRequest(ProcessingElementReference pe) {

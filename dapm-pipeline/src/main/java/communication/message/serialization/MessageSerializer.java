@@ -1,5 +1,6 @@
 package communication.message.serialization;
 import communication.message.impl.Alignment;
+import communication.message.impl.Heartbeat;
 import communication.message.impl.Metrics;
 import communication.message.impl.time.UTCTime;
 import communication.message.impl.time.Date;
@@ -159,4 +160,10 @@ public class MessageSerializer implements MessageVisitor<String> {
                 + target
                 + "\"></arc>";
     }
+
+    @Override
+    public String visit(Heartbeat heartbeat) {
+        this.serialization = heartbeat.getName() + ":" + heartbeat.getPayloadAsJson();
+        return getSerialization();
+    }   
 }

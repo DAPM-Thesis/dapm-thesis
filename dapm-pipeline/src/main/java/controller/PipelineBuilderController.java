@@ -13,15 +13,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import pipeline.processingelement.HeartbeatConfiguration;
 import pipeline.processingelement.ProcessingElement;
 import pipeline.processingelement.Sink;
+import pipeline.processingelement.heartbeat.HeartbeatTopicConfig;
 import pipeline.processingelement.operator.Operator;
 import pipeline.processingelement.source.Source;
 import repository.PEInstanceRepository;
 import repository.TemplateRepository;
 import utils.IDGenerator;
 import utils.JsonUtil;
+import utils.LogUtil;
 
 @RestController
 @RequestMapping("/pipelineBuilder")
@@ -57,6 +58,7 @@ public class PipelineBuilderController {
             ProducerConfig producerConfig = new ProducerConfig(brokerURL, topic);
             producerFactory.registerProducer(source, producerConfig);
             String instanceID = peInstanceRepository.storeInstance(source);
+            source.setInstanceId(instanceID);
 
             return ResponseEntity.ok(new PEInstanceResponse
                     .Builder(decodedTemplateID, instanceID)
@@ -82,6 +84,8 @@ public class PipelineBuilderController {
             producerFactory.registerProducer(operator, producerConfig);
 
             String instanceID = peInstanceRepository.storeInstance(operator);
+            operator.setInstanceId(instanceID);
+
             return ResponseEntity.ok(new PEInstanceResponse
                     .Builder(decodedTemplateID, instanceID)
                     .producerConfig(producerConfig)
@@ -102,6 +106,7 @@ public class PipelineBuilderController {
                 consumerFactory.registerConsumer(sink, config);
             }
             String instanceID = peInstanceRepository.storeInstance(sink);
+            sink.setInstanceId(instanceID);
             return ResponseEntity.ok(new PEInstanceResponse
                     .Builder(decodedTemplateID, instanceID)
                     .build());
@@ -111,32 +116,16 @@ public class PipelineBuilderController {
 
     @PutMapping("/heartbeat/instance/{instanceID}")
     public ResponseEntity<Void> configureHeartbeat(
-        @PathVariable("instanceID") String instanceID,
-        @RequestBody HeartbeatConfiguration heartbeatConfig) {
+            @PathVariable("instanceID") String instanceID,
+            @RequestBody HeartbeatTopicConfig heartbeatTopicConfig) { 
 
-        ProcessingElement pe = peInstanceRepository.getInstance(instanceID);
-        if (pe == null) {
-          return ResponseEntity.notFound().build();
+        ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
+        if (processingElement == null) {
+            LogUtil.info("[CONTROLLER HB] PE instance {} not found for heartbeat config.", instanceID);
+            return ResponseEntity.notFound().build();
         }
-
-        if (pe instanceof Sink sink && heartbeatConfig.getUpstreamInstanceIds() != null) {
-            System.out.println("Configuring heartbeat for Sink: " + instanceID + " with upstreams: " + heartbeatConfig.getUpstreamInstanceIds());
-            sink.setUpstreaminstanceIds(heartbeatConfig.getUpstreamInstanceIds());
-        }
-
-        if (pe instanceof Source<?> src && heartbeatConfig.getDownstreamInstanceIds() != null) {
-            System.out.println("Configuring heartbeat for Source: " + instanceID + " with downstreams: " + heartbeatConfig.getDownstreamInstanceIds());
-            src.setDownstreaminstanceIds(heartbeatConfig.getDownstreamInstanceIds());
-        }
-        
-        if (pe instanceof Operator<?,?> op) {
-            System.out.println("Configuring heartbeat for Operator: " + instanceID + 
-                                " with downstreams: " + heartbeatConfig.getDownstreamInstanceIds() + 
-                                " and upstreams: " + heartbeatConfig.getUpstreamInstanceIds());
-            if (heartbeatConfig.getUpstreamInstanceIds() != null)   op.setUpstreaminstanceIds(heartbeatConfig.getUpstreamInstanceIds());
-            if (heartbeatConfig.getDownstreamInstanceIds() != null) op.setDownstreaminstanceIds(heartbeatConfig.getDownstreamInstanceIds());
-        }
-
+        processingElement.configureHeartbeatTopics(heartbeatTopicConfig);
+        LogUtil.info("[CONTROLLER HB] Configured HeartbeatTopicConfig for PE {}", instanceID);
         return ResponseEntity.ok().build();
     }
 }

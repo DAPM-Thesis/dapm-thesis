@@ -1,6 +1,7 @@
 package communication.message.serialization;
 
 import communication.message.impl.Alignment;
+import communication.message.impl.Heartbeat;
 import communication.message.impl.Metrics;
 import communication.message.impl.time.UTCTime;
 import communication.message.impl.time.Date;
@@ -16,4 +17,5 @@ public interface MessageVisitor<T> {
     T visit(Date time);
     T visit(UTCTime UTCTime);
     T visit(Metrics metrics);
+    T visit(Heartbeat heartbeat);
 }

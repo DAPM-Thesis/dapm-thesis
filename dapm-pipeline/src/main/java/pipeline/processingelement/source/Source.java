@@ -8,49 +8,84 @@ import communication.Publisher;
 import communication.message.Message;
 import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ProcessingElement;
+import pipeline.processingelement.heartbeat.HeartbeatManager_Phase1;
+import utils.LogUtil;
 
 public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O>, ProducingProcessingElement {
-    private Producer producer; // Channel
-    private List<String> downstreaminstanceIds = List.of();
+    private Producer dataProducer; // Channel
 
     public Source(Configuration configuration) { super(configuration); }
 
+    // @Override
+    // public final void publish(O data) {
+    //     dataProducer.publish(data);
+    // }
     @Override
     public final void publish(O data) {
-        producer.publish(data);
+        if (dataProducer == null) {
+            LogUtil.info("[SRC WARN] {} Instance {}: Data producer is null. Cannot publish data: {}", this.getClass().getSimpleName(), getInstanceId(), data);
+            return;
+        }
+        if (!isAvailable()){
+            LogUtil.info("[SRC WARN] {} Instance {}: Source not available. Dropping data: {}", this.getClass().getSimpleName(), getInstanceId(), data);
+            return;
+        }
+        dataProducer.publish(data);
     }
 
     @Override
     public abstract boolean start();
 
+     protected void finalizeStartupAndStartHeartbeat_Phase1() {
+        if (this.getInstanceId() == null) { // Ensure instance ID is set
+             LogUtil.info("[SRC ERR PH1] {} Instance {}: Instance ID is null. Cannot start heartbeat manager.", this.getClass().getSimpleName(), "UNKNOWN");
+             setAvailable(false); return;
+        }
+        if (dataProducer == null || dataProducer.getBrokerUrl() == null) {
+            LogUtil.info("[SRC ERR PH1] {} Instance {}: Data producer or broker URL null. HB manager cannot start.", this.getClass().getSimpleName(), getInstanceId());
+            setAvailable(false); // Cannot effectively heartbeat if no broker info
+            return;
+        }
+        if (this.internalHeartbeatTopicConfig == null) {
+            LogUtil.info("[SRC WARN PH1] {} Instance {}: HeartbeatTopicSetupConfig not set. Heartbeats inactive.", this.getClass().getSimpleName(), getInstanceId());
+            return; // Or setAvailable(false) if HBs are mandatory for a Source
+        }
+
+        LogUtil.info("[SRC HB PH1] {} Instance {}: Finalizing startup and starting heartbeats.", this.getClass().getSimpleName(), getInstanceId());
+        this.heartbeatManager_Phase1 = new HeartbeatManager_Phase1(
+                this,
+                dataProducer.getBrokerUrl(),
+                this.internalHeartbeatTopicConfig
+        );
+        this.heartbeatManager_Phase1.start();
+    }
+
+    // @Override
+    // public boolean terminate() {
+    //     if (!dataProducer.stop())
+    //         { return false; }
+    //     boolean terminated = dataProducer.terminate();
+    //     if (terminated) dataProducer = null;
+    //     return terminated;
+    // }
+
     @Override
     public boolean terminate() {
-        if (!producer.stop())
-            { return false; }
-        boolean terminated = producer.terminate();
-        if (terminated) producer = null;
-        return terminated;
+        LogUtil.info("[SRC] {} Instance {}: Terminating Source...", this.getClass().getSimpleName(), getInstanceId());
+        boolean dataProducerStopped = true;
+        if (dataProducer != null) {
+            dataProducerStopped = dataProducer.stop();
+        }
+        boolean superTerminated = super.terminate(); // Stops heartbeats
+        boolean dataProducerTerminated = true;
+        if (dataProducer != null) {
+            dataProducerTerminated = dataProducer.terminate();
+            if(dataProducerTerminated) dataProducer = null;
+        }
+        return dataProducerStopped && superTerminated && dataProducerTerminated;
     }
 
     public final void registerProducer(Producer producer) {
-        this.producer = producer;
-    }
-
-    public final void setDownstreaminstanceIds(List<String> ids) {
-        this.downstreaminstanceIds = List.copyOf(ids);
-    }
-    
-    protected void startHeartbeat() {
-        initHeartbeat(producer.getBrokerUrl());
-        for (String downstreamId : downstreaminstanceIds) {
-            if (downstreamId == null || downstreamId.isEmpty()) {
-                System.err.println("Downstream instance ID is null or empty, skipping heartbeat link creation.");
-                continue;
-            }            
-            String sendTopic = "hb-down-" + getInstanceId() + "-to-" + downstreamId;
-            String receiveTopic = "hb-up-" + downstreamId + "-to-" + getInstanceId();
-            heartbeatManager.addLink(downstreamId, sendTopic, receiveTopic);
-        }
-        heartbeatManager.start();
+        this.dataProducer = producer;
     }
 }
