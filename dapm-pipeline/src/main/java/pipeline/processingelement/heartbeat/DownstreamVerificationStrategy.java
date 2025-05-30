@@ -3,22 +3,26 @@ package pipeline.processingelement.heartbeat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
+
+import utils.LogUtil;
 
 public class DownstreamVerificationStrategy implements HeartbeatVerificationStrategy {
     @Override
-    public boolean verify(Map<String, Instant> latestHeartbeats, Instant currentTime, long timeoutMillis) {
-        if (latestHeartbeats.isEmpty()) {
-            return true;
+    public boolean verifyLiveness(Map<String, Instant> lastHeartbeatOnMonitoredTopics,
+                                  Instant currentTime,
+                                  long timeoutMillis,
+                                  Set<String> expectedTopicsInGroupForThisDirection) {
+        if (expectedTopicsInGroupForThisDirection == null || expectedTopicsInGroupForThisDirection.isEmpty()) {
+            return true; // No downstream consumers configured/expected to monitor for this PE.
         }
-        // At least one configured downstream peer must be timely.
-        return latestHeartbeats.values().stream()
-                .anyMatch(latestReceived -> isTimely(latestReceived, currentTime, timeoutMillis));
-    }
-
-    private boolean isTimely(Instant receivedTime, Instant currentTime, long timeoutMillis) {
-        if (receivedTime == null || Instant.MIN.equals(receivedTime)) {
-            return false;
+        for (String expectedTopic : expectedTopicsInGroupForThisDirection) {
+            Instant lastHeartbeat = lastHeartbeatOnMonitoredTopics.get(expectedTopic);
+            if (isTopicTimely(lastHeartbeat, currentTime, timeoutMillis)) {
+                return true;
+            }
         }
-        return Duration.between(receivedTime, currentTime).toMillis() <= timeoutMillis;
+        LogUtil.debug("[HB STRATEGY Downstream] No downstream topics are timely among: {}", expectedTopicsInGroupForThisDirection);
+        return false;
     }
 }

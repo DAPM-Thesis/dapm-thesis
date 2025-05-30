@@ -9,6 +9,7 @@ import communication.message.Message;
 import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ProcessingElement;
 import pipeline.processingelement.heartbeat.HeartbeatManager_Phase1;
+import pipeline.processingelement.heartbeat.HeartbeatManager_V2;
 import utils.LogUtil;
 
 public abstract class Source<O extends Message> extends ProcessingElement implements Publisher<O>, ProducingProcessingElement {
@@ -36,7 +37,7 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     @Override
     public abstract boolean start();
 
-     protected void finalizeStartupAndStartHeartbeat_Phase1() {
+     protected void finalizeStartupAndStartHeartbeat() {
         if (this.getInstanceId() == null) { // Ensure instance ID is set
              LogUtil.info("[SRC ERR PH1] {} Instance {}: Instance ID is null. Cannot start heartbeat manager.", this.getClass().getSimpleName(), "UNKNOWN");
              setAvailable(false); return;
@@ -51,13 +52,19 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
             return; // Or setAvailable(false) if HBs are mandatory for a Source
         }
 
+        if (this.reactionHandler == null) { 
+            LogUtil.info("[SRC ERR V2] {} Instance {}: ReactionHandler not initialized. Cannot start HeartbeatManager_V2.", getClass().getSimpleName(), getInstanceId());
+            setAvailable(false); return;
+        }
+
         LogUtil.info("[SRC HB PH1] {} Instance {}: Finalizing startup and starting heartbeats.", this.getClass().getSimpleName(), getInstanceId());
-        this.heartbeatManager_Phase1 = new HeartbeatManager_Phase1(
+        this.heartbeatManager = new HeartbeatManager_V2(
                 this,
                 dataProducer.getBrokerUrl(),
-                this.internalHeartbeatTopicConfig
+                this.internalHeartbeatTopicConfig,
+                this.reactionHandler
         );
-        this.heartbeatManager_Phase1.start();
+        this.heartbeatManager.start();
     }
 
     // @Override

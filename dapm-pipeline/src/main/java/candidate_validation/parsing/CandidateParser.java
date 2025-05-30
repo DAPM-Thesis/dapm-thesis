@@ -7,25 +7,31 @@ import candidate_validation.ChannelReference;
 import candidate_validation.SubscriberReference;
 import candidate_validation.ProcessingElementReference;
 import pipeline.processingelement.Configuration;
+import pipeline.processingelement.heartbeat.FaultToleranceLevel;
 import utils.Pair;
 
 import java.net.URI;
 import java.util.*;
 
-public class CandidateParser implements Parser<Pair<Set<ProcessingElementReference>, Set<ChannelReference>>> {
+public class CandidateParser {
     private final JsonSchemaValidator validator;
+    private final JSONParser jsonParser;
 
     public CandidateParser(URI configFolderPath) {
         this.validator = new JsonSchemaValidator(configFolderPath);
+        this.jsonParser = new JSONParser();
     }
 
-    @Override
-    public Pair<Set<ProcessingElementReference>, Set<ChannelReference>> deserialize(String json) throws JsonSchemaMismatch {
+    public PipelineCandidateData deserialize(String json) throws JsonSchemaMismatch {
         // The JSON schema validator below will take care of throwing errors if the JSON is not correctly formatted
         // according to the pipeline_draft_json_schema.json. We can therefore omit throwing those errors afterward.
         validator.validatePipelineCandidate(json);
 
         Map<String, Object> jsonMap = (Map<String, Object>) (new JSONParser()).parse(json);
+
+        String faultToleranceLeString = (String) jsonMap.get("faultToleranceLevel");
+
+        FaultToleranceLevel faultToleranceLevel = FaultToleranceLevel.fromString(faultToleranceLeString, FaultToleranceLevel.LEVEL_1_NOTIFY_ONLY);
 
         List<Map<String, Object>> rawElements = (List<Map<String, Object>>) jsonMap.get("processing elements");
         Set<ProcessingElementReference> elements = getProcessingElementReferences(rawElements);
@@ -43,7 +49,7 @@ public class CandidateParser implements Parser<Pair<Set<ProcessingElementReferen
             validator.validateConfiguration(configJson, configFilename);
         }
 
-        return new Pair<>(elements, channels);
+        return new PipelineCandidateData(elements, channels, faultToleranceLevel);
     }
 
     private String toFilenameWithoutExtension(String... subWords) {

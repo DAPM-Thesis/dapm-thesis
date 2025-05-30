@@ -1,7 +1,7 @@
 package pipeline.processingelement;
 
 import communication.message.Message;
-import pipeline.processingelement.heartbeat.HeartbeatManager_Phase1;
+import pipeline.processingelement.heartbeat.HeartbeatManager_V2;
 import utils.LogUtil;
 import utils.Pair;
 
@@ -42,12 +42,13 @@ public abstract class Sink extends ConsumingProcessingElement {
             LogUtil.info("[SINK WARN PH1] {} Instance {}: HeartbeatTopicSetupConfig not set. Heartbeats inactive.",
                          this.getClass().getSimpleName(), getInstanceId());
         } else if (hbBrokerUrl != null) {
-            this.heartbeatManager_Phase1 = new HeartbeatManager_Phase1(
+            this.heartbeatManager = new HeartbeatManager_V2(
                     this,
                     hbBrokerUrl,
-                    this.internalHeartbeatTopicConfig
+                    this.internalHeartbeatTopicConfig,
+                    this.reactionHandler
             );
-            this.heartbeatManager_Phase1.start();
+            this.heartbeatManager.start();
             LogUtil.info("[SINK HB PH1] {} Instance {}: HeartbeatManager_Phase1 started.", getClass().getSimpleName(), getInstanceId());
         } else if (this.internalHeartbeatTopicConfig.getUpstreamHeartbeatPublishTopic()!=null ||
                    !this.internalHeartbeatTopicConfig.getUpstreamNeighborHeartbeatTopicsToSubscribeTo().isEmpty() ||

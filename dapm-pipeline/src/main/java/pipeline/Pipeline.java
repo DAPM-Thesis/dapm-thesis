@@ -3,6 +3,7 @@ package pipeline;
 import candidate_validation.ChannelReference;
 import candidate_validation.ProcessingElementReference;
 import candidate_validation.SubscriberReference;
+import pipeline.processingelement.heartbeat.FaultToleranceLevel;
 import utils.graph.DG;
 
 import java.util.*;
@@ -12,10 +13,12 @@ public class Pipeline {
     private final String pipelineID;
     private final Map<String, ProcessingElementReference> processingElements;
     private DG<ProcessingElementReference, Integer> directedGraph;
+    private final FaultToleranceLevel faultToleranceLevel;
 
-    public Pipeline(String pipelineID, Set<ChannelReference> channelReferences) {
+    public Pipeline(String pipelineID, Set<ChannelReference> channelReferences, FaultToleranceLevel faultToleranceLevel) {
         processingElements = new HashMap<>();
         this.pipelineID = pipelineID;
+        this.faultToleranceLevel = faultToleranceLevel;
         initializeDG(channelReferences);
     }
 
@@ -63,5 +66,9 @@ public class Pipeline {
                 .stream()
                 .filter(ProcessingElementReference::isSource)
                 .collect(Collectors.toSet());
+    }
+
+    public FaultToleranceLevel getFaultToleranceLevel() {
+        return faultToleranceLevel;
     }
 }

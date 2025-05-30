@@ -1,6 +1,5 @@
 package pipeline;
 
-
 import candidate_validation.*;
 import communication.API.*;
 import communication.API.request.HTTPRequest;
@@ -9,6 +8,8 @@ import communication.API.response.HTTPResponse;
 import communication.API.response.PEInstanceResponse;
 import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
+import controller.PipelineBuilderController.OperationalParamsRequest;
+import pipeline.processingelement.heartbeat.FaultToleranceLevel;
 import pipeline.processingelement.heartbeat.HeartbeatTopicConfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 public class PipelineBuilder {
     private final HTTPClient webClient;
     private final PipelineRepository pipelineRepository;
-
+    
     @Autowired
     public PipelineBuilder(HTTPClient webClient, PipelineRepository pipelineRepository) {
         this.webClient = webClient;
@@ -33,10 +34,11 @@ public class PipelineBuilder {
     }
 
     public void buildPipeline(String pipelineID, ValidatedPipeline validatedPipeline) {
-        Pipeline pipeline = new Pipeline(pipelineID, validatedPipeline.getChannels());
+        Pipeline pipeline = new Pipeline(pipelineID, validatedPipeline.getChannels(), validatedPipeline.getFaultToleranceLevel());
         buildPipeline(pipeline);
         pipelineRepository.storePipeline(pipelineID, pipeline);
         configureHeartbeats(pipeline);
+        setOperationalParametersOnPEs(pipeline);
     }
 
     private void buildPipeline(Pipeline pipeline) {
@@ -187,6 +189,28 @@ public class PipelineBuilder {
             }
         }
         LogUtil.info("[BUILDER HB] Phase 1 Heartbeat configuration dispatch completed for pipeline: {}", pipeline.getPipelineID());
+    }
+
+    private void setOperationalParametersOnPEs(Pipeline pipeline) {
+        LogUtil.info("[BUILDER OP PARAMS] Setting operational parameters for pipeline: {}", pipeline.getPipelineID());
+        FaultToleranceLevel faultToleranceLevel = pipeline.getFaultToleranceLevel();
+
+        for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
+            String instanceID = entry.getKey();
+            ProcessingElementReference peRef = entry.getValue();
+            // TODO: Also need the pipeline owner's organization host URL for notifications
+            OperationalParamsRequest params = new OperationalParamsRequest(pipeline.getPipelineID(), faultToleranceLevel, peRef.getOrganizationHostURL());
+            String url = peRef.getOrganizationHostURL() + "/pipelineBuilder/instance/" + instanceID + "/operational-params";
+            HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(params));
+
+            LogUtil.info("[BUILDER OP PARAMS] Sending to PE {} ({}): PipelineID={}, FTLevel={}",
+                    peRef.getTemplateID(), instanceID, pipeline.getPipelineID(), faultToleranceLevel);
+            HTTPResponse resp = webClient.putSync(req);
+            if (resp == null || !resp.status().is2xxSuccessful()) {                
+                throw new IllegalStateException("[PIPELINE BUILDER] Failed to set operational params for " + instanceID);
+            }
+        }
+        LogUtil.info("[BUILDER OP PARAMS] Operational parameters set for all PEs in pipeline: {}", pipeline.getPipelineID());
     }
 
     private PEInstanceResponse sendCreateSourceRequest(ProcessingElementReference pe) {

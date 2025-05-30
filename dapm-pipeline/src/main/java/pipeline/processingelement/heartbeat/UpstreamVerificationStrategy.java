@@ -1,26 +1,27 @@
 package pipeline.processingelement.heartbeat;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
+
+import utils.LogUtil;
 
 public class UpstreamVerificationStrategy implements HeartbeatVerificationStrategy {
     @Override
-    public boolean verify(Map<String, Instant> latestHeartbeats, Instant currentTime, long timeoutMillis) {
-        if (latestHeartbeats.isEmpty()) {
-            // If there are no upstream dependencies configured, this PE doesn't depend on any upstream heartbeats.
+    public boolean verifyLiveness(Map<String, Instant> lastHeartbeatOnMonitoredTopics,
+                                  Instant currentTime,
+                                  long timeoutMillis,
+                                  Set<String> expectedTopicsInGroupForThisDirection) {
+        if (expectedTopicsInGroupForThisDirection == null || expectedTopicsInGroupForThisDirection.isEmpty()) {
             return true;
         }
-        // All configured upstream peers must be timely.
-        return latestHeartbeats.values().stream()
-                .allMatch(latestReceived -> isTimely(latestReceived, currentTime, timeoutMillis));
-    }
-
-    private boolean isTimely(Instant receivedTime, Instant currentTime, long timeoutMillis) {
-        // If a peer was never seen (Instant.MIN) or somehow null, it's not timely.
-        if (receivedTime == null || Instant.MIN.equals(receivedTime)) {
-            return false;
+        for (String expectedTopic : expectedTopicsInGroupForThisDirection) {
+            Instant lastHeartbeat = lastHeartbeatOnMonitoredTopics.get(expectedTopic);
+            if (!isTopicTimely(lastHeartbeat, currentTime, timeoutMillis)) {
+                LogUtil.debug("[HB STRATEGY Upstream] Monitored topic {} is not timely (last heartbeat: {})", expectedTopic, lastHeartbeat);
+                return false;
+            }
         }
-        return Duration.between(receivedTime, currentTime).toMillis() <= timeoutMillis;
+        return true;
     }
 }

@@ -4,27 +4,44 @@
   "title": "Pipeline Draft",
   "type": "object",
   "properties": {
-    "processing elements":
-    {
+    "faultToleranceLevel": {
+      "description": "Defines the fault tolerance strategy for the entire pipeline. If omitted, a default behavior (e.g., LEVEL_0_IGNORE_FAULTS) is assumed by the application.",
+      "type": "string",
+      "enum": [
+        "LEVEL_0_IGNORE_FAULTS",
+        "LEVEL_1_NOTIFY_ONLY",
+        "LEVEL_2_STOP_PIPELINE_FOR_DEBUG",
+        "LEVEL_3_TERMINATE_ENTIRE_PIPELINE_FULL_CLEANUP",
+        "LEVEL_4_KEEP_RUNNING_PARTIAL_PIPELINE"
+      ]
+    },
+    "processing elements": {
       "type": "array",
-      "items": { "$ref": "https://www.dapm.org/processing_element_reference_schema.json"},
+      "items": {
+        "$ref": "https://www.dapm.org/processing_element_reference_schema.json"
+      },
       "minItems": 2,
       "uniqueItems": true,
       "allOf": [
         {
-          "contains": { "type": "object", "properties": { "inputs": { "type": "array", "maxItems": 0} }},
+          "contains": {
+            "type": "object",
+            "properties": { "inputs": { "type": "array", "maxItems": 0 } }
+          },
           "required": ["inputs"]
         },
         {
-          "contains": { "type": "object", "properties": { "output": { "type": "null"} }},
+          "contains": {
+            "type": "object",
+            "properties": { "output": { "type": "null" } }
+          },
           "required": ["output"]
         }
       ]
     },
-    "channels":
-    {
+    "channels": {
       "type": "array",
-      "items": { "$ref": "https://www.dapm.org/channel_reference_schema.json"},
+      "items": { "$ref": "https://www.dapm.org/channel_reference_schema.json" },
       "minItems": 1,
       "uniqueItems": true
     }
@@ -32,4 +49,3 @@
   "required": ["processing elements", "channels"],
   "additionalProperties": false
 }
-

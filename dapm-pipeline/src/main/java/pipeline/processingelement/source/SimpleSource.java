@@ -70,7 +70,7 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
             });
 
             // Start heartbeats after main logic is initiated
-            finalizeStartupAndStartHeartbeat_Phase1(); 
+            finalizeStartupAndStartHeartbeat(); 
 
             LogUtil.info("[SSRC] {} Instance {}: SimpleSource start sequence complete.", this.getClass().getSimpleName(), getInstanceId());
             return true;

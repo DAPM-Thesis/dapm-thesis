@@ -2,15 +2,24 @@ package pipeline.processingelement.heartbeat;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
 
 public interface HeartbeatVerificationStrategy {
     /**
-     * Verifies if the peers are considered live based on their latest heartbeat timestamps.
-     *
-     * @param latestHeartbeats A map of peer instance IDs to their last seen heartbeat timestamp.
-     * @param currentTime The current time to compare against.
-     * @param timeoutMillis The maximum allowed duration since the last heartbeat for a peer to be considered live.
-     * @return true if the peers meet the liveness criteria defined by the strategy, false otherwise.
+     * Verifies peer liveness based on topic activity.
+     * @param lastHeartbeatOnMonitoredTopics Map of monitoredTopicName to its last received heartbeat timestamp.
+     * @param currentTime Current time for comparison.
+     * @param timeoutMillis Liveness timeout threshold.
+     * @param expectedTopicsInGroupForThisDirection The set of all topic names that are expected for this strategy.
+     * @return true if liveness criteria met, false otherwise.
      */
-    boolean verify(Map<String, Instant> latestHeartbeats, Instant currentTime, long timeoutMillis);
+    boolean verifyLiveness(Map<String, Instant> lastHeartbeatOnMonitoredTopics,
+                           Instant currentTime,
+                           long timeoutMillis,
+                           Set<String> expectedTopicsInGroupForThisDirection);
+
+    default boolean isTopicTimely(Instant heartbeatTime, Instant currentTime, long timeoutMillis) {
+        if (heartbeatTime == null || Instant.MIN.equals(heartbeatTime)) return false;
+        return java.time.Duration.between(heartbeatTime, currentTime).toMillis() <= timeoutMillis;
+    }
 }

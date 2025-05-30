@@ -56,7 +56,7 @@ public abstract class WebSource<O extends Message> extends Source<O> {
                     error -> LogUtil.error(error, "[WSRC SUB ERR] {} Instance {}: Unhandled error in Flux subscription.", getClass().getSimpleName(), getInstanceId())
                 );
 
-            finalizeStartupAndStartHeartbeat_Phase1(); // Start heartbeats
+            finalizeStartupAndStartHeartbeat(); // Start heartbeats
 
             LogUtil.info("[WSRC] {} Instance {}: WebSource start sequence complete.", this.getClass().getSimpleName(), getInstanceId());
             return true;

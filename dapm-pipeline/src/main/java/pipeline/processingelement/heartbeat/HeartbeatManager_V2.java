@@ -1,5 +1,8 @@
 package pipeline.processingelement.heartbeat;
 
+import communication.message.Message;
+import communication.message.impl.Heartbeat;
+import communication.message.serialization.deserialization.MessageFactory;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -11,11 +14,10 @@ import org.apache.kafka.common.errors.GroupIdNotFoundException;
 import org.apache.kafka.common.errors.GroupNotEmptyException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-
-import communication.message.Message;
-import communication.message.impl.Heartbeat;
-import communication.message.serialization.deserialization.MessageFactory;
 import pipeline.processingelement.ProcessingElement;
+import pipeline.processingelement.reaction.FaultContext;
+import pipeline.processingelement.reaction.PeerDirection;
+import pipeline.processingelement.reaction.ReactionHandler;
 import utils.LogUtil;
 
 import java.time.Duration;
@@ -25,53 +27,68 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class HeartbeatManager_Phase1 {
+public class HeartbeatManager_V2 { 
     private final ProcessingElement processingElement;
     private final String instanceID;
     private final String brokerUrl;
+    private final ReactionHandler reactionHandler; 
 
     private KafkaProducer<String, String> heartbeatProducer;
     private final String upstreamHeartbeatPublishTopic;
     private final String downstreamHeartbeatPublishTopic;
 
     private KafkaConsumer<String, String> neighborHeartbeatConsumer;
-    private final List<String> allNeighborTopicsToLog;
+    private final Set<String> upstreamTopicsToMonitor;
+    private final Set<String> downstreamTopicsToMonitor;
     private String generatedNeighborLoggerConsumerGroupId;
+
+    private final ConcurrentMap<String, Instant> lastHeartbeatOnTopic = new ConcurrentHashMap<>();
+    private final HeartbeatVerificationStrategy upstreamStrategy = new UpstreamVerificationStrategy();
+    private final HeartbeatVerificationStrategy downstreamStrategy = new DownstreamVerificationStrategy();
 
     private final ScheduledExecutorService scheduler;
     private volatile boolean isRunning = false;
 
     private static final long HEARTBEAT_SEND_INTERVAL_MS = 3_000;
+    private static final long LIVENESS_CHECK_INTERVAL_MS = 5_000;
+    private static final long HEARTBEAT_TIMEOUT_MS = 10_000; // Threshold for strategies
     private static final long KAFKA_ADMIN_TIMEOUT_SECONDS = 10;
     private static final long KAFKA_CLIENT_CLOSE_TIMEOUT_SECONDS = 5;
+    private volatile boolean verificationGracePeriodOver = false;
+    private static final long INITIAL_VERIFICATION_GRACE_PERIOD_MS = 15_000; // e.g., 5 seconds
+   
 
-    public HeartbeatManager_Phase1(
+
+    public HeartbeatManager_V2(
             ProcessingElement processingElement,
             String brokerUrl,
-            HeartbeatTopicConfig topicConfig
+            HeartbeatTopicConfig topicConfig,
+            ReactionHandler reactionHandler
     ) {
         this.processingElement = Objects.requireNonNull(processingElement);
-        this.instanceID = Objects.requireNonNull(processingElement.getInstanceId(), "Owner instance ID cannot be null in HeartbeatManager constructor");
+        this.instanceID = Objects.requireNonNull(processingElement.getInstanceId());
         this.brokerUrl = Objects.requireNonNull(brokerUrl);
         Objects.requireNonNull(topicConfig, "HeartbeatTopicSetupConfig cannot be null");
+        this.reactionHandler = Objects.requireNonNull(reactionHandler, "ReactionHandler cannot be null");
 
         this.upstreamHeartbeatPublishTopic = topicConfig.getUpstreamHeartbeatPublishTopic();
         this.downstreamHeartbeatPublishTopic = topicConfig.getDownstreamHeartbeatPublishTopic();
 
-        this.allNeighborTopicsToLog = Stream.concat(
-                topicConfig.getUpstreamNeighborHeartbeatTopicsToSubscribeTo().stream(),
-                topicConfig.getDownstreamNeighborHeartbeatTopicsToSubscribeTo().stream()
-        ).distinct().collect(Collectors.toList());
+        this.upstreamTopicsToMonitor = Collections.unmodifiableSet(new HashSet<>(topicConfig.getUpstreamNeighborHeartbeatTopicsToSubscribeTo()));
+        this.downstreamTopicsToMonitor = Collections.unmodifiableSet(new HashSet<>(topicConfig.getDownstreamNeighborHeartbeatTopicsToSubscribeTo()));
+
+        Stream.concat(upstreamTopicsToMonitor.stream(), downstreamTopicsToMonitor.stream())
+              .forEach(topic -> lastHeartbeatOnTopic.put(topic, Instant.MIN)); // Initialize all monitored topics
 
         int numScheduledTasks = 0;
-        if (this.upstreamHeartbeatPublishTopic != null || this.downstreamHeartbeatPublishTopic != null) numScheduledTasks++;
-        if (!this.allNeighborTopicsToLog.isEmpty()) numScheduledTasks++;
+        if (this.upstreamHeartbeatPublishTopic != null || this.downstreamHeartbeatPublishTopic != null) numScheduledTasks++; // Send task
+        if (!this.upstreamTopicsToMonitor.isEmpty() || !this.downstreamTopicsToMonitor.isEmpty()) numScheduledTasks++; // Poll/Check task
         this.scheduler = (numScheduledTasks > 0) ? Executors.newScheduledThreadPool(numScheduledTasks) : null;
     }
 
     private void initializeRawKafkaClients() {
         boolean needsProducer = upstreamHeartbeatPublishTopic != null || downstreamHeartbeatPublishTopic != null;
-        boolean needsConsumer = !allNeighborTopicsToLog.isEmpty();
+        boolean needsConsumer = !upstreamTopicsToMonitor.isEmpty() || !downstreamTopicsToMonitor.isEmpty();
 
         if (needsProducer && heartbeatProducer == null) {
             Properties props = new Properties();
@@ -80,31 +97,33 @@ public class HeartbeatManager_Phase1 {
             props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
             props.put(ProducerConfig.ACKS_CONFIG, "1");
             this.heartbeatProducer = new KafkaProducer<>(props);
-            LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Raw KafkaProducer initialized.", processingElement.getClass().getSimpleName(), instanceID);
+            LogUtil.info("[HB MANAGER] {} Owner {}: Raw KafkaProducer initialized.", processingElement.getClass().getSimpleName(), instanceID);
         }
 
         if (needsConsumer && neighborHeartbeatConsumer == null) {
             Properties props = new Properties();
             props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerUrl);
-            // Generate and store the unique group ID
-            this.generatedNeighborLoggerConsumerGroupId = "hb-raw-logger-" + instanceID + "-" + UUID.randomUUID().toString().substring(0,8);
+            this.generatedNeighborLoggerConsumerGroupId = "hb-v2-consumer-" + instanceID + "-" + UUID.randomUUID().toString().substring(0,8);
             props.put(ConsumerConfig.GROUP_ID_CONFIG, this.generatedNeighborLoggerConsumerGroupId);
             props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
             props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
             this.neighborHeartbeatConsumer = new KafkaConsumer<>(props);
-            if (!allNeighborTopicsToLog.isEmpty()) {
-                this.neighborHeartbeatConsumer.subscribe(allNeighborTopicsToLog);
-                LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Raw KafkaConsumer (Group ID: {}) subscribed to: {}",
-                        processingElement.getClass().getSimpleName(), instanceID, this.generatedNeighborLoggerConsumerGroupId, allNeighborTopicsToLog);
+            
+            List<String> allTopicsToSubscribe = Stream.concat(upstreamTopicsToMonitor.stream(), downstreamTopicsToMonitor.stream())
+                                                      .distinct().collect(Collectors.toList());
+            if (!allTopicsToSubscribe.isEmpty()) {
+                this.neighborHeartbeatConsumer.subscribe(allTopicsToSubscribe);
+                LogUtil.info("[HB MANAGER] {} Owner {}: Raw KafkaConsumer (Group: {}) subscribed to: {}",
+                        processingElement.getClass().getSimpleName(), instanceID, this.generatedNeighborLoggerConsumerGroupId, allTopicsToSubscribe);
             } else {
-                LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Raw KafkaConsumer (Group ID: {}) initialized but no topics to subscribe to for logging.",
+                 LogUtil.info("[HB MANAGER] {} Owner {}: Raw KafkaConsumer initialized (Group: {}) but no topics to monitor.",
                         processingElement.getClass().getSimpleName(), instanceID, this.generatedNeighborLoggerConsumerGroupId);
             }
         }
     }
-    
+
     private void ensurePublishTopicsExist() {
         List<String> topicsToCreate = new ArrayList<>();
         if (upstreamHeartbeatPublishTopic != null && !upstreamHeartbeatPublishTopic.isEmpty()) topicsToCreate.add(upstreamHeartbeatPublishTopic);
@@ -124,27 +143,33 @@ public class HeartbeatManager_Phase1 {
             }
             if (!newTopics.isEmpty()) {
                 adminClient.createTopics(newTopics).all().get(5, TimeUnit.SECONDS);
-                LogUtil.info("[HB] {} Owner {}: Created own publish topics: {}", processingElement.getClass().getSimpleName(), instanceID, newTopics.stream().map(NewTopic::name).collect(Collectors.toList()));
+                LogUtil.info("[HB TOPIC] {} ProcessingElement {}: Created own publish topics: {}", processingElement.getClass().getSimpleName(), instanceID, newTopics.stream().map(NewTopic::name).collect(Collectors.toList()));
             }
         } catch (Exception e) {
             LogUtil.error(e, "[HB] {} Owner {}: Failed to ensure own publish topics exist", processingElement.getClass().getSimpleName(), instanceID);
         }
     }
-   
+    
     public synchronized void start() {
-        if (instanceID == null) {
-            LogUtil.info("[HB RAW MGR PH1 ERR] {} Owner: Cannot start, processingElement instance ID is null.", processingElement.getClass().getSimpleName());
-            return;
-        }
-        
-        if (isRunning || scheduler == null) { if(scheduler == null) isRunning = true; return; }
-        LogUtil.info("[HB] {} Owner {}: Starting...", processingElement.getClass().getSimpleName(), instanceID);
+        if (instanceID == null) { /* ... error log ... */ return; }
+        if (isRunning || scheduler == null) { /* ... logging ... */ if(scheduler == null) isRunning = true; return; }
+        LogUtil.info("[HB MANAGER] {} Owner {}: Starting...", processingElement.getClass().getSimpleName(), instanceID);
         isRunning = true;
 
-        initializeRawKafkaClients();
+        initializeRawKafkaClients(); // Sets up generatedConsumerGroupId
         ensurePublishTopicsExist();
 
-        // Publishing loop
+        // Schedule grace period completion
+        if (scheduler != null && (!upstreamTopicsToMonitor.isEmpty() || !downstreamTopicsToMonitor.isEmpty())) {
+            scheduler.schedule(() -> {
+                LogUtil.info("[HB MANAGER] {} ProcessingElement {}: Initial verification grace period ended.", processingElement.getClass().getSimpleName(), instanceID);
+                verificationGracePeriodOver = true;
+            }, INITIAL_VERIFICATION_GRACE_PERIOD_MS, TimeUnit.MILLISECONDS);
+        } else if (scheduler == null) { // No tasks, no checks needed
+            verificationGracePeriodOver = true; 
+        }
+
+        // Publish Loop
         if (heartbeatProducer != null && (upstreamHeartbeatPublishTopic != null || downstreamHeartbeatPublishTopic != null)) {
             scheduler.scheduleWithFixedDelay(() -> {
                 if (!isRunning || !processingElement.isAvailable()) return;
@@ -154,37 +179,65 @@ public class HeartbeatManager_Phase1 {
 
                     if (upstreamHeartbeatPublishTopic != null) {
                         heartbeatProducer.send(new ProducerRecord<>(upstreamHeartbeatPublishTopic, serializedHeartbeat));
-                        LogUtil.info("[HB SEND] {} Owner {}: Sent heartbeat to UPSTREAM topic {}", processingElement.getClass().getSimpleName(), instanceID, upstreamHeartbeatPublishTopic);                    
+                         LogUtil.info("[HB SEND] {} Owner {}: Sent heartbeat to UPSTREAM topic {}", processingElement.getClass().getSimpleName(), instanceID, upstreamHeartbeatPublishTopic);
                     }
                     if (downstreamHeartbeatPublishTopic != null) {
                         heartbeatProducer.send(new ProducerRecord<>(downstreamHeartbeatPublishTopic, serializedHeartbeat));
                         LogUtil.info("[HB SEND] {} Owner {}: Sent heartbeat to DOWNSTREAM topic {}", processingElement.getClass().getSimpleName(), instanceID, downstreamHeartbeatPublishTopic);                    
                     }
-                } catch (Exception e) { LogUtil.error(e, "Error sending heartbeat");}
+                } catch (Exception e) { LogUtil.error(e, "[HB MANAGER] Error sending heartbeat for {}", instanceID);}
             }, ThreadLocalRandom.current().nextInt(200, 700), HEARTBEAT_SEND_INTERVAL_MS, TimeUnit.MILLISECONDS);
         }
-        
-        // Logging consumer loop
-        if (neighborHeartbeatConsumer != null && !allNeighborTopicsToLog.isEmpty()) {
+
+        // Poll for neighbor pulses & Check Liveness Loop
+        List<String> allTopicsToSubscribe = Stream.concat(upstreamTopicsToMonitor.stream(), downstreamTopicsToMonitor.stream())
+                                                 .distinct().collect(Collectors.toList());
+
+        if (neighborHeartbeatConsumer != null && !allTopicsToSubscribe.isEmpty()) {
+             neighborHeartbeatConsumer.subscribe(allTopicsToSubscribe); // Ensure subscription is set if re-starting
             scheduler.scheduleWithFixedDelay(() -> {
-                if (!isRunning) return;
+                if (!isRunning || !processingElement.isAvailable()) return; // Also check owner availability before reacting
                 try {
-                    ConsumerRecords<String, String> records = neighborHeartbeatConsumer.poll(Duration.ofMillis(1000));
+                    // 1. Poll for incoming pulses
+                    ConsumerRecords<String, String> records = neighborHeartbeatConsumer.poll(Duration.ofMillis(200)); // Short poll, check runs often
+                    Instant now = Instant.now();
                     records.forEach(record -> {
-                        String rawValue = record.value();
-                        Message deserialized = MessageFactory.deserialize(rawValue);
+                        Message deserialized = MessageFactory.deserialize(record.value());
                         if (deserialized instanceof Heartbeat heartbeat) {
-                            LogUtil.info("[HB RECV] {} Owner {}: Logged heartbeat on topic {} from PE {}: Timestamp {}", processingElement.getClass().getSimpleName(), instanceID, record.topic(), heartbeat.getInstanceID(), heartbeat.getTimestamp());
-                        } else if (deserialized != null) {
-                             LogUtil.info("[HB RECV WARN] {} Owner {}: Received non-Heartbeat message on {}: Type {}", processingElement.getClass().getSimpleName(), instanceID, record.topic(), deserialized.getClass().getName());
-                        } else {
-                             LogUtil.info("[HB RECV WARN] {} Owner {}: Failed to deserialize or received null on topic {}: Raw value starts with '{}'", processingElement.getClass().getSimpleName(), instanceID, record.topic(), rawValue.substring(0, Math.min(rawValue.length(),50)));
+                            LogUtil.info("[HB MANAGER RECV] {} received heartbeat from {} on topic {}", processingElement.getClass(), instanceID, heartbeat.getInstanceID(), record.topic());
+                            lastHeartbeatOnTopic.put(record.topic(), heartbeat.getTimestamp()); // Use message timestamp
                         }
                     });
-                } catch (Exception e) { if (isRunning) LogUtil.error(e, "Error in neighbor heartbeat logging loop");}
-            }, 1500, 2500, TimeUnit.MILLISECONDS);
+
+                    if(!verificationGracePeriodOver) { return;}
+
+                    // 2. Verify Upstream Peers (based on their topics)
+                    if (!upstreamTopicsToMonitor.isEmpty()) {
+                        if (!upstreamStrategy.verifyLiveness(new HashMap<>(lastHeartbeatOnTopic), now, HEARTBEAT_TIMEOUT_MS, upstreamTopicsToMonitor)) {
+                            LogUtil.info("[HB MANAGER FAULT] {} Owner {}: Upstream liveness check FAILED.", processingElement.getClass().getSimpleName(), instanceID);
+                            Set<String> silentUpstreamTopics = upstreamTopicsToMonitor.stream()
+                                .filter(topic -> !upstreamStrategy.isTopicTimely(lastHeartbeatOnTopic.getOrDefault(topic, Instant.MIN), now, HEARTBEAT_TIMEOUT_MS))
+                                .collect(Collectors.toSet());
+                            reactionHandler.processLivenessFailure(new FaultContext(PeerDirection.UPSTREAM_PRODUCER, silentUpstreamTopics, upstreamTopicsToMonitor));
+                            // If reaction handler doesn't stop the PE/manager, this will keep firing.
+                            // The reaction handler for severe levels should ensure processingElement.setAvailable(false) or stop this manager.
+                        }
+                    }
+
+                    // 3. Verify Downstream Peers (based on their topics)
+                    if (!downstreamTopicsToMonitor.isEmpty()) {
+                        if (!downstreamStrategy.verifyLiveness(new HashMap<>(lastHeartbeatOnTopic), now, HEARTBEAT_TIMEOUT_MS, downstreamTopicsToMonitor)) {
+                            LogUtil.info("[HB MANAGER FAULT] {} Owner {}: Downstream liveness check FAILED.", processingElement.getClass().getSimpleName(), instanceID);
+                             Set<String> silentDownstreamTopics = downstreamTopicsToMonitor.stream()
+                                .filter(topic -> !downstreamStrategy.isTopicTimely(lastHeartbeatOnTopic.getOrDefault(topic, Instant.MIN), now, HEARTBEAT_TIMEOUT_MS))
+                                .collect(Collectors.toSet());
+                            reactionHandler.processLivenessFailure(new FaultContext(PeerDirection.DOWNSTREAM_CONSUMER, silentDownstreamTopics, downstreamTopicsToMonitor));
+                        }
+                    }
+                } catch (Exception e) { if (isRunning) LogUtil.error(e, "[HB MANAGER] Error in poll/check loop for {}", instanceID);}
+            }, LIVENESS_CHECK_INTERVAL_MS, LIVENESS_CHECK_INTERVAL_MS, TimeUnit.MILLISECONDS);
         }
-        LogUtil.info("[HB] {} Owner {}: Started successfully.", processingElement.getClass().getSimpleName(), instanceID);
+        LogUtil.info("[HB MANAGER] {} Owner {}: Started successfully.", processingElement.getClass().getSimpleName(), instanceID);
     }
 
     private void deleteOwnPublishTopics() {
@@ -200,7 +253,7 @@ public class HeartbeatManager_Phase1 {
             return;
         }
 
-        LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Attempting to delete own publish topics: {}", processingElement.getClass().getSimpleName(), instanceID, topicsToDelete);
+        LogUtil.info("[HB MANAGER] {} Owner {}: Attempting to delete own publish topics: {}", processingElement.getClass().getSimpleName(), instanceID, topicsToDelete);
         Properties props = new Properties();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, brokerUrl);
         try (AdminClient adminClient = AdminClient.create(props)) {
@@ -212,24 +265,24 @@ public class HeartbeatManager_Phase1 {
             if (!topicsThatActuallyExist.isEmpty()) {
                 DeleteTopicsResult deleteResult = adminClient.deleteTopics(topicsThatActuallyExist);
                 deleteResult.all().get(10, TimeUnit.SECONDS); // Wait for deletion
-                LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Successfully deleted own heartbeat publish topics: {}",
+                LogUtil.info("[HB MANAGER] {} Owner {}: Successfully deleted own heartbeat publish topics: {}",
                              processingElement.getClass().getSimpleName(), instanceID, topicsThatActuallyExist);
             } else {
-                LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Own publish topics {} did not exist or were already deleted.",
+                LogUtil.info("[HB MANAGER] {} Owner {}: Own publish topics {} did not exist or were already deleted.",
                              processingElement.getClass().getSimpleName(), instanceID, topicsToDelete);
             }        
         } catch (Exception e) { // Catch any other Kafka or admin client related exceptions
-            LogUtil.error(e, "[HB RAW MGR PH1 ERR] {} Owner {}: Unexpected error deleting topics {}", processingElement.getClass().getSimpleName(), instanceID, topicsToDelete);
+            LogUtil.error(e, "[HB MANAGER ERR] {} Owner {}: Unexpected error deleting topics {}", processingElement.getClass().getSimpleName(), instanceID, topicsToDelete);
         }
     }
 
     private void deleteOwnConsumerGroup() {
         if (generatedNeighborLoggerConsumerGroupId == null || generatedNeighborLoggerConsumerGroupId.isEmpty()) {
-            LogUtil.info("[HB RAW MGR PH1] {} Owner {}: No consumer group ID stored to delete.", processingElement.getClass().getSimpleName(), instanceID);
+            LogUtil.info("[HB MANAGER] {} Owner {}: No consumer group ID stored to delete.", processingElement.getClass().getSimpleName(), instanceID);
             return;
         }
 
-        LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Attempting to delete own consumer group: {}", processingElement.getClass().getSimpleName(), instanceID, generatedNeighborLoggerConsumerGroupId);
+        LogUtil.info("[HB MANAGER] {} Owner {}: Attempting to delete own consumer group: {}", processingElement.getClass().getSimpleName(), instanceID, generatedNeighborLoggerConsumerGroupId);
         Properties props = new Properties();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, brokerUrl);
         try (AdminClient adminClient = AdminClient.create(props)) {
@@ -257,10 +310,10 @@ public class HeartbeatManager_Phase1 {
 
     public synchronized void stop() {
         if (!isRunning) {
-            LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Already stopped or not started.", processingElement.getClass().getSimpleName(), instanceID);
+            LogUtil.info("[HB MANAGER] {} Owner {}: Already stopped or not started.", processingElement.getClass().getSimpleName(), instanceID);
             return;
         }
-        LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Stopping...", processingElement.getClass().getSimpleName(), instanceID);
+        LogUtil.info("[HB MANAGER] {} Owner {}: Stopping...", processingElement.getClass().getSimpleName(), instanceID);
         isRunning = false;
         if (scheduler != null) {
             scheduler.shutdown();
@@ -278,7 +331,7 @@ public class HeartbeatManager_Phase1 {
             try {
                 heartbeatProducer.flush();
                 heartbeatProducer.close(Duration.ofSeconds(KAFKA_CLIENT_CLOSE_TIMEOUT_SECONDS));
-            } catch (Exception e) {LogUtil.error(e, "[HB RAW MGR PH1] Error closing heartbeatProducer for {}", instanceID);}
+            } catch (Exception e) {LogUtil.error(e, "[HB MANAGER] Error closing heartbeatProducer for {}", instanceID);}
             heartbeatProducer = null;
         }
         
@@ -287,13 +340,13 @@ public class HeartbeatManager_Phase1 {
                 neighborHeartbeatConsumer.unsubscribe();
                 neighborHeartbeatConsumer.wakeup();
                 neighborHeartbeatConsumer.close(Duration.ofSeconds(KAFKA_CLIENT_CLOSE_TIMEOUT_SECONDS));
-            } catch (Exception e) {LogUtil.error(e, "[HB RAW MGR PH1] Error closing neighborHeartbeatLoggerConsumer for {}", instanceID);}
+            } catch (Exception e) {LogUtil.error(e, "[HB MANAGER] Error closing neighborHeartbeatLoggerConsumer for {}", instanceID);}
             neighborHeartbeatConsumer = null; 
         }
 
         deleteOwnPublishTopics();
         deleteOwnConsumerGroup();
 
-        LogUtil.info("[HB RAW MGR PH1] {} Owner {}: Stopped.", processingElement.getClass().getSimpleName(), instanceID);
+        LogUtil.info("[HB MANAGER] {} Owner {}: Stopped.", processingElement.getClass().getSimpleName(), instanceID);
     }
 }
