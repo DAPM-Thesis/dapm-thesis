@@ -8,10 +8,8 @@ import pipeline.processingelement.Configuration;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -19,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CandidateParserTest {
 
-    public static PipelineCandidate getPipelineCandidate(String jsonPath) {
+    public static ValidatedPipeline getValidatedPipeline(String jsonPath) {
         String contents;
         try { contents = Files.readString(Paths.get(jsonPath)); }
         catch (IOException e) {
@@ -27,12 +25,20 @@ public class CandidateParserTest {
             throw new RuntimeException(e);
         }
         URI configURI = Paths.get("src/test/resources/candidate_validation/template_config_schemas/").toAbsolutePath().toUri();
-        return new PipelineCandidate(contents, configURI);
+        return new ValidatedPipeline(contents, configURI);
     }
 
-    public static PipelineCandidate getSimpleValid() {
+    public static ValidatedPipeline getSimpleValid() {
         String simpleValidPath = "src/test/resources/candidate_validation/simple_valid.json";
-        return getPipelineCandidate(simpleValidPath);
+
+        String contents;
+        try { contents = Files.readString(Paths.get(simpleValidPath) ); }
+        catch (IOException e) {
+            System.out.println(System.getProperty("user.dir") + "\n\n");
+            throw new RuntimeException(e);
+        }
+        URI configURI = Paths.get("src/test/resources/candidate_validation/template_config_schemas/").toAbsolutePath().toUri();
+        return new ValidatedPipeline(contents, configURI);
     }
 
     @Test
@@ -74,9 +80,9 @@ public class CandidateParserTest {
         ChannelReference c2 = new ChannelReference(operator, sinkPort1);
         Set<ChannelReference> expectedChannels = Set.of(c1, c2);
 
-        PipelineCandidate outputCandidate = getPipelineCandidate(path);
-        Set<ProcessingElementReference> outputElements = outputCandidate.getElements();
-        Set<ChannelReference> outputChannels = outputCandidate.getChannels();
+        ValidatedPipeline outputPipeline = getValidatedPipeline(path);
+        Set<ProcessingElementReference> outputElements = outputPipeline.getElements();
+        Set<ChannelReference> outputChannels = outputPipeline.getChannels();
 
         assertEquals(expectedElements, outputElements);
         assertEquals(expectedChannels, outputChannels);
@@ -85,16 +91,16 @@ public class CandidateParserTest {
     @Test
     public void elementOrderInvariance() {
         String outputPath = "src/test/resources/candidate_validation/parser/element_order_invariance.json";
-        PipelineCandidate output = getPipelineCandidate(outputPath);
-        PipelineCandidate expected = getSimpleValid();
+        ValidatedPipeline output = getValidatedPipeline(outputPath);
+        ValidatedPipeline expected = getSimpleValid();
         assertEquals(output, expected);
     }
 
     @Test
     public void channelOrderInvariance() {
         String outputPath = "src/test/resources/candidate_validation/parser/channel_order_invariance.json";
-        PipelineCandidate output = getPipelineCandidate(outputPath);
-        PipelineCandidate expected = getSimpleValid();
+        ValidatedPipeline output = getValidatedPipeline(outputPath);
+        ValidatedPipeline expected = getSimpleValid();
         assertEquals(output, expected);
     }
 
@@ -102,14 +108,14 @@ public class CandidateParserTest {
     public void duplicate() {
         // It should not matter whether a channel or element exists twice [with same instanceID] in the given json
         String outputPath = "src/test/resources/candidate_validation/parser/duplicate.json";
-        assertThrows(RuntimeException.class, () -> getPipelineCandidate(outputPath));
+        assertThrows(RuntimeException.class, () -> getValidatedPipeline(outputPath));
     }
 
     @Test
     public void empty() {
         String path = "src/test/resources/candidate_validation/parser/empty.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -117,7 +123,7 @@ public class CandidateParserTest {
     public void singleElement() {
         String path = "src/test/resources/candidate_validation/parser/single_element.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -125,7 +131,7 @@ public class CandidateParserTest {
     public void noChannels() {
         String path = "src/test/resources/candidate_validation/parser/no_channels.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -134,7 +140,7 @@ public class CandidateParserTest {
         // A source must be represented by an empty array (by convention) - not by null.
         String path = "src/test/resources/candidate_validation/parser/null_inputs.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -156,7 +162,7 @@ public class CandidateParserTest {
                 1,
                 expectedConfiguration);
 
-        PipelineCandidate candidate = CandidateParserTest.getPipelineCandidate(path);
+        ValidatedPipeline candidate = CandidateParserTest.getValidatedPipeline(path);
         ProcessingElementReference output = candidate.getElements().stream()
                 .filter(e -> e.getOrganizationID().equals("Pepsi"))
                 .findFirst()
@@ -182,7 +188,7 @@ public class CandidateParserTest {
                 1,
                 expectedConfiguration);
 
-        PipelineCandidate candidate = CandidateParserTest.getPipelineCandidate(path);
+        ValidatedPipeline candidate = CandidateParserTest.getValidatedPipeline(path);
         ProcessingElementReference output = candidate.getElements().stream()
                 .filter(e -> e.getOrganizationID().equals("Pepsi"))
                 .findFirst()
@@ -195,7 +201,7 @@ public class CandidateParserTest {
     public void missingConfigurationProperty() {
         String path = "src/test/resources/candidate_validation/parser/missing_configuration_property.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -203,7 +209,7 @@ public class CandidateParserTest {
     public void undeclaredConfigurationProperty() {
         String path = "src/test/resources/candidate_validation/parser/undeclared_configuration_property.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -211,7 +217,7 @@ public class CandidateParserTest {
     public void noSource() {
         String path = "src/test/resources/candidate_validation/no_sink.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -219,7 +225,7 @@ public class CandidateParserTest {
     public void noSink() {
         String path = "src/test/resources/candidate_validation/parser/no_sink.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -228,7 +234,7 @@ public class CandidateParserTest {
         // a sink which is the from element of a channel in the pipeline candidate; a sink should always be the to-element
         String path = "src/test/resources/candidate_validation/parser/producing_sink.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -237,7 +243,7 @@ public class CandidateParserTest {
         // a sink which is the from element of a channel in the pipeline candidate; a sink should always be the to-element
         String path = "src/test/resources/candidate_validation/parser/consuming_source.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
@@ -245,14 +251,14 @@ public class CandidateParserTest {
     public void noConfiguration() {
         String path = "src/test/resources/candidate_validation/no_configuration.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 
     @Test void nullConfiguration() {
         String path = "src/test/resources/candidate_validation/null_configuration.json";
         assertThrows(RuntimeException.class, () -> {
-            CandidateParserTest.getPipelineCandidate(path);
+            CandidateParserTest.getValidatedPipeline(path);
         });
     }
 

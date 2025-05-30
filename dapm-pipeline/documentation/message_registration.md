@@ -5,7 +5,7 @@ The data flowing through the pipeline stem from `Message` objects. `Message` is 
 Create and define a new class that extends `Message`. In the following examples, we'll call the new class `MYMESSAGE`. While not strictly necessary, we recommend placing it within the `communication.message.impl` package.
 
 ### 2. Add the AutoRegisterMessage Annotation
-Add the annotation to the class: `@AutoRegisterMessage`
+Add the `@AutoRegisterMessage` annotation to the class:
 ``` java
 annotations.AutoRegisterMessage;
 

@@ -10,7 +10,6 @@ import java.util.Map;
 
 @Repository
 public class TemplateRepository {
-
     private final Map<String, Class<? extends ProcessingElement>> templates = new HashMap<>();
 
     public void storeTemplate(String templateID, Class<? extends ProcessingElement> template) {
@@ -28,5 +27,4 @@ public class TemplateRepository {
             throw new RuntimeException(e);
         }
     }
-
 }
