@@ -14,7 +14,7 @@
         "optional config": "not required"
       }
     },
-    { "organizationID": "DTU", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["PetriNet"],  "output": null,  "instanceNumber": 1, "configuration": {} }
+    { "organizationID": "DTU", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["Event"],  "output": null,  "instanceNumber": 1, "configuration": {} }
   ],
 
   "channels": [
@@ -23,7 +23,7 @@
         "configuration": {"number": 0.5, "string": "some string", "optional config":  "not required"}},
       "subscribers": [
         {
-          "processing element": { "organizationID": "DTU", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["PetriNet"],  "output": null,  "instanceNumber": 1, "configuration": {} },
+          "processing element": { "organizationID": "DTU", "hostURL": "http://localhost:8102", "templateID": "Dream Sink",  "inputs": ["Event"],  "output": null,  "instanceNumber": 1, "configuration": {} },
           "portNumber": 1
         }
       ]

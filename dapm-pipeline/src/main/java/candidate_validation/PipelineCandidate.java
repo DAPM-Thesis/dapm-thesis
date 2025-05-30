@@ -21,7 +21,7 @@ public class PipelineCandidate {
      * @throws RuntimeException if parsing fails or json does not conform to the pipeline candidate and configuration
      *                          schemas.
      */
-    public PipelineCandidate(String json, URI configFolderPath) throws JsonSchemaMismatch {
+    PipelineCandidate(String json, URI configFolderPath) throws JsonSchemaMismatch {
         Pair<Set<ProcessingElementReference>, Set<ChannelReference>> elementsAndChannels
                 = (new CandidateParser(configFolderPath)).deserialize(json);
         this.elements = elementsAndChannels.first();

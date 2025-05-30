@@ -1,6 +1,5 @@
 
 
-import candidate_validation.PipelineCandidate;
 import candidate_validation.ValidatedPipeline;
 import communication.API.HTTPClient;
 import communication.API.request.HTTPRequest;
@@ -41,21 +40,18 @@ public class PipelineBuilderTest {
         Mockito.reset(httpClient);
     }
 
-    public static PipelineCandidate getPipelineCandidate(String jsonPath) {
+    public static ValidatedPipeline getSimpleValid() {
+        String simpleValidPath = "src/test/resources/candidate_validation/simple_valid.json";
+
         String contents;
         try {
-            contents = Files.readString(Paths.get(jsonPath));
+            contents = Files.readString(Paths.get(simpleValidPath));
         } catch (IOException e) {
             System.out.println(System.getProperty("user.dir") + "\n\n");
             throw new RuntimeException(e);
         }
         URI configURI = Paths.get("src/test/resources/candidate_validation/template_config_schemas/").toAbsolutePath().toUri();
-        return new PipelineCandidate(contents, configURI);
-    }
-
-    public static PipelineCandidate getSimpleValid() {
-        String simpleValidPath = "src/test/resources/candidate_validation/simple_valid.json";
-        return getPipelineCandidate(simpleValidPath);
+        return new ValidatedPipeline(contents, configURI);
     }
 
     private void setUpMockResponses(Function<String, String> bodyForUrl) {
@@ -133,8 +129,7 @@ public class PipelineBuilderTest {
     public void success() {
         setUpSuccessfulMockResponses();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
 
         pipelineBuilder.buildPipeline(pipelineID, validatedPipeline);
         Pipeline pipeline = pipelineRepository.getPipeline(pipelineID);
@@ -154,8 +149,7 @@ public class PipelineBuilderTest {
     public void fail_null_template_id() {
         setUpFailedMockResponsesNullTemplateId();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
         assertThrows(
                 IllegalStateException.class,
                 () -> pipelineBuilder.buildPipeline(pipelineID, validatedPipeline)
@@ -166,8 +160,7 @@ public class PipelineBuilderTest {
     public void fail_null_instance_id() {
         setUpFailedMockResponsesNullInstanceID();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
 
         assertThrows(
                 IllegalStateException.class,
@@ -179,8 +172,7 @@ public class PipelineBuilderTest {
     public void fail_null_producer_config() {
         setUpFailedMockResponsesNullProducerConfig();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
 
         assertThrows(
                 IllegalStateException.class,
@@ -192,8 +184,7 @@ public class PipelineBuilderTest {
     public void fail_null_producer_configs() {
         setUpFailedMockResponsesNullProducerConfigs();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
 
         assertThrows(
                 IllegalStateException.class,
@@ -206,8 +197,7 @@ public class PipelineBuilderTest {
     public void fail_empty_template_id() {
         setUpFailedMockResponsesEmptyTemplateID();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
 
         assertThrows(
                 IllegalStateException.class,
@@ -219,8 +209,7 @@ public class PipelineBuilderTest {
     public void fail_empty_instance_id() {
         setUpFailedMockResponsesEmptyInstanceID();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
 
         assertThrows(
                 IllegalStateException.class,
@@ -232,8 +221,7 @@ public class PipelineBuilderTest {
     public void fail_empty_producer_configs() {
         setUpFailedMockResponsesEmptyProducerConfigs();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
 
         assertThrows(
                 IllegalStateException.class,
@@ -245,8 +233,7 @@ public class PipelineBuilderTest {
     public void fail_null_response_body() {
         setUpFailedMockResponsesNullResponseBody();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
 
         assertThrows(
                 IllegalStateException.class,
@@ -258,8 +245,7 @@ public class PipelineBuilderTest {
     public void fail_null_response() {
         setUpFailedMockResponsesNullResponse();
         String pipelineID = "pipeline1";
-        PipelineCandidate candidate = getSimpleValid();
-        ValidatedPipeline validatedPipeline = new ValidatedPipeline(candidate);
+        ValidatedPipeline validatedPipeline = getSimpleValid();
 
         assertThrows(
                 IllegalStateException.class,
