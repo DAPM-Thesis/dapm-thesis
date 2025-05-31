@@ -39,4 +39,20 @@ public class PipelineExecutionController {
         }
         return ResponseEntity.badRequest().body(null);
     }
+
+    @PutMapping("/stopProcessing/instance/{instanceID}")
+    public ResponseEntity<Void> stopPEProcessing(@PathVariable("instanceID") String instanceID) {
+        ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
+        if (processingElement == null) return ResponseEntity.notFound().build();
+        if (processingElement.stopProcessing()) return ResponseEntity.ok().build();
+        return ResponseEntity.internalServerError().build();
+    }
+
+    @PutMapping("/resumeProcessing/instance/{instanceID}")
+    public ResponseEntity<Void> resumePEProcessing(@PathVariable("instanceID") String instanceID) {
+        ProcessingElement processingElement = peInstanceRepository.getInstance(instanceID);
+        if (processingElement == null) return ResponseEntity.notFound().build();
+        if (processingElement.resumeProcessing()) return ResponseEntity.ok().build(); 
+        return ResponseEntity.internalServerError().build();
+    }
 }

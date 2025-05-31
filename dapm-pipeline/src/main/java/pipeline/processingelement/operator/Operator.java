@@ -89,6 +89,36 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     }
 
     @Override
+    public boolean stopProcessing() {
+        LogUtil.info("[OP] {} Instance {}: Stopping data processing.", getClass().getSimpleName(), getInstanceId());
+        setProcessingActive(false);
+        setAvailable(false); // Stop sending its own heartbeats
+        boolean consumersStopped = stopDataConsumers(); // From ConsumingProcessingElement via super
+        boolean producerStopped = stopDataProduction();
+        return consumersStopped && producerStopped;
+    }
+
+    @Override
+    public boolean resumeProcessing() {
+        LogUtil.info("[OP] {} Instance {}: Resuming data processing.", getClass().getSimpleName(), getInstanceId());
+        setProcessingActive(true);
+        setAvailable(true); // Resume sending its own heartbeats
+        boolean consumersResumed = resumeDataConsumers();
+        boolean producerResumed = resumeDataProduction();
+        return consumersResumed && producerResumed;
+    }
+
+    public boolean stopDataProduction() {
+        if (dataProducer != null) return dataProducer.stop();
+        return true;
+    }
+
+    public boolean resumeDataProduction() {
+        // TODO: Implement logic to resume data production
+        return true;
+    }
+
+    @Override
     public boolean terminate() {
         LogUtil.info("[OP] {} Instance {}: Terminating Operator...", this.getClass().getSimpleName(), getInstanceId());
         boolean dataProducerStopped = true;

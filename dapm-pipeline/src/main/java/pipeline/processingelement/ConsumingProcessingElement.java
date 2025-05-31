@@ -80,6 +80,24 @@ public abstract class ConsumingProcessingElement extends ProcessingElement imple
         return allDataConsumersStopped && allDataConsumersTerminated && superTerminated;
     }
 
+    public boolean stopDataConsumers() {
+        LogUtil.info("[CPE] {} Instance {}: Stopping data consumers...", getClass().getSimpleName(), getInstanceId());
+        boolean allStopped = true;
+        for (Consumer consumer : consumers.values()) {
+            if (!consumer.stop()) allStopped = false;
+        }
+        return allStopped;
+    }
+
+    public boolean resumeDataConsumers() {
+        LogUtil.info("[CPE] {} Instance {}: Resuming data consumers...", getClass().getSimpleName(), getInstanceId());
+        boolean allResumed = true;
+        for (Consumer consumer : consumers.values()) {
+            if (!consumer.start()) allResumed = false; 
+        }
+        return allResumed;
+    }
+
     @Override
     public abstract void observe(Pair<Message, Integer> inputAndPortNumber);
 

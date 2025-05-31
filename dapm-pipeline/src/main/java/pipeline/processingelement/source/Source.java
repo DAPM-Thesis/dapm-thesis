@@ -1,14 +1,11 @@
 package pipeline.processingelement.source;
 
-import java.util.List;
-
 import communication.Producer;
 import communication.ProducingProcessingElement;
 import communication.Publisher;
 import communication.message.Message;
 import pipeline.processingelement.Configuration;
 import pipeline.processingelement.ProcessingElement;
-import pipeline.processingelement.heartbeat.HeartbeatManager_Phase1;
 import pipeline.processingelement.heartbeat.HeartbeatManager_V2;
 import utils.LogUtil;
 
@@ -23,12 +20,8 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     // }
     @Override
     public final void publish(O data) {
-        if (dataProducer == null) {
-            LogUtil.info("[SRC WARN] {} Instance {}: Data producer is null. Cannot publish data: {}", this.getClass().getSimpleName(), getInstanceId(), data);
-            return;
-        }
-        if (!isAvailable()){
-            LogUtil.info("[SRC WARN] {} Instance {}: Source not available. Dropping data: {}", this.getClass().getSimpleName(), getInstanceId(), data);
+        if (dataProducer == null || !isAvailable()) {
+            LogUtil.info("[SOURCE WARN] {} [{}]: {}. Dropping: {}", this.getClass().getSimpleName(), getInstanceId(), dataProducer == null ? "Data producer is null" : "Source not available", data);
             return;
         }
         dataProducer.publish(data);
@@ -37,27 +30,53 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
     @Override
     public abstract boolean start();
 
-     protected void finalizeStartupAndStartHeartbeat() {
+    @Override
+    public boolean stopProcessing() {
+        LogUtil.info("[SRC] {} Instance {}: Stopping data processing.", getClass().getSimpleName(), getInstanceId());
+        setProcessingActive(false); 
+        setAvailable(false); // Stop sending its own heartbeats
+        return stopDataProduction();
+    }
+
+    @Override
+    public boolean resumeProcessing() {
+        LogUtil.info("[SRC] {} Instance {}: Resuming data processing.", getClass().getSimpleName(), getInstanceId());
+        setProcessingActive(true);
+        setAvailable(true); // Resume sending its own heartbeats
+        return resumeDataProduction();
+    }
+
+    public boolean stopDataProduction() {
+        if (dataProducer != null) return dataProducer.stop();
+        return true;
+    }
+
+    public boolean resumeDataProduction() {
+        // TODO: Figure out how to resume data production
+        return true;
+    }
+
+    protected void finalizeStartupAndStartHeartbeat() {
         if (this.getInstanceId() == null) { // Ensure instance ID is set
-             LogUtil.info("[SRC ERR PH1] {} Instance {}: Instance ID is null. Cannot start heartbeat manager.", this.getClass().getSimpleName(), "UNKNOWN");
+             LogUtil.info("[SOURCE ERR] {} Instance {}: Instance ID is null. Cannot start heartbeat manager.", this.getClass().getSimpleName(), "UNKNOWN");
              setAvailable(false); return;
         }
         if (dataProducer == null || dataProducer.getBrokerUrl() == null) {
-            LogUtil.info("[SRC ERR PH1] {} Instance {}: Data producer or broker URL null. HB manager cannot start.", this.getClass().getSimpleName(), getInstanceId());
+            LogUtil.info("[SOURCE ERR] {} Instance {}: Data producer or broker URL null. HB manager cannot start.", this.getClass().getSimpleName(), getInstanceId());
             setAvailable(false); // Cannot effectively heartbeat if no broker info
             return;
         }
         if (this.internalHeartbeatTopicConfig == null) {
-            LogUtil.info("[SRC WARN PH1] {} Instance {}: HeartbeatTopicSetupConfig not set. Heartbeats inactive.", this.getClass().getSimpleName(), getInstanceId());
+            LogUtil.info("[SOURCE WARN] {} Instance {}: HeartbeatTopicSetupConfig not set. Heartbeats inactive.", this.getClass().getSimpleName(), getInstanceId());
             return; // Or setAvailable(false) if HBs are mandatory for a Source
         }
 
         if (this.reactionHandler == null) { 
-            LogUtil.info("[SRC ERR V2] {} Instance {}: ReactionHandler not initialized. Cannot start HeartbeatManager_V2.", getClass().getSimpleName(), getInstanceId());
+            LogUtil.info("[SOURCE ERR] {} Instance {}: ReactionHandler not initialized. Cannot start HeartbeatManager_V2.", getClass().getSimpleName(), getInstanceId());
             setAvailable(false); return;
         }
 
-        LogUtil.info("[SRC HB PH1] {} Instance {}: Finalizing startup and starting heartbeats.", this.getClass().getSimpleName(), getInstanceId());
+        LogUtil.info("[SOURCE HB] {} Instance {}: Finalizing startup and starting heartbeats.", this.getClass().getSimpleName(), getInstanceId());
         this.heartbeatManager = new HeartbeatManager_V2(
                 this,
                 dataProducer.getBrokerUrl(),
@@ -78,7 +97,7 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
 
     @Override
     public boolean terminate() {
-        LogUtil.info("[SRC] {} Instance {}: Terminating Source...", this.getClass().getSimpleName(), getInstanceId());
+        LogUtil.info("[SOURCE] {} Instance {}: Terminating Source...", this.getClass().getSimpleName(), getInstanceId());
         boolean dataProducerStopped = true;
         if (dataProducer != null) {
             dataProducerStopped = dataProducer.stop();

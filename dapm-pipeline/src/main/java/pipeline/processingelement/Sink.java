@@ -24,17 +24,9 @@ public abstract class Sink extends ConsumingProcessingElement {
         String hbBrokerUrl = null;
         if (!getConsumers().isEmpty()) {
             hbBrokerUrl = getConsumers().values().iterator().next().getBrokerUrl();
-        } else if (this.internalHeartbeatTopicConfig != null && this.internalHeartbeatTopicConfig.getUpstreamHeartbeatPublishTopic() != null) {
-            // If a Sink has no data consumers but IS expected to publish an upstream pulse,
-            // it needs a broker URL. This is a config issue if not provided.
-            // For now, we'll rely on PipelineBuilder providing valid configuration.
-            // This case (Sink without data consumers but with HB) is unusual unless brokerURL is passed differently.
+        } else if (this.internalHeartbeatTopicConfig != null && this.internalHeartbeatTopicConfig.getUpstreamHeartbeatPublishTopic() != null) {            
             LogUtil.info("[SINK WARN] {} Instance {}: Sink has no data consumers to derive brokerUrl for heartbeats.",
                          this.getClass().getSimpleName(), getInstanceId());
-            // If there's no way to get a brokerUrl, HeartbeatManager_Phase1 init will fail if it needs to publish.
-            // If it only subscribes, brokerUrl is still needed for the raw KafkaConsumer.
-            // This situation implies a PE needs a brokerUrl even if it has no data plane Kafka components.
-            // For now, this will likely fail if hbBrokerUrl remains null and HBs are configured.
         }
 
 
@@ -60,6 +52,22 @@ public abstract class Sink extends ConsumingProcessingElement {
         
         LogUtil.info("[SINK] {} Instance {}: Sink started.", this.getClass().getSimpleName(), getInstanceId());
         return isAvailable();
+    }
+
+    @Override
+    public boolean stopProcessing() {
+        LogUtil.info("[SINK] {} Instance {}: Stopping data processing.", getClass().getSimpleName(), getInstanceId());
+        setProcessingActive(false);
+        setAvailable(false); // Stop sending its own heartbeats
+        return stopDataConsumers();
+    }
+    
+    @Override
+    public boolean resumeProcessing() {
+        LogUtil.info("[SINK] {} Instance {}: Resuming data processing.", getClass().getSimpleName(), getInstanceId());
+        setProcessingActive(true);
+        setAvailable(true); // Resume sending its own heartbeats
+        return resumeDataConsumers();
     }
 
     @Override

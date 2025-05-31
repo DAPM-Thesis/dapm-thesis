@@ -48,16 +48,15 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
         }
         try {
             isRunning = true;
-            setAvailable(true); // Mark available early, heartbeat will reflect true state
+            setAvailable(true); 
             
             if (executor == null || executor.isShutdown()) {
                 executor = Executors.newSingleThreadExecutor();
             }
             processingTask = executor.submit(() -> {
-                LogUtil.info("[SSRC LOOP] {} Instance {}: Processing loop started.", this.getClass().getSimpleName(), getInstanceId());
                 while (isRunning && !Thread.currentThread().isInterrupted() && isAvailable()) {
                     try {
-                        O output = process(); // process() might block or throw InterruptedException
+                        O output = process(); 
                         if (output != null && isRunning && isAvailable()) {
                             publish(output);
                         }
@@ -65,8 +64,7 @@ public abstract class SimpleSource<O extends Message> extends Source<O> {
                         LogUtil.error(e, "[SSRC LOOP ERR] {} Instance {}: Error in processing loop. Loop continues.", this.getClass().getSimpleName(), getInstanceId());
                     }
                 }
-                LogUtil.info("[SSRC LOOP] {} Instance {}: Processing loop finished.", this.getClass().getSimpleName(), getInstanceId());
-                isRunning = false; // Ensure flag is reset when loop exits
+                isRunning = false; 
             });
 
             // Start heartbeats after main logic is initiated

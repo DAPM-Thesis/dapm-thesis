@@ -11,6 +11,8 @@ import utils.LogUtil;
 public abstract class ProcessingElement {
     protected final Configuration configuration;
     private volatile boolean available = true;
+    private volatile boolean processingActive = true;
+
     private String instanceID;
     private String pipelineID;
 
@@ -44,6 +46,8 @@ public abstract class ProcessingElement {
     }
 
     public abstract boolean start();
+    public abstract boolean stopProcessing();
+    public abstract boolean resumeProcessing();
 
     public boolean terminate() {
         LogUtil.info("[PE TERMINATE] {} Instance {}: Base terminate called.", this.getClass().getSimpleName(), getInstanceId());
@@ -58,7 +62,16 @@ public abstract class ProcessingElement {
 
     // Getters and Setters
     public boolean isAvailable() { return available; }
-    public void setAvailable(boolean available) { this.available = available; }
+    public void setAvailable(boolean available) {
+        this.available = available;
+        if(!available) this.processingActive = false; // If not available, processing should not be active
+    }
+
+    public boolean isProcessingActive() { return processingActive; }
+    public void setProcessingActive(boolean processingActive) {         
+        this.processingActive = processingActive;
+        if(processingActive) this.available = true;  // TODO: Consider if this is right, considering PE Permissions (Access Control)
+    }
 
     public void setInstanceId(String instanceID) { this.instanceID = instanceID; }
     public String getInstanceId() { return instanceID; }
