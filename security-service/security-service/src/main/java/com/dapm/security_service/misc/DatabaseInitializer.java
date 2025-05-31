@@ -3,6 +3,7 @@ package com.dapm.security_service.misc;
 import com.dapm.security_service.models.*;
 import com.dapm.security_service.models.enums.OrgPermAction;
 import com.dapm.security_service.models.enums.ProjectPermAction;
+import com.dapm.security_service.models.enums.ProjectScope;
 import com.dapm.security_service.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -349,7 +350,22 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         // Hey there I am new
         // create a project permission
-        ProjectPermission projectPermission1=createProjectPermissionIfNotExistStatic(ProjectPermAction.READ,pipeline,UUID.randomUUID());
+        ProjectPermission projectPermission1=createProjectPermissionIfNotExistStatic(ProjectPermAction.READ, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
+        ProjectPermission projectPermission2=createProjectPermissionIfNotExistStatic(ProjectPermAction.ACCESS_REQUEST_PE, ProjectScope.ALL_PEs,UUID.randomUUID());
+        ProjectPermission projectPermission3=createProjectPermissionIfNotExistStatic(ProjectPermAction.INSTANTIATE_PE, ProjectScope.ALL_PEs,UUID.randomUUID());
+        ProjectPermission projectPermission4=createProjectPermissionIfNotExistStatic(ProjectPermAction.INSTANTIATE_PIPELINE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
+        ProjectPermission projectPermission5=createProjectPermissionIfNotExistStatic(ProjectPermAction.CONFIGURE_PIPELINE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
+        ProjectPermission projectPermission6=createProjectPermissionIfNotExistStatic(ProjectPermAction.START_PIPELINE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
+        ProjectPermission projectPermission7=createProjectPermissionIfNotExistStatic(ProjectPermAction.READ, ProjectScope.ALL_PEs,UUID.randomUUID());
+        ProjectPermission projectPermission8=createProjectPermissionIfNotExistStatic(ProjectPermAction.DELETE, ProjectScope.ALL_PEs,UUID.randomUUID());
+        ProjectPermission projectPermission9=createProjectPermissionIfNotExistStatic(ProjectPermAction.CREATE_PIPELINE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
+        ProjectPermission projectPermission10=createProjectPermissionIfNotExistStatic(ProjectPermAction.DELETE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
+        ProjectPermission projectPermission11=createProjectPermissionIfNotExistStatic(ProjectPermAction.APPROVE_REQUEST_PE, ProjectScope.ALL_PEs,UUID.randomUUID());
+
+
+
+
+
 
         ProjectRolePermission projectRolePermission=createProjectRolePermissionIfNotExistStatic(p,projectPermission1,projectRole2);
 
@@ -461,13 +477,13 @@ public class DatabaseInitializer implements CommandLineRunner {
         return proRole;
     }
 
-    private ProjectPermission createProjectPermissionIfNotExistStatic(ProjectPermAction action, Pipeline p, UUID id) {
+    private ProjectPermission createProjectPermissionIfNotExistStatic(ProjectPermAction action,  ProjectScope scope, UUID id) {
         ProjectPermission projectPermission = projectPermActionRepository.findByAction(action);
         if (projectPermission == null) {
             projectPermission = ProjectPermission.builder()
                     .id(id)
                     .action(action)
-                    .pipeline(p)
+                    .scope(scope)
                     .build();
             projectPermission = projectPermActionRepository.save(projectPermission);
         }

@@ -15,5 +15,7 @@ import java.util.UUID;
 public interface ProjPermissionRepository extends JpaRepository<ProjectPermission, UUID> {
     ProjectPermission findByAction(ProjectPermAction action);
 //    List<ProjectPermission> findByOrgRole(OrgRole orgRole);
+
+
 }
 

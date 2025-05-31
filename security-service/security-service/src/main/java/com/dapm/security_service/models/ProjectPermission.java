@@ -2,6 +2,7 @@ package com.dapm.security_service.models;
 
 import com.dapm.security_service.models.enums.OrgPermAction;
 import com.dapm.security_service.models.enums.ProjectPermAction;
+import com.dapm.security_service.models.enums.ProjectScope;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,17 +26,11 @@ public class ProjectPermission {
     @Column(name = "proj_action", nullable = false)
     private ProjectPermAction action;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_id")
-    private Pipeline pipeline;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "processing_element_id")
-    private ProcessingElement processingElement;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "scope", nullable = false)
+    private ProjectScope scope;
 
 
-//    Validates that only one target is set: either pipeline or processing element.
-    public boolean hasValidTarget() {
-        return (pipeline != null) ^ (processingElement != null); // XOR logic
-    }
+
+
 }
