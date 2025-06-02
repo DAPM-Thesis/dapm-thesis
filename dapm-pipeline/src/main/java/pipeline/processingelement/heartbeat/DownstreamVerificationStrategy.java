@@ -18,11 +18,15 @@ public class DownstreamVerificationStrategy implements HeartbeatVerificationStra
         }
         for (String expectedTopic : expectedTopicsInGroupForThisDirection) {
             Instant lastHeartbeat = lastHeartbeatOnMonitoredTopics.get(expectedTopic);
-            if (isTopicTimely(lastHeartbeat, currentTime, timeoutMillis)) {
-                return true;
+            if (isTopicTimely(lastHeartbeat, currentTime, timeoutMillis)) {  // RETURN EARLY IF ANY TOPIC IS TIMELY
+                 return true;
             }
+            
+            // if (!isTopicTimely(lastHeartbeat, currentTime, timeoutMillis)) { // CHECK IF ALL TOPICS ARE TIMELY                
+            //     return false;
+            // }
         }
-        LogUtil.debug("[HB STRATEGY Downstream] No downstream topics are timely among: {}", expectedTopicsInGroupForThisDirection);
+        LogUtil.debug("[HB STRATEGY Downstream] All downstream topics are timely among: {}", expectedTopicsInGroupForThisDirection);
         return false;
     }
 }

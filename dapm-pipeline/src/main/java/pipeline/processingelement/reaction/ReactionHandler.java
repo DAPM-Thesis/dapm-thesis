@@ -5,7 +5,7 @@ import pipeline.processingelement.ProcessingElement;
 import pipeline.processingelement.heartbeat.FaultToleranceLevel;
 
 public interface ReactionHandler {
-    void initialize(ProcessingElement ownerPE,
+    void initialize(ProcessingElement processingElement,
                     String pipelineId,
                     FaultToleranceLevel level,
                     PipelineNotificationService notificationService,

@@ -147,28 +147,29 @@ public class PipelineBuilder {
             }
 
             // 2. Determine topics of NEIGHBORS PE should subscribe to
-            List<String> upstreamTopicsToLog = new ArrayList<>();
+            List<String> upstreamTopicsToConsumeFrom = new ArrayList<>();
             for (ProcessingElementReference upstreamNeighborRef : dg.getUpstream(currentPERef)) {
                 String upstreamNeighborID = pipeline.getInstanceID(upstreamNeighborRef);
                 if (upstreamNeighborID == null) continue;
-                if (upstreamNeighborRef.isSource() || upstreamNeighborRef.isOperator()) { // These publish a downstream-facing heartbeat
-                    upstreamTopicsToLog.add("hb-downstream-" + upstreamNeighborID);
+                if (upstreamNeighborRef.isSource() || upstreamNeighborRef.isOperator()) { // downstream-facing
+                    upstreamTopicsToConsumeFrom.add("hb-downstream-" + upstreamNeighborID);
                 }
             }
-            configForCurrentPE.setUpstreamNeighborHeartbeatTopicsToSubscribeTo(upstreamTopicsToLog);
+            configForCurrentPE.setUpstreamNeighborHeartbeatTopicsToSubscribeTo(upstreamTopicsToConsumeFrom);
 
-            List<String> downstreamTopicsToLog = new ArrayList<>();
+            List<String> downstreamTopicsToConsumeFrom = new ArrayList<>();
             for (ProcessingElementReference downstreamNeighborRef : dg.getDownStream(currentPERef)) {
                 String downstreamNeighborID = pipeline.getInstanceID(downstreamNeighborRef);
                 if (downstreamNeighborID == null) continue;
-                if (downstreamNeighborRef.isOperator() || downstreamNeighborRef.isSink()) { // These publish an upstream-facing heartbeat
-                    downstreamTopicsToLog.add("hb-upstream-" + downstreamNeighborID);
+                if (downstreamNeighborRef.isOperator() || downstreamNeighborRef.isSink()) { // upstream-facing
+                    downstreamTopicsToConsumeFrom.add("hb-upstream-" + downstreamNeighborID);
                 }
             }
-            configForCurrentPE.setDownstreamNeighborHeartbeatTopicsToSubscribeTo(downstreamTopicsToLog);
+            configForCurrentPE.setDownstreamNeighborHeartbeatTopicsToSubscribeTo(downstreamTopicsToConsumeFrom);
             
             String url = currentPERef.getOrganizationHostURL() + "/pipelineBuilder/heartbeat/instance/" + currentInstanceID;
             HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(configForCurrentPE));
+            
             LogUtil.info("[BUILDER HB] Sending config to PE {} ({}) at {}: UpPubT={}, DownPubT={}, MonUp#={}, MonDown#={}",
                     currentPERef.getTemplateID(), currentInstanceID, url,
                     configForCurrentPE.getUpstreamHeartbeatPublishTopic(), configForCurrentPE.getDownstreamHeartbeatPublishTopic(),
@@ -198,7 +199,7 @@ public class PipelineBuilder {
         for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
             String instanceID = entry.getKey();
             ProcessingElementReference peRef = entry.getValue();
-            // TODO: Also need the pipeline owner's organization host URL for notifications
+            // TODO: Also need the pipeline owner's organization host URL for notifications. (or look for an alternative way to get it)
             OperationalParamsRequest params = new OperationalParamsRequest(pipeline.getPipelineID(), faultToleranceLevel, peRef.getOrganizationHostURL());
             String url = peRef.getOrganizationHostURL() + "/pipelineBuilder/instance/" + instanceID + "/operational-params";
             HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(params));

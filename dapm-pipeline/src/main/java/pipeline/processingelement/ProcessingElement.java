@@ -80,7 +80,7 @@ public abstract class ProcessingElement {
     public String getPipelineId() { return pipelineID; }
 
 
-    // TODO: IS THE RIGHT PLACE FOR THIS?
+    // TODO: IS THE RIGHT PLACE FOR THIS? Or Do we even need it? (For Permission lost?)
     public void selfReportCriticalError(String message, Exception ex) {
         LogUtil.error(ex, "[PE SELF CRITICAL ERR] {} Instance {}: {}", getClass().getSimpleName(), getInstanceId(), message);
         if (this.reactionHandler != null) {

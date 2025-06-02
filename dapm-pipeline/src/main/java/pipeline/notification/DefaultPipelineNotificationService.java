@@ -22,14 +22,6 @@ public class DefaultPipelineNotificationService implements PipelineNotificationS
     // TODO: By injecting the PipelineRepository, we can have access to the PE REF which contains the organizationHostURL
     @Override
     public void sendNotification(PipelineNotification notification, String organizationHostURL) {
-        LogUtil.info("[PIPELINE NOTIFICATION] Type: {}, PipelineID: {}, ReportingPE: {}, Message: \"{}\", Details: {}",
-                notification.notificationType(),
-                notification.pipelineId() != null ? notification.pipelineId() : "N/A",
-                notification.reportingPeInstanceId(),
-                notification.message(),
-                notification.details().isEmpty() ? "{}" : JsonUtil.toJson(notification.details())
-        );
-
         String url = organizationHostURL + "/pipeline/notification";
         try {
             String notificationJson = JsonUtil.toJson(notification);            
