@@ -309,18 +309,18 @@ public class HeartbeatManager_V2 {
         }
     }
 
-    public synchronized void stop() { // HERE STOP MEANS TERMINATE
+    public synchronized void stop() {
         if (!isRunning) {
-            LogUtil.info("[HB MANAGER] {} Processing Element {}: Already stopped or not started.", processingElement.getClass().getSimpleName(), instanceID);
             return;
         }
         LogUtil.info("[HB MANAGER] {} Processing Element {}: Stopping...", processingElement.getClass().getSimpleName(), instanceID);
         isRunning = false;
-        if (scheduler != null) {
+
+        if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdown();
             try {
-                if (!scheduler.awaitTermination(HEARTBEAT_SEND_INTERVAL_MS + 1000, TimeUnit.MILLISECONDS)) {
-                    scheduler.shutdownNow();
+                if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();                    
                 }
             } catch (InterruptedException e) {
                 scheduler.shutdownNow();
@@ -328,26 +328,32 @@ public class HeartbeatManager_V2 {
             }
         }
 
+    Thread cleanupThread = new Thread(() -> {
+        LogUtil.info("[HB MGR V2 CLEANUP THREAD] {} Owner {}: Starting Kafka resource cleanup.", processingElement.getClass().getSimpleName(), instanceID);
+        // Close Producer
         if (heartbeatProducer != null) {
             try {
                 heartbeatProducer.flush();
                 heartbeatProducer.close(Duration.ofSeconds(KAFKA_CLIENT_CLOSE_TIMEOUT_SECONDS));
-            } catch (Exception e) {LogUtil.error(e, "[HB MANAGER] Error closing heartbeatProducer for {}", instanceID);}
-            heartbeatProducer = null;
+            } catch (Exception e) { LogUtil.error(e, "[HB MGR V2 CLEANUP] Error closing heartbeatProducer for {}", instanceID); }
         }
-        
+
+        // Close Consumer
         if (heartbeatConsumer != null) {
             try {
                 heartbeatConsumer.unsubscribe();
-                heartbeatConsumer.wakeup();
                 heartbeatConsumer.close(Duration.ofSeconds(KAFKA_CLIENT_CLOSE_TIMEOUT_SECONDS));
-            } catch (Exception e) {LogUtil.error(e, "[HB MANAGER] Error closing neighborHeartbeatLoggerConsumer for {}", instanceID);}
-            heartbeatConsumer = null; 
+            } catch (Exception e) { LogUtil.error(e, "[HB MGR V2 CLEANUP] Error closing neighborHeartbeatConsumer for {}", instanceID); }
         }
 
-        deleteOwnPublishTopics();
+        // Delete topics and consumer group
+        deleteOwnPublishTopics();  
         deleteOwnConsumerGroup();
+        LogUtil.info("[HB MGR V2 CLEANUP THREAD] {} Owner {}: Kafka resource cleanup finished.", processingElement.getClass().getSimpleName(), instanceID);
+    });
+    cleanupThread.setName("HBManagerCleanup-" + instanceID.substring(0, Math.min(8, instanceID.length())));
+    cleanupThread.start();
 
-        LogUtil.info("[HB MANAGER] {} Processing Element {}: Stopped.", processingElement.getClass().getSimpleName(), instanceID);
-    }
+    LogUtil.info("[HB MGR V2] {} Owner {}: Stop sequence initiated, cleanup delegated to separate thread.", processingElement.getClass().getSimpleName(), instanceID);
+}
 }

@@ -11,6 +11,7 @@ import communication.API.HTTPClient;
 import communication.API.HTTPWebClient;
 import communication.API.request.HTTPRequest;
 import pipeline.notification.PipelineNotificationService;
+// import pipeline.manager.PipelineActionRequest;
 import pipeline.notification.NotificationType;
 import pipeline.notification.PipelineNotification;
 import pipeline.processingelement.ProcessingElement;
@@ -24,6 +25,7 @@ public class DefaultReactionHandler implements ReactionHandler {
     private FaultToleranceLevel currentFaultToleranceLevel;
     private PipelineNotificationService notificationService;
     private String organizationHostURL;
+    private String pipelineOwnerOrgHostURL;
     // TODO: think of a another way to call the execution service: could a new component like PipelineManager
     //private String executionServiceURL = "http://localhost:8084"; 
     // private HTTPWebClient httpClient = new HTTPWebClient();
@@ -60,12 +62,11 @@ public class DefaultReactionHandler implements ReactionHandler {
             case LEVEL_1_NOTIFY_ONLY:
                 handleNotifyOnly(faultContext);
                 break;
-            case LEVEL_2_STOP_PIPELINE_FOR_DEBUG:
-                requestPipelineStop(); 
+            case LEVEL_2_TERMINATE_ENTIRE_PIPELINE:
+                //handlePipelineTerminate(faultContext);
                 break;
-            case LEVEL_3_TERMINATE_ENTIRE_PIPELINE_FULL_CLEANUP:
-                requestPipelineTerminate();
-                break;
+            case LEVEL_3_KEEP_RUNNING_PARTIAL_PIPELINE:
+                handleKeepRunningPartialPipeline(faultContext);
             case LEVEL_0_IGNORE_FAULTS:
             default:
                 break;
@@ -77,6 +78,36 @@ public class DefaultReactionHandler implements ReactionHandler {
             return;
         }
         this.notificationService.sendNotification(notification, this.organizationHostURL);
+    }
+
+    private void sendNotification(FaultContext faultContext) {
+        String message = String.format(
+            "PE %s (%s) detected heartbeat loss from its %s. Silent monitored topics: %s. All configured topics for this group: %s.",
+            processingElement.getInstanceId(),
+            processingElement.getClass().getSimpleName(),
+            faultContext.affectedPeerDirection().name().toLowerCase().replace("_", " "),
+            faultContext.silentMonitoredTopics(),
+            faultContext.allConfiguredTopicsForDirection()
+        );
+
+        NotificationType notificationType = faultContext.affectedPeerDirection() == PeerDirection.UPSTREAM_PRODUCER ?
+                NotificationType.HEARTBEAT_TIMEOUT_ON_UPSTREAM_TOPIC :
+                NotificationType.HEARTBEAT_TIMEOUT_ON_DOWNSTREAM_TOPIC;
+
+        Map<String, Object> details = new HashMap<>();
+        details.put("silentTopics", faultContext.silentMonitoredTopics().toString());
+        details.put("allConfiguredTopicsForDirection", faultContext.allConfiguredTopicsForDirection().toString());
+
+        PipelineNotification notification = new PipelineNotification(
+            notificationType,
+            this.pipelineID,
+            processingElement.getInstanceId(),
+            message,
+            Instant.now(),
+            details
+        );
+
+        sendNotification(notification);
     }
 
     //TODO: Make the goal clear for this emthod: whether do we want this or not
@@ -117,32 +148,7 @@ public class DefaultReactionHandler implements ReactionHandler {
     }
 
     private void handleNotifyOnly(FaultContext faultContext) {
-        String message = String.format(
-            "PE %s (%s) detected heartbeat loss from its %s. Silent monitored topics: %s. All configured topics for this group: %s.",
-            processingElement.getInstanceId(),
-            processingElement.getClass().getSimpleName(),
-            faultContext.affectedPeerDirection().name().toLowerCase().replace("_", " "),
-            faultContext.silentMonitoredTopics(),
-            faultContext.allConfiguredTopicsForDirection()
-        );
-
-        NotificationType notificationType = faultContext.affectedPeerDirection() == PeerDirection.UPSTREAM_PRODUCER ?
-                NotificationType.HEARTBEAT_TIMEOUT_ON_UPSTREAM_TOPIC :
-                NotificationType.HEARTBEAT_TIMEOUT_ON_DOWNSTREAM_TOPIC;
-
-        Map<String, Object> details = new HashMap<>();
-        details.put("silentTopics", faultContext.silentMonitoredTopics().toString());
-        details.put("allConfiguredTopicsForDirection", faultContext.allConfiguredTopicsForDirection().toString());
-
-        PipelineNotification notification = new PipelineNotification(
-            notificationType,
-            this.pipelineID,
-            processingElement.getInstanceId(),
-            message,
-            Instant.now(),
-            details
-        );
-        sendNotification(notification);
+        sendNotification(faultContext);
         LogUtil.info("[REACTION HANDLER] {} ProcessingElement {}: Notification sent for {} fault. PE continues operation.",
             processingElement.getClass().getSimpleName(), processingElement.getInstanceId(), faultContext.affectedPeerDirection());
     }
@@ -151,7 +157,14 @@ public class DefaultReactionHandler implements ReactionHandler {
         // TODO
     }
 
-    private void requestPipelineTerminate() {
-        // TODO
+    private void handleKeepRunningPartialPipeline(FaultContext faultContext) {
+         LogUtil.info("[REACTION HANDLER LVL3] {} processingElement {}: Partial pipeline mode. Fault with {} peers.",
+            processingElement.getClass().getSimpleName(), processingElement.getInstanceId(), faultContext.affectedPeerDirection());
+        
+        sendNotification(faultContext);
+
+        // TODO: move this logic to a service that handles pipeline actions (ex: PipelineManager)
+        // for responsibility separation
+        processingElement.terminate();
     }
 }

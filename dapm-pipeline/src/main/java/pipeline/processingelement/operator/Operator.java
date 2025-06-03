@@ -121,6 +121,8 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
     @Override
     public boolean terminate() {
         LogUtil.info("[OP] {} Instance {}: Terminating Operator...", this.getClass().getSimpleName(), getInstanceId());
+        setAvailable(false); 
+        setProcessingActive(false);
         boolean dataProducerStopped = true;
         if (dataProducer != null) dataProducerStopped = dataProducer.stop();
         boolean superTerminated = super.terminate(); 
