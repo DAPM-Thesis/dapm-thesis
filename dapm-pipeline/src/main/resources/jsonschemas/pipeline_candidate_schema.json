@@ -8,11 +8,10 @@
       "description": "Defines the fault tolerance strategy for the entire pipeline. If omitted, a default behavior (e.g., LEVEL_0_IGNORE_FAULTS) is assumed by the application.",
       "type": "string",
       "enum": [
-        "LEVEL_0_IGNORE_FAULTS",
-        "LEVEL_1_NOTIFY_ONLY",
-        "LEVEL_2_TERMINATE_ENTIRE_PIPELINE",
-        "LEVEL_3_KEEP_RUNNING_PARTIAL_PIPELINE",
-        "LEVEL_4_RESTART_FAILED_INSTANCE"
+        "LEVEL_NOTIFY_ONLY",
+        "LEVEL_TERMINATE_ENTIRE_PIPELINE",
+        "LEVEL_KEEP_RUNNING_PARTIAL_PIPELINE",
+        "LEVEL_RESTART_FAILED_INSTANCE"
       ]
     },
     "processing elements": {

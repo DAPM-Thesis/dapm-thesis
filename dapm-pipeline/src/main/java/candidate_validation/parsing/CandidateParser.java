@@ -31,7 +31,7 @@ public class CandidateParser {
 
         String faultToleranceLeString = (String) jsonMap.get("faultToleranceLevel");
 
-        FaultToleranceLevel faultToleranceLevel = FaultToleranceLevel.fromString(faultToleranceLeString, FaultToleranceLevel.LEVEL_1_NOTIFY_ONLY);
+        FaultToleranceLevel faultToleranceLevel = FaultToleranceLevel.fromString(faultToleranceLeString, FaultToleranceLevel.LEVEL_NOTIFY_ONLY);
 
         List<Map<String, Object>> rawElements = (List<Map<String, Object>>) jsonMap.get("processing elements");
         Set<ProcessingElementReference> elements = getProcessingElementReferences(rawElements);

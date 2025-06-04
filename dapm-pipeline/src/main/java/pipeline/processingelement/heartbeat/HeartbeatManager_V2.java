@@ -43,8 +43,8 @@ public class HeartbeatManager_V2 {
     private String heartbeatConsumerGroupId;
 
     private final ConcurrentMap<String, Instant> lastHeartbeatOnTopic = new ConcurrentHashMap<>();
-    private final HeartbeatVerificationStrategy upstreamStrategy = new UpstreamVerificationStrategy();
-    private final HeartbeatVerificationStrategy downstreamStrategy = new DownstreamVerificationStrategy();
+    private final HeartbeatVerificationStrategy upstreamStrategy;
+    private final HeartbeatVerificationStrategy downstreamStrategy;
 
     private final ScheduledExecutorService scheduler;
     private volatile boolean isRunning = false;
@@ -72,6 +72,17 @@ public class HeartbeatManager_V2 {
         this.brokerUrl = Objects.requireNonNull(brokerUrl);
         Objects.requireNonNull(topicConfig, "HeartbeatTopicSetupConfig cannot be null");
         this.reactionHandler = Objects.requireNonNull(reactionHandler, "ReactionHandler cannot be null");
+
+        // Initialize verfication strategies based on fault tolerance level
+        this.upstreamStrategy = new UpstreamVerificationStrategy(); // Currently we want all upstream PE instances to be active
+
+        if(processingElement.getFaultToleranceLevel() == FaultToleranceLevel.LEVEL_TERMINATE_ENTIRE_PIPELINE ||
+            processingElement.getFaultToleranceLevel() == FaultToleranceLevel.LEVEL_NOTIFY_ONLY) {
+            this.downstreamStrategy = new AllDownstreamTopicsActiveStrategy();
+        }
+        else{
+            this.downstreamStrategy = new AnyDownstreamVerificationStrategy();
+        }
 
         this.upstreamHeartbeatPublishTopic = topicConfig.getUpstreamHeartbeatPublishTopic();
         this.downstreamHeartbeatPublishTopic = topicConfig.getDownstreamHeartbeatPublishTopic();
@@ -164,7 +175,7 @@ public class HeartbeatManager_V2 {
         // Schedule grace period completion
         if (scheduler != null && (!upstreamTopicsToMonitor.isEmpty() || !downstreamTopicsToMonitor.isEmpty())) {
             scheduler.schedule(() -> {
-                LogUtil.info("[HB MANAGER] {} ProcessingElement {}: Initial verification grace period ended.", processingElement.getClass().getSimpleName(), instanceID);
+                LogUtil.info("[HB MANAGER] {} ProcessingElement {}: Initial verification grace period ended." + "Grace Time: "+INITIAL_VERIFICATION_GRACE_PERIOD_MS, processingElement.getClass().getSimpleName(), instanceID);
                 verificationGracePeriodOver = true;
             }, INITIAL_VERIFICATION_GRACE_PERIOD_MS, TimeUnit.MILLISECONDS);
         } else if (scheduler == null) { // No tasks, no checks needed
@@ -201,12 +212,12 @@ public class HeartbeatManager_V2 {
                 if (!isRunning || !processingElement.isAvailable()) return; // Also check owner availability before reacting
                 try {
                     // 1. Poll for incoming heartbeats
-                    ConsumerRecords<String, String> records = heartbeatConsumer.poll(Duration.ofMillis(200)); // Short poll, check runs often
+                    ConsumerRecords<String, String> records = heartbeatConsumer.poll(Duration.ofMillis(1000)); // Short poll 1sec, check runs often
                     Instant now = Instant.now();
                     records.forEach(record -> {
                         Message deserialized = MessageFactory.deserialize(record.value());
                         if (deserialized instanceof Heartbeat heartbeat) {
-                            LogUtil.info("[HB RECV] {} with id {} received heartbeat from {} on topic {}", processingElement.getClass(), instanceID, heartbeat.getInstanceID(), record.topic());
+                            LogUtil.info("[HB RECV] {} with id {} received heartbeat from {} on topic {}", processingElement.getClass().getSimpleName(), instanceID, heartbeat.getInstanceID(), record.topic());
                             lastHeartbeatOnTopic.put(record.topic(), heartbeat.getTimestamp()); // Use message timestamp
                         }
                     });
@@ -221,7 +232,6 @@ public class HeartbeatManager_V2 {
                                 .filter(topic -> !upstreamStrategy.isTopicTimely(lastHeartbeatOnTopic.getOrDefault(topic, Instant.MIN), now, HEARTBEAT_TIMEOUT_MS))
                                 .collect(Collectors.toSet());
                             reactionHandler.processLivenessFailure(new FaultContext(PeerDirection.UPSTREAM_PRODUCER, silentUpstreamTopics, upstreamTopicsToMonitor));
-                            // If reaction handler doesn't stop the PE instance, this will keep firing.
                         }
                     }
 

@@ -20,7 +20,7 @@ public abstract class ProcessingElement {
     protected HeartbeatManager_V2 heartbeatManager;
 
     protected ReactionHandler reactionHandler;
-    protected FaultToleranceLevel pipelineFaultToleranceLevel = FaultToleranceLevel.LEVEL_1_NOTIFY_ONLY;
+    protected FaultToleranceLevel pipelineFaultToleranceLevel = FaultToleranceLevel.LEVEL_NOTIFY_ONLY;
     protected PipelineNotificationService pipelineNotificationService;
     protected String organizationHostURL;
 
@@ -78,6 +78,10 @@ public abstract class ProcessingElement {
 
     public void setPipelineId(String pipelineID) { this.pipelineID = pipelineID; }
     public String getPipelineId() { return pipelineID; }
+
+    public FaultToleranceLevel getFaultToleranceLevel(){
+        return pipelineFaultToleranceLevel;
+    }
 
 
     // TODO: IS THE RIGHT PLACE FOR THIS? Or Do we even need it? (For Permission lost?)

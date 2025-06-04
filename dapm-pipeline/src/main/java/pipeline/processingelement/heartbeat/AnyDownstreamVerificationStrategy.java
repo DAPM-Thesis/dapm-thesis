@@ -7,7 +7,7 @@ import java.util.Set;
 
 import utils.LogUtil;
 
-public class DownstreamVerificationStrategy implements HeartbeatVerificationStrategy {
+public class AnyDownstreamVerificationStrategy implements HeartbeatVerificationStrategy {
     @Override
     public boolean verifyLiveness(Map<String, Instant> lastHeartbeatOnMonitoredTopics,
                                   Instant currentTime,
@@ -21,10 +21,6 @@ public class DownstreamVerificationStrategy implements HeartbeatVerificationStra
             if (isTopicTimely(lastHeartbeat, currentTime, timeoutMillis)) {  // RETURN EARLY IF ANY TOPIC IS TIMELY
                  return true;
             }
-            
-            // if (!isTopicTimely(lastHeartbeat, currentTime, timeoutMillis)) { // CHECK IF ALL TOPICS ARE TIMELY                
-            //     return false;
-            // }
         }
         LogUtil.debug("[HB STRATEGY Downstream] All downstream topics are timely among: {}", expectedTopicsInGroupForThisDirection);
         return false;

@@ -5,18 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import communication.API.HTTPClient;
-import communication.API.HTTPWebClient;
-import communication.API.request.HTTPRequest;
 import pipeline.notification.PipelineNotificationService;
-// import pipeline.manager.PipelineActionRequest;
 import pipeline.notification.NotificationType;
 import pipeline.notification.PipelineNotification;
 import pipeline.processingelement.ProcessingElement;
 import pipeline.processingelement.heartbeat.FaultToleranceLevel;
-import pipeline.service.PipelineExecutionService;
 import utils.LogUtil;
 
 public class DefaultReactionHandler implements ReactionHandler {
@@ -24,7 +17,7 @@ public class DefaultReactionHandler implements ReactionHandler {
     private String pipelineID;
     private FaultToleranceLevel currentFaultToleranceLevel;
     private PipelineNotificationService notificationService;
-    private String organizationHostURL;
+    private String peHostOrganizationURL;
     private String pipelineOwnerOrgHostURL;
     // TODO: think of a another way to call the execution service: could a new component like PipelineManager
     //private String executionServiceURL = "http://localhost:8084"; 
@@ -38,7 +31,7 @@ public class DefaultReactionHandler implements ReactionHandler {
         this.pipelineID = Objects.requireNonNull(pipelineID, "PipelineId cannot be null");
         this.currentFaultToleranceLevel = Objects.requireNonNull(level, "FaultToleranceLevel cannot be null");
         this.notificationService = Objects.requireNonNull(notificationService, "NotificationService cannot be null");
-        this.organizationHostURL = Objects.requireNonNull(organizationHostURL, "Organization Host URL cannot be null");
+        this.peHostOrganizationURL = Objects.requireNonNull(organizationHostURL, "Organization Host URL cannot be null");
         
         LogUtil.info("[REACTION HANDLER INIT] {} Instance {}: Initialized for Pipeline {} with Level: {}",
             processingElement.getClass().getSimpleName(), processingElement.getInstanceId(), this.pipelineID, level);
@@ -59,25 +52,26 @@ public class DefaultReactionHandler implements ReactionHandler {
                 currentFaultToleranceLevel);
 
         switch (currentFaultToleranceLevel) {
-            case LEVEL_1_NOTIFY_ONLY:
+            case LEVEL_NOTIFY_ONLY:
                 handleNotifyOnly(faultContext);
                 break;
-            case LEVEL_2_TERMINATE_ENTIRE_PIPELINE:
-                //handlePipelineTerminate(faultContext);
+            case LEVEL_TERMINATE_ENTIRE_PIPELINE:
+                handlePipelineTerminate(faultContext);
                 break;
-            case LEVEL_3_KEEP_RUNNING_PARTIAL_PIPELINE:
+            case LEVEL_KEEP_RUNNING_PARTIAL_PIPELINE:
                 handleKeepRunningPartialPipeline(faultContext);
-            case LEVEL_0_IGNORE_FAULTS:
+                break;
+            case LEVEL_RESTART_FAILED_INSTANCE:
             default:
                 break;
         }
     }
 
     private void sendNotification(PipelineNotification notification) {
-        if (this.organizationHostURL == null || this.organizationHostURL.isEmpty()) {
+        if (this.peHostOrganizationURL == null || this.peHostOrganizationURL.isEmpty()) {
             return;
         }
-        this.notificationService.sendNotification(notification, this.organizationHostURL);
+        this.notificationService.sendNotification(notification, this.peHostOrganizationURL);
     }
 
     private void sendNotification(FaultContext faultContext) {
@@ -153,8 +147,13 @@ public class DefaultReactionHandler implements ReactionHandler {
             processingElement.getClass().getSimpleName(), processingElement.getInstanceId(), faultContext.affectedPeerDirection());
     }
 
-    private void requestPipelineStop() {
-        // TODO
+    private void handlePipelineTerminate(FaultContext faultContext) {
+        LogUtil.info("[REACTION HANDLER LVL2] {} processingElement {}: Terminating entire pipeline due to fault with {} peers.",
+            processingElement.getClass().getSimpleName(), processingElement.getInstanceId(), faultContext.affectedPeerDirection());
+
+        sendNotification(faultContext);
+
+        processingElement.terminate();        
     }
 
     private void handleKeepRunningPartialPipeline(FaultContext faultContext) {
