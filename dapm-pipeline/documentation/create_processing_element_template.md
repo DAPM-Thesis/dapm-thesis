@@ -4,7 +4,7 @@ Create and store processing element templates in your organization. These templa
 ## Sources
 Sources are responsible for producing messages to be processed downstream.
 
-Extend the `SimpleSource` or `WebSource` abstract classes. As parameters it takes a message type, this should be the expected output of this source. Implement the required methods. 
+Extend the `SimpleSource`, `WebSource`, or `Source` abstract classes. As parameters it takes a message type, this should be the expected output of this source. Implement the required methods. 
 
 The SimpleSource could either be generating data internally or implement another mechanism to fetch external data. 
 ```java
@@ -30,7 +30,7 @@ public class SourceA extends SimpleSource<Event> {
 ## Operators
 Operators process messages and transform data.
 
-Extend the `SimpleOperator` or the `MiningOperator`. The parameters are again the expected output type. Implement the required methods.
+Extend the `SimpleOperator`, `MiningOperator`, or `Operator`. The parameters are again the expected output type. Implement the required methods.
 ```java
 public class EventOperatorB extends SimpleOperator<Event> { } 
 

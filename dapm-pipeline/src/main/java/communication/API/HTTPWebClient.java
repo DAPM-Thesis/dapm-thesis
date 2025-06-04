@@ -24,6 +24,8 @@ public class HTTPWebClient implements HTTPClient {
     public HTTPResponse putSync(HTTPRequest httpRequest) {
         return sendRequest("PUT", httpRequest);
     }
+    @Override
+    public HTTPResponse deleteSync(HTTPRequest httpRequest) {return sendRequest("DELETE", httpRequest);}
 
     private HTTPResponse sendRequest(String method, HTTPRequest httpRequest) {
         String url = httpRequest.getUrl();

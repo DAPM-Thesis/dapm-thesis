@@ -53,7 +53,7 @@ public class PipelineExecutionService {
             for( ProcessingElementReference pe : currentLevel ) {
                 String instanceID = pipeline.getInstanceID(pe);
                 String url = pe.getOrganizationHostURL() + "/pipelineExecution/terminate/instance/" + instanceID;
-                HTTPResponse response = webClient.putSync(new HTTPRequest(url));
+                HTTPResponse response = webClient.deleteSync(new HTTPRequest(url));
                 if (!isSuccess(response.status())) {
                     throw new PipelineExecutionException("Failed to terminate PE " + instanceID);
                 }

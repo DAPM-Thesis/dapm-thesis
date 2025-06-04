@@ -6,4 +6,5 @@ import communication.API.response.HTTPResponse;
 public interface HTTPClient {
     HTTPResponse postSync(HTTPRequest httpRequest);
     HTTPResponse putSync(HTTPRequest httpRequest);
+    HTTPResponse deleteSync(HTTPRequest httpRequest);
 }
