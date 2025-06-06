@@ -10,7 +10,7 @@ import java.util.List;
 public class MetricsDeserializationStrategy implements DeserializationStrategy {
     @Override
     public Message deserialize(String payload) {
-        String listContents = payload.substring(1, payload.length() - 1); // "1, 2, 3, 4"
+        String listContents = payload.substring(1, payload.length() - 1); // remove square brackets
         String[] numbers = listContents.split(",");
 
         List<Double> deserialization = new ArrayList<>();
