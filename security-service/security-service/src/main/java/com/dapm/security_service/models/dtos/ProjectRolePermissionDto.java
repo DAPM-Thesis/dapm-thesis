@@ -12,12 +12,11 @@ public class ProjectRolePermissionDto {
     private String projectName;
     private String roleName;
     private ProjectPermAction action;
-    private ProjectScope scope;
 
     public ProjectRolePermissionDto(ProjectRolePermission prp) {
         this.projectName = prp.getProject().getName();
         this.roleName = prp.getRole().getName();
         this.action = prp.getPermission().getAction();
-        this.scope = prp.getPermission().getScope();
+
     }
 }

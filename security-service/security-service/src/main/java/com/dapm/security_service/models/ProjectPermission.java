@@ -26,9 +26,6 @@ public class ProjectPermission {
     @Column(name = "proj_action", nullable = false)
     private ProjectPermAction action;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "scope", nullable = false)
-    private ProjectScope scope;
 
 
 

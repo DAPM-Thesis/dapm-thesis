@@ -32,7 +32,6 @@ public class ProjectPermissionController {
         ProjectPermission permission = ProjectPermission.builder()
                 .id(UUID.randomUUID())
                 .action(request.getAction())
-                .scope(request.getScope())
                 .build();
         permission = projPermissionRepository.save(permission);
         return ResponseEntity.ok(new ProjectPermissionDto(permission));

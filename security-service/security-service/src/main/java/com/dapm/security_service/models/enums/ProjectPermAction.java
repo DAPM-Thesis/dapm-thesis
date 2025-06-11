@@ -10,8 +10,15 @@ public enum ProjectPermAction {
     INSTANTIATE_PE,
     INSTANTIATE_PIPELINE,
 
-    READ,
-    DELETE,
+    READ_PIPELINE,
+    READ_PIPELINES,
+    READ_PE,
+    READ_PES,
+
+    UPDATE_PROJECT,
+
+    DELETE_PIPELINE,
+    DELETE_PE,
     CREATE_PIPELINE
 }
 

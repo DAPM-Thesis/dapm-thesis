@@ -15,12 +15,12 @@ import java.util.UUID;
 public class ProjectPermissionDto {
  private UUID id;
  private ProjectPermAction action;
- private ProjectScope scope;
+
 
  public ProjectPermissionDto(ProjectPermission permission){
         this.id = permission.getId();
         this.action = permission.getAction();
-        this.scope = permission.getScope();
+
  }
 
 

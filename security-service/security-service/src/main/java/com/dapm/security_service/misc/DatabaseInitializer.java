@@ -350,17 +350,18 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         // Hey there I am new
         // create a project permission
-        ProjectPermission projectPermission1=createProjectPermissionIfNotExistStatic(ProjectPermAction.READ, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
-        ProjectPermission projectPermission2=createProjectPermissionIfNotExistStatic(ProjectPermAction.ACCESS_REQUEST_PE, ProjectScope.ALL_PEs,UUID.randomUUID());
-        ProjectPermission projectPermission3=createProjectPermissionIfNotExistStatic(ProjectPermAction.INSTANTIATE_PE, ProjectScope.ALL_PEs,UUID.randomUUID());
-        ProjectPermission projectPermission4=createProjectPermissionIfNotExistStatic(ProjectPermAction.INSTANTIATE_PIPELINE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
-        ProjectPermission projectPermission5=createProjectPermissionIfNotExistStatic(ProjectPermAction.CONFIGURE_PIPELINE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
-        ProjectPermission projectPermission6=createProjectPermissionIfNotExistStatic(ProjectPermAction.START_PIPELINE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
-        ProjectPermission projectPermission7=createProjectPermissionIfNotExistStatic(ProjectPermAction.READ, ProjectScope.ALL_PEs,UUID.randomUUID());
-        ProjectPermission projectPermission8=createProjectPermissionIfNotExistStatic(ProjectPermAction.DELETE, ProjectScope.ALL_PEs,UUID.randomUUID());
-        ProjectPermission projectPermission9=createProjectPermissionIfNotExistStatic(ProjectPermAction.CREATE_PIPELINE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
-        ProjectPermission projectPermission10=createProjectPermissionIfNotExistStatic(ProjectPermAction.DELETE, ProjectScope.ALL_PIPELINES,UUID.randomUUID());
-        ProjectPermission projectPermission11=createProjectPermissionIfNotExistStatic(ProjectPermAction.APPROVE_REQUEST_PE, ProjectScope.ALL_PEs,UUID.randomUUID());
+        ProjectPermission projectPermission1=createProjectPermissionIfNotExistStatic(ProjectPermAction.READ_PE, UUID.randomUUID());
+        ProjectPermission projectPermission2=createProjectPermissionIfNotExistStatic(ProjectPermAction.ACCESS_REQUEST_PE,UUID.randomUUID());
+        ProjectPermission projectPermission3=createProjectPermissionIfNotExistStatic(ProjectPermAction.INSTANTIATE_PE, UUID.randomUUID());
+        ProjectPermission projectPermission4=createProjectPermissionIfNotExistStatic(ProjectPermAction.INSTANTIATE_PIPELINE,UUID.randomUUID());
+        ProjectPermission projectPermission5=createProjectPermissionIfNotExistStatic(ProjectPermAction.CONFIGURE_PIPELINE,UUID.randomUUID());
+        ProjectPermission projectPermission6=createProjectPermissionIfNotExistStatic(ProjectPermAction.START_PIPELINE,UUID.randomUUID());
+        ProjectPermission projectPermission7=createProjectPermissionIfNotExistStatic(ProjectPermAction.READ_PES, UUID.randomUUID());
+        ProjectPermission projectPermission8=createProjectPermissionIfNotExistStatic(ProjectPermAction.UPDATE_PROJECT,UUID.randomUUID());
+
+
+
+        ProjectPermission projectPermission11=createProjectPermissionIfNotExistStatic(ProjectPermAction.APPROVE_REQUEST_PE,UUID.randomUUID());
 
 
 
@@ -368,6 +369,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
 
         ProjectRolePermission projectRolePermission=createProjectRolePermissionIfNotExistStatic(p,projectPermission1,projectRole2);
+        ProjectRolePermission projectRolePermission2=createProjectRolePermissionIfNotExistStatic(p,projectPermission8,projectRole2);
 
         User user = userRepository.findByUsername("anna")
                 .orElseThrow(() -> new RuntimeException("User 'anna' not found"));
@@ -477,13 +479,13 @@ public class DatabaseInitializer implements CommandLineRunner {
         return proRole;
     }
 
-    private ProjectPermission createProjectPermissionIfNotExistStatic(ProjectPermAction action,  ProjectScope scope, UUID id) {
+    private ProjectPermission createProjectPermissionIfNotExistStatic(ProjectPermAction action, UUID id) {
         ProjectPermission projectPermission = projectPermActionRepository.findByAction(action);
         if (projectPermission == null) {
             projectPermission = ProjectPermission.builder()
                     .id(id)
                     .action(action)
-                    .scope(scope)
+
                     .build();
             projectPermission = projectPermActionRepository.save(projectPermission);
         }

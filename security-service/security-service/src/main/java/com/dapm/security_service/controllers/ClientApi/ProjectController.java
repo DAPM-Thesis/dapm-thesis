@@ -56,6 +56,7 @@ public class ProjectController {
         project.setId( UUID.randomUUID());
         project.setName(request.getName());
         Organization organization = userDetails.getUser().getOrganization();
+        System.out.println("mra7ib");
 
         project.setOrganization(organization);
 
@@ -64,7 +65,7 @@ public class ProjectController {
     }
 
     @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
-    @PutMapping("/{name}/create-role")
+    @PutMapping("/{name}/assign-role")
     public ResponseEntity<ProjectDto> assignRoleToProject(@PathVariable String name, @RequestBody ProjectRolesAssignmentDto projectRolesAssignmentDto) {
         Project project= projectRepository.findByName(name).orElse(null);
         ProjectRole projectRole=projectsRolesRepository.findByName(projectRolesAssignmentDto.getRole());
@@ -84,8 +85,8 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
     //update a project with createProjectDto
-    @PreAuthorize("hasAuthority('UPDATE_PROJECT')")
     @PutMapping("/{name}/update")
+    @PreAuthorize("hasAuthority('UPDATE_PROJECT:' + #name)")
     public ResponseEntity<ProjectDto> updateProject(
             @PathVariable String name,
             @RequestBody CreateProjectDto request
@@ -96,6 +97,7 @@ public class ProjectController {
         Project updated = projectRepository.save(project);
         return ResponseEntity.ok(new ProjectDto(updated));
     }
+
 
 
 

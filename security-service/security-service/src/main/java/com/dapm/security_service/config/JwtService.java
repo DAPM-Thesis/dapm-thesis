@@ -2,11 +2,14 @@ package com.dapm.security_service.config;
 
 import com.dapm.security_service.models.User;
 import com.dapm.security_service.models.Role;
+import com.dapm.security_service.models.UserRoleAssignment;
+import com.dapm.security_service.repositories.UserRoleAssignmentRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,8 @@ import java.util.stream.Collectors;
 @Service
 public class JwtService {
     private static final String SECRET_KEY= "5A7134743777397A24432646294A404E635266556A586E3272357538782F4125";
+    @Autowired
+    public UserRoleAssignmentRepository userRoleAssignmentRepository;
 
     public String extractUserName( String token){
         return extractClaim(token, Claims::getSubject);
@@ -88,6 +93,21 @@ public class JwtService {
         if (user.getOrganization() != null) {
             claims.put("organizationId", user.getOrganization().getId().toString());
             claims.put("organizationName", user.getOrganization().getName());
+        }
+
+
+        List<UserRoleAssignment> assignments = userRoleAssignmentRepository.findByUser(user);
+        if (assignments != null && !assignments.isEmpty()) {
+            List<Map<String, String>> projectRoles = assignments.stream()
+                    .map(assignment -> {
+                        Map<String, String> roleInfo = new HashMap<>();
+                        roleInfo.put("project", assignment.getProject().getName());
+                        roleInfo.put("role", assignment.getRole().getName());
+                        return roleInfo;
+                    })
+                    .collect(Collectors.toList());
+
+            claims.put("projectRoles", projectRoles);
         }
 
         return generateToken(claims, user);
