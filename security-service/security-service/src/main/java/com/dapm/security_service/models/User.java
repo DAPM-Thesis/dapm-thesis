@@ -43,7 +43,11 @@ public class User implements UserDetails {
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
-
+//    @Column(name = "external", nullable = false)
+//    private boolean external = false;
+//
+//    @Column(name = "authenticatable", nullable = false)
+//    private boolean authenticatable = true;
 
 
 

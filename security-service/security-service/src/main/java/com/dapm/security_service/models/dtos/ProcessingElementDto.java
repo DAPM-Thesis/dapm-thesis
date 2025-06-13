@@ -27,14 +27,23 @@ public class ProcessingElementDto {
 
     public ProcessingElementDto(ProcessingElement processingElement) {
         this.id = processingElement.getId();
-
         this.templateId = processingElement.getTemplateId();
-        this.ownerOrganization = processingElement.getOwnerOrganization().getName();
+
+        if (processingElement.getOwnerOrganization() != null) {
+            this.ownerOrganization = processingElement.getOwnerOrganization().getName();
+        } else if (processingElement.getOwnerPartnerOrganization() != null) {
+            this.ownerOrganization = processingElement.getOwnerPartnerOrganization().getName();
+        } else {
+            this.ownerOrganization = "Unknown";
+        }
+
         this.inputs = processingElement.getInputs() != null
                 ? processingElement.getInputs().stream().collect(Collectors.toSet())
                 : Collections.emptySet();
+
         this.outputs = processingElement.getOutputs() != null
                 ? processingElement.getOutputs().stream().collect(Collectors.toSet())
                 : Collections.emptySet();
     }
+
 }

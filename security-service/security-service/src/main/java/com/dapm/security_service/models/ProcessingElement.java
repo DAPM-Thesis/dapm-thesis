@@ -20,8 +20,15 @@ public class ProcessingElement {
 
     // The organization that owns this processing element.
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "owner_organization_id", nullable = false)
+    @JoinColumn(name = "owner_organization_id")
     private Organization ownerOrganization;
+
+    // The organization that owns this processing element.
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_partner_organization_id")
+    private PartnerOrganization ownerPartnerOrganization;
+
+
 
     // The identifier of the template used for this processing element.
     @Column(name = "template_id", nullable = false)
@@ -47,4 +54,12 @@ public class ProcessingElement {
     @Column(name = "visible_org")
     @Builder.Default
     private Set<String> visibility = new HashSet<>();
+
+    public void validateOwner() {
+        if ((ownerOrganization == null && ownerPartnerOrganization == null) ||
+                (ownerOrganization != null && ownerPartnerOrganization != null)) {
+            throw new IllegalArgumentException("Exactly one owner must be set: either ownerOrganization or ownerPartnerOrganization.");
+        }
+    }
+
 }

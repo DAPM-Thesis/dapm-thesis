@@ -3,11 +3,9 @@ package com.dapm.security_service.services;
 import com.dapm.security_service.models.*;
 import com.dapm.security_service.models.dtos.PipelineDesignDto;
 import com.dapm.security_service.models.dtos.ProcessingElementDto;
-import com.dapm.security_service.repositories.OrganizationRepository;
-import com.dapm.security_service.repositories.PipelineRepository;
-import com.dapm.security_service.repositories.ProcessingElementRepository;
-import com.dapm.security_service.repositories.UserRepository;
+import com.dapm.security_service.repositories.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -21,8 +19,14 @@ public class PipelineDesignService {
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
     private final ProcessingElementRepository processingElementRepository;
+    private final ProjectRepository projectRepository;
+    private final PartnerOrganizationRepository partnerOrganizationRepository;
+    private final ProjectCollaborationRepository projectCollaborationRepository;
     private final ObjectMapper objectMapper;
     private final VisiblePeClient visiblePeClient;
+
+    @Value("${dapm.defaultOrgName}")
+    private String orgName;
 
     public PipelineDesignService(
             PipelineRepository pipelineRepository,
@@ -30,6 +34,9 @@ public class PipelineDesignService {
             UserRepository userRepository,
             ProcessingElementRepository processingElementRepository,
             ObjectMapper objectMapper,
+            PartnerOrganizationRepository partnerOrganizationRepository,
+            ProjectRepository projectRepository,
+            ProjectCollaborationRepository projectCollaborationRepository,
             VisiblePeClient visiblePeClient
     ) {
         this.pipelineRepository = pipelineRepository;
@@ -38,6 +45,9 @@ public class PipelineDesignService {
         this.processingElementRepository = processingElementRepository;
         this.objectMapper = objectMapper;
         this.visiblePeClient = visiblePeClient;
+        this.projectCollaborationRepository = projectCollaborationRepository;
+        this.projectRepository = projectRepository;
+        this.partnerOrganizationRepository = partnerOrganizationRepository;
     }
 
     public List<ProcessingElementDto> getAvailablePeTemplates(String org) {
@@ -48,6 +58,9 @@ public class PipelineDesignService {
                 .collect(Collectors.toList());
 
         List<ProcessingElementDto> remoteDtos = visiblePeClient.getVisiblePEsFromOrgB(org);
+        // now it is hardcoded to OrgB, but you can make it dynamic if needed
+        partnerOrganizationRepository.findByName("OrgB")
+                .orElseGet(() -> partnerOrganizationRepository.save(new PartnerOrganization(UUID.randomUUID(),"OrgB")));
 
         Set<UUID> existingIds = localDtos.stream()
                 .map(ProcessingElementDto::getId)
@@ -70,14 +83,31 @@ public class PipelineDesignService {
                 UUID newId = UUID.randomUUID();
                 idMap.put(tempId, newId);
 
-                elements.add(ProcessingElement.builder()
+                ProcessingElement.ProcessingElementBuilder builder = ProcessingElement.builder()
                         .id(newId)
                         .templateId(peDto.getTemplateId())
-                        .ownerOrganization(getOrganization(peDto.getOwnerOrganization()))
                         .inputs(peDto.getInputs())
-                        .outputs(peDto.getOutputs())
-                        .build());
+                        .outputs(peDto.getOutputs());
+
+                if (peDto.getOwnerOrganization().equals(orgName)) {
+                    builder.ownerOrganization(getOrganization(peDto.getOwnerOrganization()));
+                } else {
+                    builder.ownerPartnerOrganization(getPartnerOrganization(peDto.getOwnerOrganization()));
+                    // add to the project collaboration repository
+                    ProjectCollaboration collaboration = new ProjectCollaboration();
+                    collaboration.setId(UUID.randomUUID());
+                    collaboration.setProject(projectRepository.findByName(dto.getProject())
+                            .orElseThrow(() -> new RuntimeException("Project '" + dto.getProject() + "' not found")));
+                    collaboration.setPartnerOrganization(getPartnerOrganization(peDto.getOwnerOrganization()));
+                    collaboration.setOrganization(getOrganization(orgName));
+                    projectCollaborationRepository.save(collaboration);
+                }
+
+                ProcessingElement pe = builder.build();
+                pe.validateOwner(); // Optional: add this to ensure XOR logic
+                elements.add(pe);
             }
+
         }
 
         List<Channel> updatedChannels = dto.getChannels().stream()
@@ -89,11 +119,14 @@ public class PipelineDesignService {
 
 
 
+        // Ensure the project exists or response error
+        Project project = projectRepository.findByName(dto.getProject())
+                .orElseThrow(() -> new RuntimeException("Project '" + dto.getProject() + "' not found"));
 
         Pipeline pipeline = Pipeline.builder()
                 .id(UUID.randomUUID())
                 .name(dto.getName())
-                .description(dto.getDescription())
+                .project(project)
                 .ownerOrganization(getDefaultOwnerOrganization())
                 .pipelineRole(null)
                 .processingElements(elements)
@@ -109,6 +142,10 @@ public class PipelineDesignService {
     private Organization getOrganization(String name) {
         return organizationRepository.findByName(name)
                 .orElseThrow(() -> new RuntimeException("Organization '" + name + "' not found"));
+    }
+    private PartnerOrganization getPartnerOrganization(String name) {
+        return partnerOrganizationRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("Partner Organization '" + name + "' not found"));
     }
 
     private Organization getDefaultOwnerOrganization() {

@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PipelineDesignDto {
     private String name;
-    private String description;
+    private String project;
 
     private List<ProcessingElementDto> processingElements;
 

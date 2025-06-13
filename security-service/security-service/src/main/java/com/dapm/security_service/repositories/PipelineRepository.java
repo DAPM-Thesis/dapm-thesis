@@ -30,4 +30,6 @@ public interface PipelineRepository extends JpaRepository<Pipeline, UUID> {
             "LEFT JOIN FETCH p.tokens " +
             "WHERE p.id = :id")
     Optional<Pipeline> findByIdWithProcessingElementsAndTokens(@Param("id") UUID id);
+
+    Optional<Pipeline> findByName(String pipelineName);
 }
