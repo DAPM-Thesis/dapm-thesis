@@ -20,10 +20,28 @@ public class PipelineCandidateValidator {
         if (!isConnected(candidate)) { errors.add("Pipeline graph is not weakly connected."); }
         if (!channelInputsAndOutputsMatch(candidate)) { errors.add("There are mismatches between channel input and outputs, either because of type mismatch(es) or because multiple publishers produce to the same port number in the channel's subscriber(s)."); }
         if (!allPathsFromSourceToSink(candidate)) { errors.add("The pipeline is not fully (weakly) connected: not all paths lead from a source to a sink."); }
+        if (!validateOptionalInputs(candidate)) { errors.add("Invalid 'isOptional' flag. Can only be set to true for inputs to a merge processing element (an operator/sink with 2 or more inputs)."); }
 
         return errors;
     }
 
+    private static boolean validateOptionalInputs(PipelineCandidate candidate) {
+        Map<ProcessingElementReference, Long> inputCounts = candidate.getChannels().stream()
+                .flatMap(channel -> channel.getSubscribers().stream())
+                .collect(Collectors.groupingBy(SubscriberReference::getElement, Collectors.counting()));
+
+        for (ChannelReference channel : candidate.getChannels()) {
+            for (SubscriberReference subscriber : channel.getSubscribers()) {
+                if (subscriber.isOptional()) {
+                    long count = inputCounts.getOrDefault(subscriber.getElement(), 0L);
+                    if (count < 2) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 
     private static boolean allPathsFromSourceToSink(PipelineCandidate candidate) {
         Set<ProcessingElementReference> elements = candidate.getElements();

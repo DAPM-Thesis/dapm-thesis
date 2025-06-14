@@ -166,9 +166,23 @@ public class PipelineBuilder {
                 }
             }
             configForCurrentPE.setDownstreamNeighborHeartbeatTopicsToSubscribeTo(downstreamTopicsToConsumeFrom);
+            // Determine which upstream topics are optional
+            Set<String> optionalTopics = new HashSet<>();
+            for (ChannelReference channel : pipeline.getChannels()) {
+                for (SubscriberReference subscriber : channel.getSubscribers()) {
+                    if (subscriber.getElement().equals(currentPERef) && subscriber.isOptional()) {
+                        String producerInstanceId = pipeline.getInstanceID(channel.getPublisher());
+                        if (producerInstanceId != null) {
+                            optionalTopics.add("hb-downstream-" + producerInstanceId);
+                        }
+                    }
+                }
+            }
+            configForCurrentPE.setOptionalUpstreamNeighborTopics(optionalTopics);
+            
             
             String url = currentPERef.getOrganizationHostURL() + "/pipelineBuilder/heartbeat/instance/" + currentInstanceID;
-            HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(configForCurrentPE));
+                HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(configForCurrentPE));
             
             LogUtil.info("[BUILDER HB] Sending config to PE {} ({}) at {}: UpPubT={}, DownPubT={}, MonUp#={}, MonDown#={}",
                     currentPERef.getTemplateID(), currentInstanceID, url,
@@ -205,7 +219,7 @@ public class PipelineBuilder {
             HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(params));
 
             LogUtil.info("[BUILDER OP PARAMS] Sending to PE {} ({}): PipelineID={}, FTLevel={}",
-                    peRef.getTemplateID(), instanceID, pipeline.getPipelineID(), faultToleranceLevel);
+                    peRef.getTemplateID(), instanceID + "-" + peRef.getInstanceNumber(), pipeline.getPipelineID(), faultToleranceLevel);
             HTTPResponse resp = webClient.putSync(req);
             if (resp == null || !resp.status().is2xxSuccessful()) {                
                 throw new IllegalStateException("[PIPELINE BUILDER] Failed to set operational params for " + instanceID);

@@ -6,28 +6,37 @@
   "properties": {
     "publisher": {
       "allOf": [
-        { "$ref": "https://www.dapm.org/processing_element_reference_schema.json" },
-        { "type": "object", "properties": { "output": { "not": { "type": "null" }}}}
+        {
+          "$ref": "https://www.dapm.org/processing_element_reference_schema.json"
+        },
+        {
+          "type": "object",
+          "properties": { "output": { "not": { "type": "null" } } }
+        }
       ]
     },
-    "subscribers":
-    {
+    "subscribers": {
       "type": "array",
-      "items":
-      {
+      "items": {
         "type": "object",
         "properties": {
           "processing element": {
             "allOf": [
-              { "$ref":  "https://www.dapm.org/processing_element_reference_schema.json" },
+              {
+                "$ref": "https://www.dapm.org/processing_element_reference_schema.json"
+              },
               {
                 "type": "object",
-                "properties": { "inputs": { "type": "array", "minItems": 1}},
+                "properties": { "inputs": { "type": "array", "minItems": 1 } },
                 "required": ["inputs"]
               }
             ]
           },
-          "portNumber": { "type": "integer", "minimum": 1 }
+          "portNumber": { "type": "integer", "minimum": 1 },
+          "isOptional": {
+            "type": "boolean",
+            "default": false
+          }
         },
         "required": ["processing element", "portNumber"],
         "additionalProperties": false

@@ -98,7 +98,8 @@ public class CandidateParser {
     private SubscriberReference getSubscriberReference(Map<String, Object> rawSubscriber) {
         ProcessingElementReference element = getProcessingElementReferences((Map<String, Object>) rawSubscriber.get("processing element"));
         int portNumber = (int) rawSubscriber.get("portNumber");
-        return new SubscriberReference(element, portNumber);
+        boolean isOptional = (boolean) rawSubscriber.getOrDefault("isOptional", false);
+        return new SubscriberReference(element, portNumber, isOptional);
     }
 
     private Set<ProcessingElementReference> getProcessingElementReferences(List<Map<String, Object>> rawElements) {

@@ -74,8 +74,8 @@ public class CandidateParserTest {
 
         Set<ProcessingElementReference> expectedElements = Set.of(source, operator, sink);
 
-        SubscriberReference operatorPort1 = new SubscriberReference(operator, 1);
-        SubscriberReference sinkPort1 = new SubscriberReference(sink, 1);
+        SubscriberReference operatorPort1 = new SubscriberReference(operator, 1, false);
+        SubscriberReference sinkPort1 = new SubscriberReference(sink, 1, false);
         ChannelReference c1 = new ChannelReference(source, operatorPort1);
         ChannelReference c2 = new ChannelReference(operator, sinkPort1);
         Set<ChannelReference> expectedChannels = Set.of(c1, c2);

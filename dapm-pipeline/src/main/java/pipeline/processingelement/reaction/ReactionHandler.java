@@ -13,7 +13,7 @@ public interface ReactionHandler {
 
     void setFaultToleranceLevel(FaultToleranceLevel level);
     
-    void processLivenessFailure(FaultContext faultContext);
+    void processLivenessFailure(FaultContext faultContext, boolean isOptional);
 
     void processSelfReportedCriticalError(String errorMessage, Exception exceptionDetails);
 }

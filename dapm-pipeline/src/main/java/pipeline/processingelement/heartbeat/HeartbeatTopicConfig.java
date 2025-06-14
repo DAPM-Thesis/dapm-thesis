@@ -1,6 +1,7 @@
 package pipeline.processingelement.heartbeat;
 
 import java.util.List;
+import java.util.Set;
 import java.util.Collections;
 
 public class HeartbeatTopicConfig {
@@ -8,10 +9,12 @@ public class HeartbeatTopicConfig {
     private String downstreamHeartbeatPublishTopic;
     private List<String> upstreamNeighborHeartbeatTopicsToSubscribeTo;
     private List<String> downstreamNeighborHeartbeatTopicsToSubscribeTo;
+    private Set<String> optionalUpstreamNeighborTopics;
 
     public HeartbeatTopicConfig() {
         this.upstreamNeighborHeartbeatTopicsToSubscribeTo = Collections.emptyList();
         this.downstreamNeighborHeartbeatTopicsToSubscribeTo = Collections.emptyList();
+        this.optionalUpstreamNeighborTopics = Collections.emptySet();
     }
 
     // Getters & Setters (as previously defined)
@@ -23,4 +26,6 @@ public class HeartbeatTopicConfig {
     public void setUpstreamNeighborHeartbeatTopicsToSubscribeTo(List<String> topics) { this.upstreamNeighborHeartbeatTopicsToSubscribeTo = topics != null ? topics : Collections.emptyList(); }
     public List<String> getDownstreamNeighborHeartbeatTopicsToSubscribeTo() { return downstreamNeighborHeartbeatTopicsToSubscribeTo; }
     public void setDownstreamNeighborHeartbeatTopicsToSubscribeTo(List<String> topics) { this.downstreamNeighborHeartbeatTopicsToSubscribeTo = topics != null ? topics : Collections.emptyList(); }
+    public Set<String> getOptionalUpstreamNeighborTopics() { return optionalUpstreamNeighborTopics; }
+    public void setOptionalUpstreamNeighborTopics(Set<String> topics) { this.optionalUpstreamNeighborTopics = topics != null ? topics : Collections.emptySet(); }
 }

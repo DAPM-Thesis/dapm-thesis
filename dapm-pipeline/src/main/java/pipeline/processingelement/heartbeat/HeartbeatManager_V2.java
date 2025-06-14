@@ -38,8 +38,9 @@ public class HeartbeatManager_V2 {
     private final String downstreamHeartbeatPublishTopic;
 
     private KafkaConsumer<String, String> heartbeatConsumer;
-    private final Set<String> upstreamTopicsToMonitor;
+    private Set<String> upstreamTopicsToMonitor; //mutable
     private final Set<String> downstreamTopicsToMonitor;
+    private final Set<String> optionalUpstreamTopics;
     private String heartbeatConsumerGroupId;
 
     private final ConcurrentMap<String, Instant> lastHeartbeatOnTopic = new ConcurrentHashMap<>();
@@ -58,7 +59,6 @@ public class HeartbeatManager_V2 {
 
     private volatile boolean verificationGracePeriodOver = false;
     private static final long INITIAL_VERIFICATION_GRACE_PERIOD_MS = 30_000; //30 seconds
-   
 
 
     public HeartbeatManager_V2(
@@ -73,22 +73,22 @@ public class HeartbeatManager_V2 {
         Objects.requireNonNull(topicConfig, "HeartbeatTopicSetupConfig cannot be null");
         this.reactionHandler = Objects.requireNonNull(reactionHandler, "ReactionHandler cannot be null");
 
-        // Initialize verfication strategies based on fault tolerance level
-        this.upstreamStrategy = new UpstreamVerificationStrategy(); // Currently we want all upstream PE instances to be active
+        this.upstreamStrategy = new UpstreamVerificationStrategy();
 
         if(processingElement.getFaultToleranceLevel() == FaultToleranceLevel.LEVEL_TERMINATE_ENTIRE_PIPELINE ||
             processingElement.getFaultToleranceLevel() == FaultToleranceLevel.LEVEL_NOTIFY_ONLY) {
             this.downstreamStrategy = new AllDownstreamTopicsActiveStrategy();
-        }
-        else{
+        } else{
             this.downstreamStrategy = new AnyDownstreamVerificationStrategy();
         }
 
         this.upstreamHeartbeatPublishTopic = topicConfig.getUpstreamHeartbeatPublishTopic();
-        this.downstreamHeartbeatPublishTopic = topicConfig.getDownstreamHeartbeatPublishTopic();
+        this.downstreamHeartbeatPublishTopic = topicConfig.getDownstreamHeartbeatPublishTopic();        
 
-        this.upstreamTopicsToMonitor = Collections.unmodifiableSet(new HashSet<>(topicConfig.getUpstreamNeighborHeartbeatTopicsToSubscribeTo()));
+        this.upstreamTopicsToMonitor = new HashSet<>(topicConfig.getUpstreamNeighborHeartbeatTopicsToSubscribeTo());
         this.downstreamTopicsToMonitor = Collections.unmodifiableSet(new HashSet<>(topicConfig.getDownstreamNeighborHeartbeatTopicsToSubscribeTo()));
+        this.optionalUpstreamTopics = Collections.unmodifiableSet(new HashSet<>(topicConfig.getOptionalUpstreamNeighborTopics()));
+
 
         Stream.concat(upstreamTopicsToMonitor.stream(), downstreamTopicsToMonitor.stream())
               .forEach(topic -> lastHeartbeatOnTopic.put(topic, Instant.MIN)); 
@@ -178,7 +178,7 @@ public class HeartbeatManager_V2 {
                 LogUtil.info("[HB MANAGER] {} ProcessingElement {}: Initial verification grace period ended." + "Grace Time: "+INITIAL_VERIFICATION_GRACE_PERIOD_MS, processingElement.getClass().getSimpleName(), instanceID);
                 verificationGracePeriodOver = true;
             }, INITIAL_VERIFICATION_GRACE_PERIOD_MS, TimeUnit.MILLISECONDS);
-        } else if (scheduler == null) { // No tasks, no checks needed
+        } else if (scheduler == null) { 
             verificationGracePeriodOver = true; 
         }
 
@@ -220,20 +220,12 @@ public class HeartbeatManager_V2 {
                             LogUtil.info("[HB RECV] {} with id {} received heartbeat from {} on topic {}", processingElement.getClass().getSimpleName(), instanceID, heartbeat.getInstanceID(), record.topic());
                             lastHeartbeatOnTopic.put(record.topic(), heartbeat.getTimestamp()); // Use message timestamp
                         }
-                    });
+                    });                   
 
                     if(!verificationGracePeriodOver) { return;}
 
-                    // 2. Verify Upstream Peers (based on their topics)
-                    if (!upstreamTopicsToMonitor.isEmpty()) {
-                        if (!upstreamStrategy.verifyLiveness(new HashMap<>(lastHeartbeatOnTopic), now, HEARTBEAT_TIMEOUT_MS, upstreamTopicsToMonitor)) {
-                            LogUtil.info("[HB MANAGER FAULT] {} Processing Element {}: Upstream liveness check FAILED.", processingElement.getClass().getSimpleName(), instanceID);
-                            Set<String> silentUpstreamTopics = upstreamTopicsToMonitor.stream()
-                                .filter(topic -> !upstreamStrategy.isTopicTimely(lastHeartbeatOnTopic.getOrDefault(topic, Instant.MIN), now, HEARTBEAT_TIMEOUT_MS))
-                                .collect(Collectors.toSet());
-                            reactionHandler.processLivenessFailure(new FaultContext(PeerDirection.UPSTREAM_PRODUCER, silentUpstreamTopics, upstreamTopicsToMonitor));
-                        }
-                    }
+                    // 2. Perform Liveness Check for Upstream Peers
+                    upstreamLivenessCheck();
 
                     // 3. Verify Downstream Peers (based on their topics)
                     if (!downstreamTopicsToMonitor.isEmpty()) {
@@ -242,13 +234,66 @@ public class HeartbeatManager_V2 {
                              Set<String> silentDownstreamTopics = downstreamTopicsToMonitor.stream()
                                 .filter(topic -> !downstreamStrategy.isTopicTimely(lastHeartbeatOnTopic.getOrDefault(topic, Instant.MIN), now, HEARTBEAT_TIMEOUT_MS))
                                 .collect(Collectors.toSet());
-                            reactionHandler.processLivenessFailure(new FaultContext(PeerDirection.DOWNSTREAM_CONSUMER, silentDownstreamTopics, downstreamTopicsToMonitor));
+                            reactionHandler.processLivenessFailure(new FaultContext(PeerDirection.DOWNSTREAM_CONSUMER, silentDownstreamTopics, downstreamTopicsToMonitor), false);
                         }
                     }
                 } catch (Exception e) { if (isRunning) LogUtil.error(e, "[HB MANAGER] Error in poll/check loop for {}", instanceID);}
             }, LIVENESS_CHECK_INTERVAL_MS, LIVENESS_CHECK_INTERVAL_MS, TimeUnit.MILLISECONDS);
         }
         LogUtil.info("[HB MANAGER] {} Processing Element {}: Started successfully.", processingElement.getClass().getSimpleName(), instanceID);
+    }
+    private void upstreamLivenessCheck() {
+        if (!isRunning || !verificationGracePeriodOver || upstreamTopicsToMonitor.isEmpty()) {
+            return;
+        }
+
+        Instant now = Instant.now();
+        boolean areAllActiveTopicsTimely = upstreamStrategy.verifyLiveness(lastHeartbeatOnTopic, now, HEARTBEAT_TIMEOUT_MS, upstreamTopicsToMonitor);
+
+        if (!areAllActiveTopicsTimely) {
+            Set<String> silentTopics = upstreamTopicsToMonitor.stream()
+                    .filter(topic -> !upstreamStrategy.isTopicTimely(lastHeartbeatOnTopic.get(topic), now, HEARTBEAT_TIMEOUT_MS))
+                    .collect(Collectors.toSet());
+            
+            if (silentTopics.isEmpty()) return;
+
+            boolean isCriticalFailure = silentTopics.stream()
+                    .anyMatch(silentTopic -> !optionalUpstreamTopics.contains(silentTopic));
+
+            boolean isOptional = !isCriticalFailure;
+
+            FaultContext faultContext = new FaultContext(PeerDirection.UPSTREAM_PRODUCER, silentTopics, upstreamTopicsToMonitor);
+            reactionHandler.processLivenessFailure(faultContext, isOptional);
+
+            if (isOptional) {
+                LogUtil.info("[HB MANAGER] Non-critical failure. All silent topics were optional: {}", silentTopics);
+                stopMonitoringTopics(silentTopics);
+            }
+        }
+    }
+
+    private synchronized void stopMonitoringTopics(Set<String> topicsToUnsubscribe) {
+        if (topicsToUnsubscribe == null || topicsToUnsubscribe.isEmpty()) {
+            return;
+        }
+
+        boolean changed = this.upstreamTopicsToMonitor.removeAll(topicsToUnsubscribe);
+
+        if (changed) {
+            LogUtil.info("[HB MANAGER] Unsubscribing from failed optional topics: {}", topicsToUnsubscribe);
+
+            Set<String> allTopicsToStillMonitor = new HashSet<>(this.upstreamTopicsToMonitor);
+            allTopicsToStillMonitor.addAll(this.downstreamTopicsToMonitor);
+
+            if (this.heartbeatConsumer != null) {
+                if (allTopicsToStillMonitor.isEmpty()) {
+                    this.heartbeatConsumer.unsubscribe();
+                } else {
+                    // Re-subscribe to the new, smaller set of topics
+                    this.heartbeatConsumer.subscribe(new ArrayList<>(allTopicsToStillMonitor));
+                }
+            }
+        }
     }
 
     private void deleteOwnPublishTopics() {

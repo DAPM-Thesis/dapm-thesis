@@ -14,11 +14,13 @@ public class Pipeline {
     private final Map<String, ProcessingElementReference> processingElements;
     private DG<ProcessingElementReference, Integer> directedGraph;
     private final FaultToleranceLevel faultToleranceLevel;
+    private final Set<ChannelReference> channels;
 
     public Pipeline(String pipelineID, Set<ChannelReference> channelReferences, FaultToleranceLevel faultToleranceLevel) {
         processingElements = new HashMap<>();
         this.pipelineID = pipelineID;
         this.faultToleranceLevel = faultToleranceLevel;
+        this.channels = channelReferences;
         initializeDG(channelReferences);
     }
 
@@ -26,6 +28,8 @@ public class Pipeline {
 
     // return an unmodifiable map to ensure that processing elements are only added via addProcessingElement()
     public Map<String, ProcessingElementReference> getProcessingElements() {return Collections.unmodifiableMap(processingElements);}
+
+    public Set<ChannelReference> getChannels() { return Collections.unmodifiableSet(channels); }
 
     public void addProcessingElement(String instanceID, ProcessingElementReference processingElementReference) {
         processingElements.put(instanceID, processingElementReference);

@@ -35,7 +35,7 @@ public abstract class ProcessingElement {
         this.internalHeartbeatTopicConfig = config;
     }
 
-     public void setOperationalParameters(String pipelineID, FaultToleranceLevel faultToleranceLevel, PipelineNotificationService notificationService, String organizationHostURL) {
+    public void setOperationalParameters(String pipelineID, FaultToleranceLevel faultToleranceLevel, PipelineNotificationService notificationService, String organizationHostURL) {
         this.pipelineID = pipelineID;
         this.pipelineFaultToleranceLevel = faultToleranceLevel;
         this.pipelineNotificationService = notificationService;

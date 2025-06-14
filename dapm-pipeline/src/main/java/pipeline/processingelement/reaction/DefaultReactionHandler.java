@@ -45,7 +45,7 @@ public class DefaultReactionHandler implements ReactionHandler {
     }
 
     @Override
-    public void processLivenessFailure(FaultContext faultContext) {
+    public void processLivenessFailure(FaultContext faultContext, boolean isOptional) {
         LogUtil.info("[REACTION HANDLER] {} Instance {}: Processing liveness failure for {} peers. Silent topics: {}. Configured Level: {}",
                 processingElement.getClass().getSimpleName(), processingElement.getInstanceId(),
                 faultContext.affectedPeerDirection(), faultContext.silentMonitoredTopics(),
@@ -59,7 +59,7 @@ public class DefaultReactionHandler implements ReactionHandler {
                 handlePipelineTerminate(faultContext);
                 break;
             case LEVEL_KEEP_RUNNING_PARTIAL_PIPELINE:
-                handleKeepRunningPartialPipeline(faultContext);
+                handleKeepRunningPartialPipeline(faultContext, isOptional);
                 break;
             case LEVEL_RESTART_FAILED_INSTANCE:
             default:
@@ -156,14 +156,19 @@ public class DefaultReactionHandler implements ReactionHandler {
         processingElement.terminate();        
     }
 
-    private void handleKeepRunningPartialPipeline(FaultContext faultContext) {
+    private void handleKeepRunningPartialPipeline(FaultContext faultContext, boolean isOptional) {
          LogUtil.info("[REACTION HANDLER LVL3] {} processingElement {}: Partial pipeline mode. Fault with {} peers.",
             processingElement.getClass().getSimpleName(), processingElement.getInstanceId(), faultContext.affectedPeerDirection());
         
         sendNotification(faultContext);
 
-        // TODO: move this logic to a service that handles pipeline actions (ex: PipelineManager)
-        // for responsibility separation
-        processingElement.terminate();
+        if(!isOptional) {
+            LogUtil.info("[REACTION] Critical failure. Terminating PE {} according to policy.", processingElement.getInstanceId());
+            // TODO: move this logic to a service that handles pipeline actions (ex: PipelineManager)
+            // for responsibility separation
+            processingElement.terminate();
+        } else {
+            LogUtil.info("[REACTION] Optional peer failure. PE {} will continue operation.", processingElement.getInstanceId());
+        }
     }
 }
