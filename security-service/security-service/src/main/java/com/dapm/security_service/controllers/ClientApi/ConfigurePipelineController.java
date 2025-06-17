@@ -18,7 +18,7 @@ public class ConfigurePipelineController {
     @Autowired
     private PipelineRepository pipelineRepository;
 
-    @PreAuthorize("hasAuthority('VIEW_PROJECT:' + @pipelineRepository.findByName(#pipelineName).get().project.name)")
+//    @PreAuthorize("hasAuthority('CONFIGURE_PIPELINE:' + @pipelineRepository.findByName(#pipelineName).get().project.name)")
     @GetMapping("/{pipelineName}/validate")
     public String validatePipeline(@PathVariable String pipelineName) {
         var pipeline = pipelineRepository.findByName(pipelineName)

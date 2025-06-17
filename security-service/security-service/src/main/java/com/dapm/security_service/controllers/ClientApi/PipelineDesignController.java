@@ -26,8 +26,7 @@ public class PipelineDesignController {
     /**
      * GET endpoint to retrieve all available processing element templates for the given organization.
      * The service aggregates both local and externally visible templates.
-     *
-     * Example call: /api/pipeline/design/available-pe-templates?org=OrgA
+
      */
     @GetMapping("/available-pe-templates")
     public ResponseEntity<List<ProcessingElementDto>> getAvailablePeTemplates() {
