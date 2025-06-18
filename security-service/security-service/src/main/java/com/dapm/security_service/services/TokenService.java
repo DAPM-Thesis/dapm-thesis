@@ -115,4 +115,21 @@ public class TokenService {
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }
+    // generate token for user requesting from a partner organization the token most be like the handdshake token so the partner can make sure this user is from the desired org
+    public String generateTokenForPartnerOrgUser(User user, long ttlSeconds) {
+        Instant now = Instant.now();
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("username", user.getUsername());
+        claims.put("organization", user.getOrganization().getName());
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(user.getId().toString())
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plusSeconds(ttlSeconds)))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
+    }
+    // generate token for processing element request
+
 }

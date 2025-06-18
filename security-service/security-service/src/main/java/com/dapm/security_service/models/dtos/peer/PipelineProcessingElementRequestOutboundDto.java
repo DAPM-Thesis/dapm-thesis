@@ -1,5 +1,6 @@
 package com.dapm.security_service.models.dtos.peer;
 
+import com.dapm.security_service.models.RequesterInfo;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
 import lombok.Data;
 
@@ -12,8 +13,8 @@ import java.util.UUID;
 @Data
 public class PipelineProcessingElementRequestOutboundDto {
     private UUID id;
-    private UUID pipelinePeId;
-    private RequesterInfoDto requesterInfo;
+    private String processingElementName;
+    private RequesterInfo requesterInfo;
     private UUID pipelineId;
 
     private int requestedExecutionCount;

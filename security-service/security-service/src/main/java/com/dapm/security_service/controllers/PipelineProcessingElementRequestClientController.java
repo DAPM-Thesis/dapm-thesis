@@ -1,18 +1,18 @@
 package com.dapm.security_service.controllers;
-import com.dapm.security_service.models.PipelineProcessingElementRequest;
-import com.dapm.security_service.models.ProcessingElement;
-import com.dapm.security_service.models.RequesterInfo;
-import com.dapm.security_service.models.User;
+import com.dapm.security_service.models.*;
 import com.dapm.security_service.models.dtos.PipelineProcessingElementRequestDto;
 import com.dapm.security_service.models.dtos.peer.PipelineProcessingElementRequestOutboundDto;
 import com.dapm.security_service.models.dtos.peer.RequestResponse;
-import com.dapm.security_service.models.dtos.peer.RequesterInfoDto;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
 import com.dapm.security_service.repositories.PipelineProcessingElementRequestRepository;
+import com.dapm.security_service.repositories.PipelineRepository;
 import com.dapm.security_service.repositories.ProcessingElementRepository;
 import com.dapm.security_service.repositories.UserRepository;
+import com.dapm.security_service.security.CustomUserDetails;
 import com.dapm.security_service.services.OrgBRequestService;
+import com.dapm.security_service.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -22,6 +22,9 @@ import java.util.UUID;
 public class PipelineProcessingElementRequestClientController {
 
     @Autowired private OrgBRequestService orgBRequestService;
+    @Autowired private TokenService tokenService;
+
+    @Autowired private PipelineRepository pipelineRepository;
 
     @Autowired private PipelineProcessingElementRequestRepository pipelineNodeRequestRepository;
     @Autowired private ProcessingElementRepository processingElementRepositry;
@@ -51,13 +54,17 @@ public class PipelineProcessingElementRequestClientController {
      * We forward the request to OrgB's PeerApi.
      */
     @PostMapping("/peer")
-    public RequestResponse initiatePeerRequest(@RequestBody PipelineProcessingElementRequestDto requestDto) {
-        PipelineProcessingElementRequest request = convertDtoToEntity(requestDto);
+    public RequestResponse initiatePeerRequest(
+            @RequestBody PipelineProcessingElementRequestDto requestDto
+    ,@AuthenticationPrincipal CustomUserDetails userDetails) {
+        PipelineProcessingElementRequest request = convertDtoToEntity(requestDto,userDetails.getUser());
         String webhookUrl = "http://localhost:8080/api/client/pipeline-node-requests/webhook";
         request.setWebhookUrl(webhookUrl);
 
         // 2. Save locally
         PipelineProcessingElementRequest localRequest = pipelineNodeRequestRepository.save(request);
+
+        System.out.println("my request is "+ localRequest);
 
         // 3. Convert entity → outbound DTO
         PipelineProcessingElementRequestOutboundDto outboundDto = toOutboundDto(localRequest);
@@ -94,35 +101,30 @@ public class PipelineProcessingElementRequestClientController {
         return orgBRequestService.getRequestDetailsFromOrgB(id);
     }
 
-    private PipelineProcessingElementRequest convertDtoToEntity(PipelineProcessingElementRequestDto dto) {
-        ProcessingElement node = processingElementRepositry.findById(dto.getPipelinePeId())
-                .orElseThrow(() -> new RuntimeException("Node not found: " + dto.getPipelinePeId()));
-        User user = userRepository.findById(dto.getRequesterId())
-                .orElseThrow(() -> new RuntimeException("Requester not found: " + dto.getRequesterId()));
+    private PipelineProcessingElementRequest convertDtoToEntity(PipelineProcessingElementRequestDto dto, User user) {
+        ProcessingElement node = processingElementRepositry.findByTemplateId(dto.getProcessingElement())
+                .orElseThrow(() -> new RuntimeException("Node not found: " + dto.getProcessingElement()));
 
         RequesterInfo requester = new RequesterInfo();
         requester.setRequesterId(user.getId());
         requester.setUsername(user.getUsername());
         requester.setOrganization(user.getOrganization().getName());
+        requester.setToken(tokenService.generateTokenForPartnerOrgUser(user, 300));
 
-//        requester.setRole(String.valueOf(user.getRoles().stream().findFirst().orElse(null)));
-
-        String firstRoleName = "role to be removed";
-
-        requester.setRole(firstRoleName);
-
-        requester.setPermissions("");
+        // get pilineId from pipline repository
+        Pipeline pipeline= pipelineRepository.findByName(dto.getPiplineName())
+                .orElseThrow(() -> new RuntimeException("Pipeline not found: " + dto.getPiplineName()));
 
         return PipelineProcessingElementRequest.builder()
-                .id(dto.getId() != null ? dto.getId() : UUID.randomUUID())
+                .id(UUID.randomUUID())
                 .pipelineNode(node)
                 .requesterInfo(requester)
-                .pipelineId(dto.getPipelineId())
+                .pipelineId(pipeline.getId())
                 .requestedExecutionCount(dto.getRequestedExecutionCount())
                 .requestedDurationHours(dto.getRequestedDurationHours())
-                .status(dto.getStatus())
-                .approvalToken(dto.getApprovalToken())
-                .decisionTime(dto.getDecisionTime())
+                .status(AccessRequestStatus.PENDING)
+                .approvalToken("")
+                .decisionTime(null)
                 .build();
     }
     private PipelineProcessingElementRequestOutboundDto toOutboundDto(PipelineProcessingElementRequest entity) {
@@ -141,17 +143,16 @@ public class PipelineProcessingElementRequestClientController {
 
         // 2) PipelineNode ID
         if (entity.getPipelineNode() != null) {
-            dto.setPipelinePeId(entity.getPipelineNode().getId());
+            dto.setProcessingElementName(entity.getPipelineNode().getTemplateId());
         }
 
         // 3) RequesterInfo
         if (entity.getRequesterInfo() != null) {
-            RequesterInfoDto infoDto = new RequesterInfoDto();
+            RequesterInfo infoDto = new RequesterInfo();
             infoDto.setRequesterId(entity.getRequesterInfo().getRequesterId());
             infoDto.setUsername(entity.getRequesterInfo().getUsername());
             infoDto.setOrganization(entity.getRequesterInfo().getOrganization());
-            infoDto.setRole(entity.getRequesterInfo().getRole());
-            infoDto.setPermissions(entity.getRequesterInfo().getPermissions());
+            infoDto.setToken(entity.getRequesterInfo().getToken());
             dto.setRequesterInfo(infoDto);
         }
 

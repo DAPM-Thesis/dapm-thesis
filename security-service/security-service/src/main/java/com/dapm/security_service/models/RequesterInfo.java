@@ -1,6 +1,7 @@
 package com.dapm.security_service.models;
 
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Lob;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,6 @@ public class RequesterInfo {
     private UUID requesterId;
     private String username;
     private String organization;
-    private String role;
-    private String permissions;
+    @Lob
+    private String token;
 }

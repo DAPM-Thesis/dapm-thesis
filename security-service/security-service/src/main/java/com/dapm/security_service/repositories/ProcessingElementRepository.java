@@ -16,4 +16,7 @@ public interface ProcessingElementRepository extends JpaRepository<ProcessingEle
 
     // For POST: lookup specific PE by its ID
     Optional<ProcessingElement> findById(UUID id);
+
+    // Find by template ID
+    Optional<ProcessingElement> findByTemplateId(String templateId);
 }

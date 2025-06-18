@@ -3,14 +3,19 @@ package com.dapm.security_service.controllers.ClientApi;
 import com.dapm.security_service.models.ConfirmationResponse;
 import com.dapm.security_service.models.PipelineProcessingElementRequest;
 import com.dapm.security_service.models.dtos.ApproveProcessingElementRequestDto;
+import com.dapm.security_service.models.dtos.PipelineProcessingElementRequestDto;
+import com.dapm.security_service.models.dtos.ProccessingElementAccessRequestDto;
+import com.dapm.security_service.models.dtos.ProjectDto;
 import com.dapm.security_service.models.dtos.peer.RequestResponse;
 import com.dapm.security_service.models.enums.AccessRequestStatus;
 import com.dapm.security_service.repositories.PipelineProcessingElementRequestRepository;
+import com.dapm.security_service.security.CustomUserDetails;
 import com.dapm.security_service.services.OrgARequestService;
 import com.dapm.security_service.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,8 +33,12 @@ public class PipelineProcessingElementRequestController {
 
     // Get all pipeline node requests.
     @GetMapping
-    public List<PipelineProcessingElementRequest> getAllRequests() {
-        return requestRepository.findAll();
+    public List<ProccessingElementAccessRequestDto> getAllRequests() {
+        return requestRepository.findAll()
+                .stream()
+                .map(ProccessingElementAccessRequestDto::new)
+                .toList();
+
     }
 
     // Get a specific request by its ID.
@@ -40,11 +49,17 @@ public class PipelineProcessingElementRequestController {
 
     // Create a new pipeline node request.
     @PostMapping
-    public PipelineProcessingElementRequest createRequest(@RequestBody PipelineProcessingElementRequest request) {
+    public PipelineProcessingElementRequest createRequest(
+            @RequestBody PipelineProcessingElementRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        String token = tokenService.generateTokenForPartnerOrgUser(userDetails.getUser(),300);
+        request.getRequesterInfo().setToken(token);
         if (request.getId() == null) {
             request.setId(UUID.randomUUID());
         }
+
         request.setStatus(AccessRequestStatus.PENDING);
+        System.out.println("my request"+ request);
         return requestRepository.save(request);
     }
 
