@@ -1,6 +1,8 @@
 package com.dapm.security_service.controllers.ClientApi;
 import com.dapm.security_service.models.dtos.ConfigureValidationDto;
 import com.dapm.security_service.models.dtos.MissingPermissionsDto;
+import com.dapm.security_service.models.enums.AccessRequestStatus;
+import com.dapm.security_service.repositories.PipelineProcessingElementRequestRepository;
 import com.dapm.security_service.repositories.PipelineRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -20,7 +22,9 @@ public class ConfigurePipelineController {
     @Autowired
     private PipelineRepository pipelineRepository;
 
-//    @PreAuthorize("hasAuthority('CONFIGURE_PIPELINE:' + @pipelineRepository.findByName(#pipelineName).get().project.name)")
+    @Autowired
+    private PipelineProcessingElementRequestRepository pipelineProcessingElementRequestRepository;
+    @PreAuthorize("@pipelineAccessEvaluator.canConfigurePipeline(#pipelineName, authentication)")
     @GetMapping("/{pipelineName}/validate")
     public ConfigureValidationDto validatePipeline(@PathVariable String pipelineName) {
         var pipeline = pipelineRepository.findByName(pipelineName)
@@ -40,9 +44,30 @@ public class ConfigurePipelineController {
             validationDto.setStatus("VALID");
             validationDto.setMissingPermissions(List.of());
         } else {
-            validationDto.setStatus("INVALID");
-            validationDto.setMissingPermissions(partnerElements);
+            // Load actual partner-owned elements
+            var partnerElementsEntities = pipeline.getProcessingElements().stream()
+                    .filter(pe -> pe.getOwnerPartnerOrganization() != null)
+                    .collect(Collectors.toList());
+
+            // Collect missing elements: those with no PENDING request
+            List<MissingPermissionsDto> missingPermissions = partnerElementsEntities.stream()
+                    .filter(pe -> !pipelineProcessingElementRequestRepository
+                            .existsByPipelineIdAndPipelineNode_IdAndStatus(
+                                    pipeline.getId(), pe.getId(), AccessRequestStatus.APPROVED))
+                    .map(pe -> new MissingPermissionsDto(
+                            pe.getTemplateId(),
+                            pe.getOwnerPartnerOrganization().getName()))
+                    .collect(Collectors.toList());
+
+            if (missingPermissions.isEmpty()) {
+                validationDto.setStatus("VALID");
+                validationDto.setMissingPermissions(List.of());
+            } else {
+                validationDto.setStatus("INVALID");
+                validationDto.setMissingPermissions(missingPermissions);
+            }
         }
+
 
         return validationDto;
     }

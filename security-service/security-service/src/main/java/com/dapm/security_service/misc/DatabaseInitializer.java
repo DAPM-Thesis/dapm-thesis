@@ -191,6 +191,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
             processingElementRepository.save(peB);
 
+
         }
 
 
@@ -282,9 +283,11 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         // 6. Create Users for OrgA.
         createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, AdminOrgRole,org, USER_ANNA_ID);
+        createUserIfNotExistStatic("charlie","charlie@gmail.com", "dapm", adminRole, AdminOrgRole, org, UUID.fromString("11111111-1111-1111-1111-111111111116"));
         createUserIfNotExistStatic("anthoni", "anthoni@example.com", "dapm", depHeadRole,AdminOrgRole, org, USER_ANTHONI_ID);
         createUserIfNotExistStatic("alice", "alice@example.com", "dapm", researcherRole,defaultOrgRole, org,  USER_ALICE_ID);
         createUserIfNotExistStatic("ashley", "ashley@example.com", "dapm", researcherRole,defaultOrgRole, org,  USER_ASHLEY_ID);
+
 
 
         // Hey there I am new
@@ -370,6 +373,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         ProjectRolePermission projectRolePermission=createProjectRolePermissionIfNotExistStatic(p,projectPermission1,projectRole2);
         ProjectRolePermission projectRolePermission2=createProjectRolePermissionIfNotExistStatic(p,projectPermission8,projectRole2);
+        ProjectRolePermission projectRolePermission3=createProjectRolePermissionIfNotExistStatic(p,projectPermission5,projectRole2);
 
         User user = userRepository.findByUsername("anna")
                 .orElseThrow(() -> new RuntimeException("User 'anna' not found"));

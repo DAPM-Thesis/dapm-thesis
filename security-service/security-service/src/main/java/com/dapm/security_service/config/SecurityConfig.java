@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/authenticate",
+                                "/api/client/pipeline-processingElement/webhook",
                                 "/api/peer/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"

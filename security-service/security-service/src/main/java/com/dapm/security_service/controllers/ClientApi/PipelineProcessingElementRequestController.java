@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/pipeline-node-requests")
+@RequestMapping("/api/pipeline-processingElements-requests")
 public class PipelineProcessingElementRequestController {
 
     @Autowired private PipelineProcessingElementRequestRepository requestRepository;
@@ -94,9 +94,8 @@ public class PipelineProcessingElementRequestController {
         // convert hr - min - sec - ms
         request.setAllowedDurationHours(((approveNodeRequestDto.getAllowedDurationHours() * 60) * 60) * 1000);
         request.setAllowedNoExecutions(approveNodeRequestDto.getAllowedNoExecutions());
-        request.setAllowedDataUsagePercentage(approveNodeRequestDto.getAllowedDataUsagePercentage());
 
-        request.setApprovalToken(tokenService.generateTokenForNodeRequest(request));
+        //request.setApprovalToken(tokenService.generateTokenForNodeRequest(request));
         request.setStatus(AccessRequestStatus.APPROVED);
 
         requestRepository.save(request);
@@ -105,42 +104,31 @@ public class PipelineProcessingElementRequestController {
         var response = new RequestResponse();
         response.setRequestId(request.getId());
         response.setRequestStatus(request.getStatus());
-        response.setToken(request.getApprovalToken());
+        //response.setToken(request.getApprovalToken());
         ConfirmationResponse remoteResponse = orgARequestService.sendResponseToOrgA(response);
 
         // Send notification to the webhook URL provided in the request
         String webhookUrl = request.getWebhookUrl(); // Assuming the webhook URL is stored in the request entity
-        System.out.println(webhookUrl+" mmmmmmmmmmmmmmm");
-        if (webhookUrl != null && !webhookUrl.isEmpty()) {
-            // Prepare the data to send to the webhook
-            RequestResponse webhookResponse = new RequestResponse();
-            webhookResponse.setRequestId(request.getId());
-            webhookResponse.setRequestStatus(request.getStatus());
-            webhookResponse.setToken(request.getApprovalToken());
+        String webhookResponseMessage = "Webhook URL is empty or not set";
+        // Prepare the data to send to the webhook
+        RequestResponse webhookResponse = new RequestResponse();
+        webhookResponse.setRequestId(request.getId());
+        webhookResponse.setRequestStatus(request.getStatus());
+        //webhookResponse.setToken(request.getApprovalToken());
 
-            // Use RestTemplate to send the notification to the webhook
-            RestTemplate restTemplate = new RestTemplate();
-            try {
-                // Send a POST request to the webhook URL with the response data
-                ResponseEntity<String> webhookResponseEntity = restTemplate.exchange(
+        // Use RestTemplate to send the notification to the webhook
+        RestTemplate restTemplate = new RestTemplate();
+        // Send a POST request to the webhook URL with the response data
+        ResponseEntity<String> webhookResponseEntity = restTemplate.exchange(
                         webhookUrl,
                         HttpMethod.POST,
                         new org.springframework.http.HttpEntity<>(webhookResponse),
                         String.class
-                );
-
-                // Log or handle the webhook response (optional)
-                System.out.println("Org B-- Webhook response: " + webhookResponseEntity.getBody());
-
-            } catch (Exception e) {
-                // Handle errors with the webhook request (e.g., logging, retrying)
-                System.err.println("Error sending webhook notification: " + e.getMessage());
-            }
-        }
-
+        );
+        webhookResponseMessage = webhookResponseEntity.getBody();
 
         // update this part and find a something that Bob should see after approval: could be a 204
-        return remoteResponse.isMessageReceived() + "\n "+ request.getApprovalToken();
+        return remoteResponse.isMessageReceived() + "\n "+ webhookResponseMessage;
     }
 
 

@@ -15,15 +15,19 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 public class ProccessingElementAccessRequestDto {
+    private UUID requestId;
     private String processingElement;
     private String pipelineName;
-    private RequesterInfo requesterInfo;
+    private String requesterUsername;
     private String webhookUrl;
+    private AccessRequestStatus status;
 
     public ProccessingElementAccessRequestDto(PipelineProcessingElementRequest request) {
+        this.requestId = request.getId();
         this.processingElement = request.getPipelineNode().getTemplateId();
         this.pipelineName = request.getPipelineId().toString();
-        this.requesterInfo = request.getRequesterInfo();
+        this.requesterUsername = request.getRequesterInfo().getUsername();
         this.webhookUrl = request.getWebhookUrl();
+        this.status = request.getStatus();
     }
 }

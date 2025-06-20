@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 public class OrgARequestService {
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private final String ORG_A_BASE_URL = "http://localhost:8081/api/peer/pipeline-node-requests/approve";
+    private final String ORG_A_BASE_URL = "http://orga:8080/api/peer/pipeline-node-requests/approve";
 
     public ConfirmationResponse sendResponseToOrgA(RequestResponse response){
         return restTemplate.postForObject(

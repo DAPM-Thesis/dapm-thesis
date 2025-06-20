@@ -12,6 +12,7 @@ import com.dapm.security_service.repositories.PipelineProcessingElementRequestRe
 import com.dapm.security_service.repositories.ProcessingElementRepository;
 import com.dapm.security_service.services.TokenVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -94,9 +95,11 @@ public class PipelineProcessingElementPeerController {
     }
 
     // OrgB call this endpoint to send approval of the request.
+    @Transactional
     @PostMapping("/approve")
     public ConfirmationResponse approveRequest(@RequestBody RequestResponse requestResponse){
-        var request = requestRepository.getById(requestResponse.getRequestId());
+        var request = requestRepository.findById(requestResponse.getRequestId())
+                .orElseThrow(() -> new RuntimeException("Request not found"));
 
         if(request.getId() == null){
             var confirmationRespone = new ConfirmationResponse();
@@ -104,10 +107,11 @@ public class PipelineProcessingElementPeerController {
             return confirmationRespone;
         }
 
-        request.setApprovalToken(requestResponse.getToken());
+        //request.setApprovalToken(requestResponse.getToken());
         request.setStatus(requestResponse.getRequestStatus());
 
         requestRepository.save(request);
+        // save them in cache so the configure can check them
 
         var confirmationResponse = new ConfirmationResponse();
         confirmationResponse.setMessageReceived(true);

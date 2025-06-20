@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/client/pipeline-node-requests")
+@RequestMapping("/api/client/pipeline-processingElement")
 public class PipelineProcessingElementRequestClientController {
 
     @Autowired private OrgBRequestService orgBRequestService;
@@ -38,10 +38,10 @@ public class PipelineProcessingElementRequestClientController {
 
         // Update the status and other details based on the webhook response
         request.setStatus(requestResponse.getRequestStatus());
-        request.setApprovalToken(requestResponse.getToken());
+        //request.setApprovalToken(requestResponse.getToken());
 
         // Save the updated request
-        pipelineNodeRequestRepository.save(request);
+        //pipelineNodeRequestRepository.save(request);
 
         // Optionally log or send a response indicating the webhook was received successfully
         System.out.println("Webhook received by Org A for request ID: " + requestId);
@@ -53,12 +53,12 @@ public class PipelineProcessingElementRequestClientController {
      * Alice calls this to request use of a node owned by OrgB.
      * We forward the request to OrgB's PeerApi.
      */
-    @PostMapping("/peer")
+    @PostMapping("/request")
     public RequestResponse initiatePeerRequest(
             @RequestBody PipelineProcessingElementRequestDto requestDto
     ,@AuthenticationPrincipal CustomUserDetails userDetails) {
         PipelineProcessingElementRequest request = convertDtoToEntity(requestDto,userDetails.getUser());
-        String webhookUrl = "http://localhost:8080/api/client/pipeline-node-requests/webhook";
+        String webhookUrl = "http://orga:8080/api/client/pipeline-processingElement/webhook";
         request.setWebhookUrl(webhookUrl);
 
         // 2. Save locally

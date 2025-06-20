@@ -9,5 +9,4 @@ public class ApproveProcessingElementRequestDto {
     private UUID requestId;
     private Integer allowedDurationHours;
     private Integer allowedNoExecutions;
-    private Integer allowedDataUsagePercentage;
 }
