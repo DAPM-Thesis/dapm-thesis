@@ -1,4 +1,5 @@
 package communication.message.serialization;
+import communication.message.Message;
 import communication.message.impl.Alignment;
 import communication.message.impl.Metrics;
 import communication.message.impl.time.UTCTime;
@@ -99,12 +100,14 @@ public class MessageSerializer implements MessageVisitor<String> {
     private String commaSeparatedAttributesString(Collection<Attribute<?>> attributes) {
         if (attributes.isEmpty()) {return "";}
         StringBuilder sb = new StringBuilder();
+        MessageSerializer serializer = new MessageSerializer();
         for (Attribute<?> attr : attributes) {
 
             sb.append(", ")
                     .append(JSONParser.toJSONString(attr.getName()))
-                    .append(": ")
-                    .append(JSONParser.toJSONString(attr.getValue()));
+                    .append(": ");
+            if (attr.getValue() instanceof Message message) { sb.append(serializer.visit(message)); }
+            else { sb.append(JSONParser.toJSONString(attr.getValue()));}
         }
         return sb.toString();
     }
@@ -135,6 +138,12 @@ public class MessageSerializer implements MessageVisitor<String> {
                 + "\"><initialMarking><text>"
                 + p.getMarking()
                 + "</text></initialMarking></place>";
+    }
+
+    // allows for calling visit on the superclass. This will then call the correct subclass acceptVisitor (whose serialization should set this class' serialization attribute!)
+    public String visit(Message message) {
+        message.acceptVisitor(this);
+        return getSerialization();
     }
 
     private String serializeTransition(Transition t) {

@@ -13,13 +13,16 @@ import communication.message.impl.petrinet.Transition;
 import communication.message.impl.petrinet.arc.Arc;
 import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
+import communication.message.impl.time.UTCTime;
 import communication.message.serialization.MessageSerializer;
 import communication.message.serialization.deserialization.MessageFactory;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -128,6 +131,19 @@ class MessageDeserializerTest {
         MessageSerializer serializer = new MessageSerializer();
         String JXES = serializer.visit(expected);
         Message output = MessageFactory.deserialize(JXES);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    void wikipediaEventInverseWithAttribute() throws IOException {
+        Set<Attribute<?>> nonEssentialAttributes = new HashSet<>();
+        nonEssentialAttributes.add(new Attribute<>("UTC time", new UTCTime()));
+        Event expected = new Event("case", "act", "timestamp", nonEssentialAttributes);
+
+        MessageSerializer serializer = new MessageSerializer();
+        String JXES = serializer.visit(expected);
+        Message output = MessageFactory.deserialize(JXES);
+        assertEquals(expected, output);
     }
 
     @Test

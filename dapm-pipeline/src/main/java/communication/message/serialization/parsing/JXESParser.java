@@ -92,7 +92,7 @@ public class JXESParser extends JSONParser {
         String caseID = (String) traceAttributes.get("concept:name");
 
         Map<String, Object> combinedAttributes
-                = getCombinedAttributes(traceAttributes,globalEventAttributes, parseJSONObject(eventObject));
+                = getCombinedAttributes(traceAttributes, globalEventAttributes, parseJSONObject(eventObject));
 
         String activity = (String) combinedAttributes.remove("concept:name");
         String timestamp = (String) combinedAttributes.remove("date");

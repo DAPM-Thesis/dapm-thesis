@@ -1,5 +1,7 @@
 package communication.message.serialization.parsing;
 
+import communication.message.MessageTypeRegistry;
+import communication.message.serialization.deserialization.MessageFactory;
 import utils.Pair;
 
 import java.util.*;
@@ -27,7 +29,19 @@ public class JSONParser {
     Object parseValue(String item) {
         if (isJSONObject(item)) { return parseJSONObject(item); }
         if (isJSONArray(item)) { return parseJSONArray(item); }
+        if (isDAPMMessage(item)) { return MessageFactory.deserialize(item); }
         else { return parseSimpleType(item); }
+    }
+
+    private boolean isDAPMMessage(String item) {
+        int colonIndex = item.indexOf(':');
+        if (colonIndex == -1) { return false; }
+
+        int lastDotBeforeColon = item.lastIndexOf('.', colonIndex);
+        if (lastDotBeforeColon == -1) { return false; }
+
+        String potentialSimpleClassName = item.substring(lastDotBeforeColon + 1, colonIndex);
+        return MessageTypeRegistry.isSupportedMessageType(potentialSimpleClassName);
     }
 
     Map<String, Object> parseJSONObject(String object) {

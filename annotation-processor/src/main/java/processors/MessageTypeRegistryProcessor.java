@@ -46,11 +46,16 @@ public class MessageTypeRegistryProcessor extends AbstractProcessor {
         registryCode.append("    private static final Map<String, Class<? extends Message>> nameToClass = new HashMap<>();\n\n");
 
         addStaticRegistrationBlock(registryCode, annotatedElements);
+        addisSupportedMessageTypeMethod(registryCode);
         addGetter(registryCode);
         addRegisterMethod(registryCode);
 
         registryCode.append("}\n");
         return registryCode.toString();
+    }
+
+    private void addisSupportedMessageTypeMethod(StringBuilder registryCode) {
+        registryCode.append("    public static boolean isSupportedMessageType(String simpleClassName) { return nameToClass.containsKey(simpleClassName); }\n\n");
     }
 
     private void addPackageAndDependencies(StringBuilder registryCode) {
