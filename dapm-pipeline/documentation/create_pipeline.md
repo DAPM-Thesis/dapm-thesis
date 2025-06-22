@@ -4,7 +4,7 @@ Define a pipeline using JSON-based definitions in your organization.
 ## 1. Define pipeline assembly Json
 Specify the processing elements that are going to be part of the pipeline, the parameters have to align with existing processing element templates stored in organizations.
 
-Then connect the processing elements through channels by listing the publisher with its subscribers. Make sure the output of the publisher matches the input of the subscribers.
+Then connect the processing elements through channels by listing the publisher with its subscribers. Make sure the output of the publisher matches the input of the subscribers. The syntax of a pipeline representation is defined in the JSON schemas in src/main/resources/jsonschemas.
 
 An example of a simple pipeline:
 ```json
@@ -38,14 +38,18 @@ An example of a simple pipeline:
 }
 ```
 ## 2. Create config schema
-Each processing element defined in the pipeline assembly Json must have a corresponding config schema. This schema defines the expected structure of the configuration object used for that particular template and whether additional properties are allowed.
+Each processing element defined in the pipeline assembly JSON must have a corresponding config schema. This schema defines the expected structure of the configuration object used for that particular template and whether additional properties are required and/or allowed.
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://www.dapm.org/config/orga_simplesource_config_schema.json",
-  "title": "orgA SimpleSource Config",
+  "$id": "https://www.dapm.org/config/orga_example_config_schema.json",
+  "title": "orgA Example Config",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "some required string": { "type":  "string", "minLength": 2, "maxLength": 2},
+    "optional property": { "type": "integer"}
+  },
+  "required": ["some required string"],
   "additionalProperties": false
 }
 ```
