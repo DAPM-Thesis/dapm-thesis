@@ -1,6 +1,8 @@
 # dapm-thesis
 This repository is a facet of the DAPM (Distributed Architecture for Process Mining) Online Data Streaming Pipelines theses. 
 
+Read documentation [here](https://github.com/DAPM-Thesis/dapm-thesis/tree/main/dapm-pipeline/documentation)
+
 The repository is shared by three DAPM groups:
 1. Christian Becke, Zou Yong Nan Klaassen
 2. Reshma Zaman, Tama Sarker
