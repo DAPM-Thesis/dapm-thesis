@@ -1,5 +1,6 @@
 package com.dapm.security_service.controllers.ClientApi;
 
+import com.dapm.security_service.models.dtos.GetPiplineDto;
 import com.dapm.security_service.models.dtos.PipelineDesignDto;
 import com.dapm.security_service.models.dtos.ProcessingElementDto;
 import com.dapm.security_service.models.Pipeline;
@@ -44,8 +45,11 @@ public class PipelineDesignController {
      * The service maps this DTO to a Pipeline entity and persists it.
      */
     @PostMapping
-    public ResponseEntity<Pipeline> createPipelineDesign(@RequestBody PipelineDesignDto pipelineDesignDto) {
+    public ResponseEntity<GetPiplineDto> createPipelineDesign(@RequestBody PipelineDesignDto pipelineDesignDto) {
         Pipeline createdPipeline = pipelineDesignService.savePipelineDesign(pipelineDesignDto);
-        return ResponseEntity.ok(createdPipeline);
+        // Convert the created Pipeline entity back to DTO for response
+        GetPiplineDto createdPipelineDto = new GetPiplineDto(createdPipeline);
+        // Return the created pipeline design as a response
+        return ResponseEntity.ok(createdPipelineDto);
     }
 }

@@ -49,10 +49,7 @@ public class PipelineProcessingElementRequestClientController {
         return "webhook received";
     }
 
-    /**
-     * Alice calls this to request use of a node owned by OrgB.
-     * We forward the request to OrgB's PeerApi.
-     */
+
     @PostMapping("/request")
     public RequestResponse initiatePeerRequest(
             @RequestBody PipelineProcessingElementRequestDto requestDto

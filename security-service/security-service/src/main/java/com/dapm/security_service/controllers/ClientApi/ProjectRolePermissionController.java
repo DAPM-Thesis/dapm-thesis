@@ -64,4 +64,18 @@ public class ProjectRolePermissionController {
         projectRolePermissionRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+    // create a get for getting permissions of specific project role
+    @GetMapping("/role/{roleName}")
+    public List<ProjectRolePermissionDto> getPermissionsByRole(@PathVariable String roleName, @RequestParam String projectName) {
+        Project project = projectRepository.findByName(projectName)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+        ProjectRole role = project.getProjectRoles().stream()
+                .filter(r -> r.getName().equalsIgnoreCase(roleName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Role not found in project"));
+        return projectRolePermissionRepository.findByProjectAndRole(project, role)
+                .stream()
+                .map(ProjectRolePermissionDto::new)
+                .toList();
+    }
 }
