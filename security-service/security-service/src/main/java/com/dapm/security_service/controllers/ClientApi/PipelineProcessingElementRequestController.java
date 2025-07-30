@@ -15,6 +15,7 @@ import com.dapm.security_service.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -81,7 +82,7 @@ public class PipelineProcessingElementRequestController {
         return requestRepository.save(request);
     }
 
-
+    @PreAuthorize("hasAuthority('APPROVE_REQUEST_PE')")
     @PostMapping("/approve")
     public String approveNodeRequest(@RequestBody ApproveProcessingElementRequestDto approveNodeRequestDto){
         PipelineProcessingElementRequest request = requestRepository.findById(approveNodeRequestDto.getRequestId())

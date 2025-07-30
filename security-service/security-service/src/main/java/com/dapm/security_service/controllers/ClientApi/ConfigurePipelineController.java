@@ -24,7 +24,7 @@ public class ConfigurePipelineController {
 
     @Autowired
     private PipelineProcessingElementRequestRepository pipelineProcessingElementRequestRepository;
-    @PreAuthorize("@pipelineAccessEvaluator.canConfigurePipeline(#pipelineName, authentication)")
+    @PreAuthorize("@pipelineAccessEvaluator.hasPermission(#pipelineName, authentication, 'CONFIGURE_PIPELINE')")
     @GetMapping("/{pipelineName}/validate")
     public ConfigureValidationDto validatePipeline(@PathVariable String pipelineName) {
         var pipeline = pipelineRepository.findByName(pipelineName)

@@ -12,6 +12,7 @@ public enum OrgPermAction {
     DELETE_ROLE,
     UPDATE_ROLE,
     ASSIGN_ROLE,
+    APPROVE_REQUEST_PE,
     ASSIGN_PROJECT_ROLES,
     ASSIGN_USER_ROLE,
 

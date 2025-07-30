@@ -280,6 +280,9 @@ public class DatabaseInitializer implements CommandLineRunner {
         OrgPermission orgPermission7 = createOrgPermissionIfNotExistStatic(OrgPermAction.DELETE_PROJECT, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission9 = createOrgPermissionIfNotExistStatic(OrgPermAction.CREATE_ROLE, AdminOrgRole, UUID.randomUUID());
         OrgPermission orgPermission10 = createOrgPermissionIfNotExistStatic(OrgPermAction.ASSIGN_USER_ROLE, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission12 = createOrgPermissionIfNotExistStatic(OrgPermAction.DELETE_ROLE, AdminOrgRole, UUID.randomUUID());
+        OrgPermission orgPermission13 = createOrgPermissionIfNotExistStatic(OrgPermAction.APPROVE_REQUEST_PE, AdminOrgRole, UUID.randomUUID());
+        //OrgPermission orgPermission14 = createOrgPermissionIfNotExistStatic(OrgPermAction.me, AdminOrgRole, UUID.randomUUID());
 
         // 6. Create Users for OrgA.
         createUserIfNotExistStatic("anna", "anna@example.com", "dapm", adminRole, AdminOrgRole,org, USER_ANNA_ID);
@@ -364,7 +367,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
 
 
-        ProjectPermission projectPermission11=createProjectPermissionIfNotExistStatic(ProjectPermAction.APPROVE_REQUEST_PE,UUID.randomUUID());
+        //ProjectPermission projectPermission11=createProjectPermissionIfNotExistStatic(ProjectPermAction.APPROVE_REQUEST_PE,UUID.randomUUID());
 
 
 
@@ -374,6 +377,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         ProjectRolePermission projectRolePermission=createProjectRolePermissionIfNotExistStatic(p,projectPermission1,projectRole2);
         ProjectRolePermission projectRolePermission2=createProjectRolePermissionIfNotExistStatic(p,projectPermission8,projectRole2);
         ProjectRolePermission projectRolePermission3=createProjectRolePermissionIfNotExistStatic(p,projectPermission5,projectRole2);
+        ProjectRolePermission projectRolePermission4=createProjectRolePermissionIfNotExistStatic(p,projectPermission2,projectRole2);
 
         User user = userRepository.findByUsername("anna")
                 .orElseThrow(() -> new RuntimeException("User 'anna' not found"));

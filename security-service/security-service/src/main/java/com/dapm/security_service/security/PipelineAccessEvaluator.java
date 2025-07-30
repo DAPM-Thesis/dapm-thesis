@@ -11,7 +11,7 @@ public class PipelineAccessEvaluator {
     @Autowired
     private PipelineRepository pipelineRepository;
 
-    public boolean canConfigurePipeline(String pipelineName, Authentication auth) {
+    public boolean hasPermission(String pipelineName, Authentication auth, String permission) {
         var pipeline = pipelineRepository.findByName(pipelineName)
                 .orElse(null);
         if (pipeline == null || pipeline.getProject() == null) {
@@ -19,7 +19,8 @@ public class PipelineAccessEvaluator {
         }
 
         String projectName = pipeline.getProject().getName();
-        String requiredAuthority = "CONFIGURE_PIPELINE:" + projectName;
+        String requiredAuthority = permission+":" + projectName;
+        System.out.println("hey there "+ permission+":" + projectName);
 
         return auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals(requiredAuthority));

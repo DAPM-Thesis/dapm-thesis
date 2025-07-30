@@ -12,6 +12,8 @@ import com.dapm.security_service.security.CustomUserDetails;
 import com.dapm.security_service.services.OrgBRequestService;
 import com.dapm.security_service.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,11 +51,14 @@ public class PipelineProcessingElementRequestClientController {
         return "webhook received";
     }
 
-
+    @PreAuthorize("@pipelineAccessEvaluator.hasPermission(#requestDto.getPiplineName(), authentication, 'ACCESS_REQUEST_PE')")
     @PostMapping("/request")
     public RequestResponse initiatePeerRequest(
             @RequestBody PipelineProcessingElementRequestDto requestDto
     ,@AuthenticationPrincipal CustomUserDetails userDetails) {
+//        if (!pipelineAccessEvaluator.hasPermission(requestDto.getPiplineName(), authentication, "ACCESS_REQUEST_PE")) {
+//            throw new AccessDeniedException("You do not have permission to access this pipeline.");
+//        }
         PipelineProcessingElementRequest request = convertDtoToEntity(requestDto,userDetails.getUser());
         String webhookUrl = "http://orga:8080/api/client/pipeline-processingElement/webhook";
         request.setWebhookUrl(webhookUrl);

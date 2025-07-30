@@ -6,7 +6,7 @@ public enum ProjectPermAction {
     START_PIPELINE,
     ACCESS_REQUEST_PE,
 
-    APPROVE_REQUEST_PE,
+
     INSTANTIATE_PE,
     INSTANTIATE_PIPELINE,
 
