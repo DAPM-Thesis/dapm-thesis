@@ -2,6 +2,8 @@ package communication.message.serialization;
 
 import communication.message.impl.Alignment;
 import communication.message.impl.Metrics;
+import communication.message.impl.ProcessMap;
+import communication.message.impl.causalnet.CausalNet;
 import communication.message.impl.time.UTCTime;
 import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
@@ -16,4 +18,6 @@ public interface MessageVisitor<T> {
     T visit(Date time);
     T visit(UTCTime UTCTime);
     T visit(Metrics metrics);
+    T visit(ProcessMap processMap);
+    T visit(CausalNet causalNet);
 }

@@ -2,6 +2,10 @@ package communication.message.serialization;
 import communication.message.Message;
 import communication.message.impl.Alignment;
 import communication.message.impl.Metrics;
+import communication.message.impl.ProcessMap;
+import communication.message.impl.causalnet.CausalNet;
+import communication.message.impl.causalnet.CausalNetBinding;
+import communication.message.impl.causalnet.CausalNetNode;
 import communication.message.impl.time.UTCTime;
 import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
@@ -14,8 +18,10 @@ import communication.message.impl.petrinet.arc.Arc;
 import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
 import communication.message.serialization.parsing.JSONParser;
+import utils.Pair;
 
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Stream;
 
 /** Class for serializing Message's. Note that any given instance of this class only is safe to use in a synchronous context. */
 public class MessageSerializer implements MessageVisitor<String> {
@@ -73,6 +79,131 @@ public class MessageSerializer implements MessageVisitor<String> {
     public String visit(Metrics metrics) {
         this.serialization = metrics.getName() + ':' + metrics;
         return getSerialization();
+    }
+
+    @Override
+    public String visit(ProcessMap processMap) {
+        this.serialization = processMap.getName() + ':' + serialize(processMap);
+        return getSerialization();
+    }
+
+    @Override
+    public String visit(CausalNet causalNet) {
+        this.serialization = causalNet.getName() + ':' + serialize(causalNet);
+        return getSerialization();
+    }
+
+    private String serialize(CausalNet causalNet) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"label\":\"").append(causalNet.getLabel()).append("\"");
+
+        serializeCNetNodes(sb, causalNet);
+        serializeCNetBindings(sb, causalNet, CausalNetBinding.Type.INPUT);
+        serializeCNetBindings(sb, causalNet, CausalNetBinding.Type.OUTPUT);
+
+        if (causalNet.getStart() != null) { sb.append(",\"start\":\"").append(causalNet.getStart().getLabel()).append("\""); }
+        if (causalNet.getEnd() != null) { sb.append(",\"end\":\"").append(causalNet.getEnd().getLabel()).append("\""); }
+
+        sb.append("}"); // close outermost object
+        return sb.toString();
+    }
+
+    private void serializeCNetBindings(StringBuilder sb, CausalNet CNet, CausalNetBinding.Type type) {
+        if (type != CausalNetBinding.Type.INPUT && type != CausalNetBinding.Type.OUTPUT) { throw new TypeNotPresentException("The called type does not exist", null); }
+        String propertyName = (type == CausalNetBinding.Type.INPUT) ? "inputBindings" : "outputBindings";
+        Map<CausalNetNode, Set<CausalNetBinding>> bindings = (type == CausalNetBinding.Type.INPUT) ? CNet.getInputBindings() : CNet.getOutputBindings();
+
+        if (bindings.isEmpty())
+            { return; }
+
+        sb.append(",\"").append(propertyName).append("\": [");
+        for (Map.Entry<CausalNetNode, Set<CausalNetBinding>> entry : bindings.entrySet()) {
+            sb.append("{\"node\": \"").append(entry.getKey().getLabel()).append("\", \"boundNodes\": [");
+            if (!entry.getValue().isEmpty()) {
+                List<String> boundLabels = new ArrayList<>();
+                for (CausalNetBinding binding : entry.getValue()) {
+                    for (CausalNetNode node : binding.getBoundNodes()) { boundLabels.add("\"" + node.getLabel() + "\""); }
+                }
+                sb.append(String.join(",", boundLabels));
+            }
+            sb.append("]},");
+        }
+        sb.setCharAt(sb.length()-1, ']');
+
+    }
+
+    private void serializeCNetNodes(StringBuilder sb, CausalNet causalNet) {
+        if (!causalNet.getNodes().isEmpty()) {
+            sb.append(",\"nodes\": [");
+            for (CausalNetNode node : causalNet.getNodes()) {
+                sb.append("\"").append(node.getLabel()).append("\"").append(",");
+            }
+            sb.setCharAt(sb.length() - 1, ']');
+        }
+    }
+
+    private String serialize(ProcessMap processMap) {
+        Map<String, Pair<Double, Double>> activities = new HashMap<>();
+        Set<String> activityNames = processMap.getActivities();
+        activityNames.forEach(activity -> activities.put(activity, new Pair<>(processMap.getActivityRelativeFrequency(activity), processMap.getActivityAbsoluteFrequency(activity))));
+
+        Map<Pair<String, String>, Pair<Double, Double>> relations = new HashMap<>();
+        Set<Pair<String,String>> relationPairs = processMap.getRelations();
+        relationPairs.forEach(relation -> relations.put(relation, new Pair<>(processMap.getRelationRelativeFrequency(relation), processMap.getRelationAbsoluteFrequency(relation))));
+
+        Set<String> startingActivities = processMap.getStartingActivities();
+        Set<String> endingActivities = processMap.getEndingActivities();
+
+        StringBuilder activitiesBuilder = new StringBuilder();
+        if (!activities.isEmpty()) {
+            activitiesBuilder.append("\"activities\": {");
+            for (Map.Entry<String, Pair<Double, Double>> entry : activities.entrySet()) {
+                activitiesBuilder.append("\"").append(entry.getKey()).append("\":{\"relFreq\":").append(entry.getValue().first()).append(", \"absFreq\":").append(entry.getValue().second()).append("},");
+            }
+            activitiesBuilder.setLength(activitiesBuilder.length() - 1);
+            activitiesBuilder.append("}");
+        }
+
+        StringBuilder relationsBuilder = new StringBuilder();
+        if (!relations.isEmpty()) {
+            relationsBuilder.append("\"relations\": {");
+            for (Map.Entry<Pair<String, String>, Pair<Double, Double>> entry : relations.entrySet()) {
+                String source = entry.getKey().first();
+                String target = entry.getKey().second();
+                double relativeFrequency = entry.getValue().first();
+                double absoluteFrequency = entry.getValue().second();
+                relationsBuilder.append("\"").append(source).append("@@@").append(target).append("\":{");
+                relationsBuilder.append("\"relFreq\":").append(relativeFrequency).append(", \"absFreq\":").append(absoluteFrequency).append("},");
+            }
+            relationsBuilder.setLength(relationsBuilder.length() - 1);
+            relationsBuilder.append("}");
+        }
+
+        StringBuilder startingActivitiesBuilder = new StringBuilder();
+        if (!startingActivities.isEmpty()) {
+            startingActivitiesBuilder.append("\"startingActivities\": \"");
+            for (String startingActivity : startingActivities) {
+                startingActivitiesBuilder.append(startingActivity).append("@@@");
+            }
+            startingActivitiesBuilder.setLength(startingActivitiesBuilder.length() - 3);
+            startingActivitiesBuilder.append("\"");
+        }
+
+        StringBuilder endingActivitiesBuilder = new StringBuilder();
+        if (!endingActivities.isEmpty()) {
+            endingActivitiesBuilder.append("\"endingActivities\": \"");
+            for (String endingActivity : endingActivities) {
+                endingActivitiesBuilder.append(endingActivity).append("@@@");
+            }
+            endingActivitiesBuilder.setLength(endingActivitiesBuilder.length() - 3);
+            endingActivitiesBuilder.append("\"");
+        }
+
+        List<String> properties = Stream.of(activitiesBuilder.toString(), relationsBuilder.toString(), startingActivitiesBuilder.toString(), endingActivitiesBuilder.toString())
+                .filter(s -> !s.isEmpty())
+                .toList();
+
+        return '{' + String.join(",", properties) + '}';
     }
 
     private String toJXES(Trace trace) {

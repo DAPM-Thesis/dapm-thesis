@@ -1,0 +1,12 @@
+{
+  "label":"all attributes included",
+  "nodes": ["node 1","n2"],
+  "inputBindings": [
+    {"node": "node 1", "boundNodes": []},
+    {"node": "n2", "boundNodes": ["n2i1"]}],
+  "outputBindings": [
+    {"node": "node 1", "boundNodes": []},
+    {"node": "n2", "boundNodes": ["n2o1","n2o2"]}],
+  "start":"node 1",
+  "end":"n2"
+}

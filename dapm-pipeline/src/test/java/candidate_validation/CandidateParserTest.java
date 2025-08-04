@@ -21,7 +21,7 @@ public class CandidateParserTest {
         String contents;
         try { contents = Files.readString(Paths.get(jsonPath)); }
         catch (IOException e) {
-            System.out.println(System.getProperty("user.dir") + "\n\n");
+            //System.out.println(System.getProperty("user.dir") + "\n\n");
             throw new RuntimeException(e);
         }
         URI configURI = Paths.get("src/test/resources/candidate_validation/template_config_schemas/").toAbsolutePath().toUri();
@@ -34,7 +34,7 @@ public class CandidateParserTest {
         String contents;
         try { contents = Files.readString(Paths.get(simpleValidPath) ); }
         catch (IOException e) {
-            System.out.println(System.getProperty("user.dir") + "\n\n");
+            //System.out.println(System.getProperty("user.dir") + "\n\n");
             throw new RuntimeException(e);
         }
         URI configURI = Paths.get("src/test/resources/candidate_validation/template_config_schemas/").toAbsolutePath().toUri();

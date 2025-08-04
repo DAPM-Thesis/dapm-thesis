@@ -22,7 +22,7 @@ public class JSONParser {
         List<String> stringItems = commaSplitArray(array);
 
         List<Object> items = new ArrayList<>();
-        for (String item : stringItems) { items.add(parseValue(item)); }
+        stringItems.forEach(item -> items.add(parseValue(item)));
         return items;
     }
 

@@ -3,6 +3,11 @@ package serialization.message;
 import communication.message.Message;
 import communication.message.impl.Alignment;
 import communication.message.impl.Metrics;
+import communication.message.impl.ProcessMap;
+import communication.message.impl.causalnet.CausalNet;
+import communication.message.impl.causalnet.CausalNetBinding;
+import communication.message.impl.causalnet.CausalNetGenerator;
+import communication.message.impl.causalnet.CausalNetNode;
 import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
@@ -259,6 +264,73 @@ class MessageDeserializerTest {
         MessageSerializer serializer = new MessageSerializer();
         String metricsStr = serializer.visit(expected);
         Message output = MessageFactory.deserialize(metricsStr);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    void ProcessMapInverse() {
+        ProcessMap expected = new ProcessMap();
+        expected.addActivity("a1", 0.5, 5); expected.addActivity("a2", 0.5, 5);
+        expected.addRelation("a1", "a2", 1.0, 10);
+        expected.addStartingActivity("a1"); expected.addStartingActivity("a3"); expected.addStartingActivity("a4");
+        expected.addEndingActivity("a2"); expected.addEndingActivity("a3"); expected.addEndingActivity("a4");
+
+        String serialization = (new MessageSerializer()).visit(expected);
+        Message output = MessageFactory.deserialize(serialization);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    void emptyProcessMapInverse() {
+        ProcessMap expected = new ProcessMap();
+        String serialization = (new MessageSerializer()).visit(expected);
+        Message output = MessageFactory.deserialize(serialization);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    void complexCausalNetInverse() {
+        CausalNetNode start = new CausalNetNode("ARTIFICIAL_START");
+        CausalNetNode end = new CausalNetNode("ARTIFICIAL_END");
+        CausalNetNode categorize = new CausalNetNode("categorize");
+        CausalNetNode edit = new CausalNetNode("edit");
+        CausalNetNode newChange = new CausalNetNode("new");
+
+        CausalNet expected = new CausalNet("mined model");
+        expected.addNode(start); expected.addNode(end); expected.addNode(edit); expected.addNode(newChange); expected.addNode(categorize);
+        expected.addInputBinding(end, newChange, categorize, edit); expected.addInputBinding(edit, start); expected.addInputBinding(newChange, start); expected.addInputBinding(categorize, start);
+        expected.addOutputBinding(edit, end); expected.addOutputBinding(start, categorize, newChange, edit); expected.addOutputBinding(newChange, end); expected.addOutputBinding(categorize, end);
+        expected.setStartNode(start);
+        expected.setEndNode(end);
+
+        String serialization = (new MessageSerializer()).visit(expected);
+        Message output = MessageFactory.deserialize(serialization);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    void causalNetInverse() {
+        CausalNet expected = new CausalNet("all attributes included");
+        CausalNetNode node1 = new CausalNetNode("node 1");
+        CausalNetNode n2 = new CausalNetNode("n2");
+        expected.addNode(node1);
+        expected.addNode(n2);
+        expected.addOutputBinding(n2, new CausalNetNode("n2o1"), new CausalNetNode("n2o2"));
+        expected.addInputBinding(n2, new CausalNetNode("n2i1"));
+        expected.setStartNode(node1);
+        expected.setEndNode(n2);
+
+        String serialization = (new MessageSerializer()).visit(expected);
+        CausalNet output = (CausalNet) MessageFactory.deserialize(serialization);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    void minimalCausalNetInverse() {
+        CausalNet expected = new CausalNet("only label");
+
+        String serialization = (new MessageSerializer()).visit(expected);
+        CausalNet output = (CausalNet) MessageFactory.deserialize(serialization);
         assertEquals(expected, output);
     }
 

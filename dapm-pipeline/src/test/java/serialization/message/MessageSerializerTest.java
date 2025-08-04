@@ -2,7 +2,10 @@ package serialization.message;
 
 import communication.message.Message;
 import communication.message.impl.Alignment;
+import communication.message.impl.ProcessMap;
 import communication.message.impl.Trace;
+import communication.message.impl.causalnet.CausalNet;
+import communication.message.impl.causalnet.CausalNetNode;
 import communication.message.impl.event.Attribute;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
@@ -12,6 +15,7 @@ import communication.message.impl.petrinet.arc.Arc;
 import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
 import communication.message.serialization.MessageSerializer;
+import communication.message.serialization.deserialization.MessageFactory;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -137,6 +141,70 @@ public class MessageSerializerTest {
         assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
     }
 
+    @Test
+    void processMap() {
+        ProcessMap process = new ProcessMap();
+        process.addActivity("a1", 0.5, 5);
+        process.addActivity("a2", 0.5, 5);
+        process.addRelation("a1", "a2", 1.0, 10);
+        process.addStartingActivity("a1");
+        process.addEndingActivity("a2");
+        process.addStartingActivity("a3");
+        process.addEndingActivity("a3");
+        process.addStartingActivity("a4");
+        process.addEndingActivity("a4");
+
+        String output = (new MessageSerializer()).visit(process);
+        String expected = process.getName() + ':' + "{\"activities\": {\"a1\":{\"relFreq\":0.5, \"absFreq\":5.0},\"a2\":{\"relFreq\":0.5, \"absFreq\":5.0}},\"relations\": {\"a1@@@a2\":{\"relFreq\":1.0, \"absFreq\":10.0}},\"startingActivities\": \"a1@@@a3@@@a4\",\"endingActivities\": \"a2@@@a3@@@a4\"}";
+        assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
+    }
+
+    @Test
+    void causalNet() {
+        CausalNet causalNet = new CausalNet("all attributes included");
+
+        CausalNetNode node1 = new CausalNetNode("node 1");
+        CausalNetNode node2 = new CausalNetNode("n2");
+        causalNet.addNode(node1);
+        causalNet.addNode(node2);
+        causalNet.addOutputBinding(node2, new CausalNetNode("n2o1"), new CausalNetNode("n2o2"));
+        causalNet.addInputBinding(node2, new CausalNetNode("n2i1"));
+        causalNet.setStartNode(node1);
+        causalNet.setEndNode(node2);
+
+        String output = (new MessageSerializer()).visit(causalNet);
+        String expected = causalNet.getName() + ':' + "{\"label\":\"all attributes included\",\"nodes\":[\"node 1\",\"n2\"],\"inputBindings\":[{\"node\":\"node1\",\"boundNodes\":[]},{\"node\":\"n2\",\"boundNodes\":[\"n2i1\"]}],\"outputBindings\":[{\"node\":\"node1\",\"boundNodes\":[]},{\"node\":\"n2\",\"boundNodes\":[\"n2o1\",\"n2o2\"]}],\"start\":\"node 1\",\"end\":\"n2\"}\n";
+        assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
+    }
+
+    @Test
+    void causalNetMultipleBindings() {
+        CausalNetNode start = new CausalNetNode("ARTIFICIAL_START");
+        CausalNetNode end = new CausalNetNode("ARTIFICIAL_END");
+        CausalNetNode categorize = new CausalNetNode("categorize");
+        CausalNetNode edit = new CausalNetNode("edit");
+        CausalNetNode newChange = new CausalNetNode("new");
+
+        CausalNet expected = new CausalNet("mined model");
+        expected.addNode(start); expected.addNode(end); expected.addNode(edit); expected.addNode(newChange); expected.addNode(categorize);
+        expected.addInputBinding(end, newChange, categorize, edit); expected.addInputBinding(edit, start); expected.addInputBinding(newChange, start); expected.addInputBinding(categorize, start);
+        expected.addOutputBinding(edit, end); expected.addOutputBinding(start, categorize, newChange, edit); expected.addOutputBinding(newChange, end); expected.addOutputBinding(categorize, end);
+        expected.setStartNode(start);
+        expected.setEndNode(end);
+
+        String serialization = (new MessageSerializer()).visit(expected);
+        Message output = MessageFactory.deserialize(serialization);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    void minimalCausalNet() {
+        CausalNet causalNet = new CausalNet("no nodes");
+        String output = (new MessageSerializer()).visit(causalNet);
+        String expected = causalNet.getName() + ':' + "{\"label\":\"no nodes\"}";
+        assertEquals(output.replaceAll("\\s+", ""), expected.replaceAll("\\s+", ""));
+    }
+
     public PetriNet getExamplePetriNet(){
         /*
          *             --> p2 -
@@ -165,6 +233,5 @@ public class MessageSerializerTest {
         // so this is not a workflow net
         return new PetriNet(places, transitions, flowRelation);
     }
-
 
 }

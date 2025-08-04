@@ -96,4 +96,6 @@ Add the `MYMESSAGE` class name as a string to the enum in `src/resources/jsonsch
   "enum": ["Event", "PetriNet", "MYMESSAGE"]
 }
 ```
+
 ### 9. You're Done!
+Remember to `mvn clean install` the annotation-processor and then the `dapm-pipeline` projects to be able to use `MYMESSAGE`.

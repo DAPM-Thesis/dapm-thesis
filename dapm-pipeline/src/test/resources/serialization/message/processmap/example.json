@@ -1,0 +1,20 @@
+{
+  "activities": {
+    "a1": {
+      "relFreq": 0.5,
+      "absFreq": 5.0
+    },
+    "a2": {
+      "relFreq": 0.5,
+      "absFreq": 5.0
+    }
+  },
+  "relations": {
+    "a1@@@a2": {
+      "relFreq": 1.0,
+      "absFreq": 10.0
+    }
+  },
+  "startingActivities": "a1@@@a3@@@a4",
+  "endingActivities": "a2@@@a3@@@a4"
+}
