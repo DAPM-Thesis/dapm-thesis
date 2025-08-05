@@ -30,7 +30,7 @@ public class UserRoleAssigmnetController {
 
 
     @PostMapping("/assign")
-    @PreAuthorize("hasAuthority('ASSIGN_USER_ROLE')")
+    @PreAuthorize("hasAuthority('ASSIGN_USER_ROLE') or hasAuthority('ASSIGN_USER_PROJECT_ROLE:' + #request.getProject())")
     public ResponseEntity<?> assignUserRole(@RequestBody AssignUserRoleDto request) {
 
         Optional<User> userOpt = userRepository.findByUsername(request.getUsername());

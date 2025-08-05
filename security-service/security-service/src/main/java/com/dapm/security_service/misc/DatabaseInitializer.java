@@ -364,6 +364,9 @@ public class DatabaseInitializer implements CommandLineRunner {
         ProjectPermission projectPermission6=createProjectPermissionIfNotExistStatic(ProjectPermAction.START_PIPELINE,UUID.randomUUID());
         ProjectPermission projectPermission7=createProjectPermissionIfNotExistStatic(ProjectPermAction.READ_PES, UUID.randomUUID());
         ProjectPermission projectPermission8=createProjectPermissionIfNotExistStatic(ProjectPermAction.UPDATE_PROJECT,UUID.randomUUID());
+        ProjectPermission projectPermission9=createProjectPermissionIfNotExistStatic(ProjectPermAction.ASSIGN_USER_PROJECT_ROLE,UUID.randomUUID());
+        ProjectPermission projectPermission10=createProjectPermissionIfNotExistStatic(ProjectPermAction.CREATE_PIPELINE,UUID.randomUUID());
+
 
 
 
@@ -378,6 +381,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         ProjectRolePermission projectRolePermission2=createProjectRolePermissionIfNotExistStatic(p,projectPermission8,projectRole2);
         ProjectRolePermission projectRolePermission3=createProjectRolePermissionIfNotExistStatic(p,projectPermission5,projectRole2);
         ProjectRolePermission projectRolePermission4=createProjectRolePermissionIfNotExistStatic(p,projectPermission2,projectRole2);
+        ProjectRolePermission projectRolePermission5=createProjectRolePermissionIfNotExistStatic(p,projectPermission9,projectRole2);
+        ProjectRolePermission projectRolePermission6=createProjectRolePermissionIfNotExistStatic(p,projectPermission10,projectRole2);
 
         User user = userRepository.findByUsername("anna")
                 .orElseThrow(() -> new RuntimeException("User 'anna' not found"));

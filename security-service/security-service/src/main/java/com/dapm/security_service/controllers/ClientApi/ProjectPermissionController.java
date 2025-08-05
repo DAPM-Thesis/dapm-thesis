@@ -7,6 +7,7 @@ import com.dapm.security_service.repositories.ProjectRepository;
 import com.dapm.security_service.repositories.ProjectRolePermissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.dapm.security_service.models.dtos.ProjectPermissionDto;
 
@@ -19,7 +20,7 @@ public class ProjectPermissionController {
     @Autowired
     private ProjPermissionRepository projPermissionRepository;
 
-
+    @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
     @GetMapping
     public List<ProjectPermissionDto> getAllPermissions() {
         return projPermissionRepository.findAll()
@@ -27,6 +28,7 @@ public class ProjectPermissionController {
                 .map(ProjectPermissionDto::new)
                 .toList();
     }
+    @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
     @PostMapping
     public ResponseEntity<ProjectPermissionDto> createPermission(@RequestBody ProjectPermissionDto request) {
         ProjectPermission permission = ProjectPermission.builder()
@@ -36,6 +38,7 @@ public class ProjectPermissionController {
         permission = projPermissionRepository.save(permission);
         return ResponseEntity.ok(new ProjectPermissionDto(permission));
     }
+    @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePermission(@PathVariable UUID id) {
         projPermissionRepository.deleteById(id);

@@ -1,10 +1,7 @@
 package com.dapm.security_service.controllers.ClientApi;
 
-import com.dapm.security_service.models.Pipeline;
 import com.dapm.security_service.models.ProcessingElement;
-import com.dapm.security_service.models.dtos.PipelineDto;
 import com.dapm.security_service.models.dtos.ProcessingElementDto;
-import com.dapm.security_service.repositories.PipelineRepository;
 import com.dapm.security_service.repositories.ProcessingElementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/processingElements")
-public class ProcessingElementController {
+public class PETemplateController {
     @Autowired
     private ProcessingElementRepository processingElementRepository;
 

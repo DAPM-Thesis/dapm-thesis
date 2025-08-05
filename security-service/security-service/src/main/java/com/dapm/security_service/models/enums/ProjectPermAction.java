@@ -5,6 +5,7 @@ public enum ProjectPermAction {
     CONFIGURE_PIPELINE,
     START_PIPELINE,
     ACCESS_REQUEST_PE,
+    ASSIGN_USER_PROJECT_ROLE,
 
 
     INSTANTIATE_PE,

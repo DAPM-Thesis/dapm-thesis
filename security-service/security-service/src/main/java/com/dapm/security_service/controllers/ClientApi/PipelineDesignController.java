@@ -7,6 +7,7 @@ import com.dapm.security_service.models.Pipeline;
 import com.dapm.security_service.services.PipelineDesignService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class PipelineDesignController {
      *
      * The service maps this DTO to a Pipeline entity and persists it.
      */
+    @PreAuthorize(" hasAuthority('CREATE_PIPELINE:' + #pipelineDesignDto.getProject())")
     @PostMapping
     public ResponseEntity<GetPiplineDto> createPipelineDesign(@RequestBody PipelineDesignDto pipelineDesignDto) {
         Pipeline createdPipeline = pipelineDesignService.savePipelineDesign(pipelineDesignDto);

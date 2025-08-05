@@ -6,6 +6,7 @@ import com.dapm.security_service.models.dtos.ProjectRolePermissionDto;
 import com.dapm.security_service.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class ProjectRolePermissionController {
     private final ProjectRepository projectRepository;
     private final ProjectsRolesRepository projectRoleRepository;
     private final ProjPermissionRepository projPermissionRepository;
-
+    @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
     @GetMapping
     public List<ProjectRolePermissionDto> getPermissions(@RequestParam String projectName) {
         Project project = projectRepository.findByName(projectName)
@@ -31,6 +32,8 @@ public class ProjectRolePermissionController {
                 .toList();
     }
 
+
+    @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
     @PostMapping
     public ResponseEntity<ProjectRolePermissionDto> assignPermission(@RequestBody AssignProjectRolePermissionDto request) {
         Project project = projectRepository.findByName(request.getProjectName())
@@ -58,13 +61,14 @@ public class ProjectRolePermissionController {
         newMapping = projectRolePermissionRepository.save(newMapping);
         return ResponseEntity.ok(new ProjectRolePermissionDto(newMapping));
     }
-
+    @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMapping(@PathVariable UUID id) {
         projectRolePermissionRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
     // create a get for getting permissions of specific project role
+    @PreAuthorize("hasAuthority('ASSIGN_PROJECT_ROLES')")
     @GetMapping("/role/{roleName}")
     public List<ProjectRolePermissionDto> getPermissionsByRole(@PathVariable String roleName, @RequestParam String projectName) {
         Project project = projectRepository.findByName(projectName)
