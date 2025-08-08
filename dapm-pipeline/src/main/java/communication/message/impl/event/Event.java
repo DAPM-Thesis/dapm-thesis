@@ -32,6 +32,13 @@ public class Event extends Message {
     public String getTimestamp() {return timestamp; }
     public Collection<Attribute<?>> getAttributes() {return attributes;}
 
+    public Attribute<?> getAttribute(String name) {
+        return attributes.stream()
+                .filter(attr -> attr.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
     @Override
     public void acceptVisitor(MessageVisitor<?> v) {
         v.visit(this);

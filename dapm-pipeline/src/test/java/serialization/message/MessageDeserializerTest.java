@@ -8,6 +8,9 @@ import communication.message.impl.causalnet.CausalNet;
 import communication.message.impl.causalnet.CausalNetBinding;
 import communication.message.impl.causalnet.CausalNetGenerator;
 import communication.message.impl.causalnet.CausalNetNode;
+import communication.message.impl.softconformance.SoftConformanceReport;
+import communication.message.impl.softconformance.models.SoftConformanceStatus;
+import communication.message.impl.softconformance.models.pdfa.PDFA;
 import communication.message.impl.time.Date;
 import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
@@ -331,6 +334,33 @@ class MessageDeserializerTest {
 
         String serialization = (new MessageSerializer()).visit(expected);
         CausalNet output = (CausalNet) MessageFactory.deserialize(serialization);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    void softConformanceReportInverse() {
+        PDFA reference = new PDFA();
+        reference.addNode("A");
+        reference.addNode("B");
+        reference.addNode("C");
+        reference.addEdge("A", "A", 0.2);
+        reference.addEdge("A", "B", 0.8);
+        reference.addEdge("B", "C", 1);
+
+        SoftConformanceReport expected = new SoftConformanceReport();
+        SoftConformanceStatus statA = new SoftConformanceStatus(reference, "A");
+        statA.getMean().increment(0.1);
+        statA.getMean().increment(30d);
+
+        SoftConformanceStatus statB = new SoftConformanceStatus(reference, "B");
+        statB.replayEvent("C");
+        statB.replayEvent("A");
+        expected.put("A", statA);
+        expected.put("B", statB);
+
+        String serialization = (new MessageSerializer()).visit(expected);
+        SoftConformanceReport output = (SoftConformanceReport) MessageFactory.deserialize(serialization);
+        assertEquals(output.get("A"), expected.get("A"));
         assertEquals(expected, output);
     }
 

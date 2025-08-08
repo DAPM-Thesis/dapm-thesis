@@ -1,0 +1,71 @@
+{
+  "A":
+  {
+    "model":
+    {
+      "nodes": ["A","B","C"],
+      "edges": [
+        {"from":"A","to":"A","probability":0.2},
+        {"from":"A","to":"B","probability":0.8},
+        {"from":"B","to":"C","probability":1.0}
+      ],
+      "inEdgeMap": {
+        "A": [{"from":"A","to":"A","probability":0.2}],
+        "B": [{"from":"A","to":"B","probability":0.8}],
+        "C": [{"from":"B","to":"C","probability":1.0}]
+      },
+      "outEdgeMap": {
+        "A": [
+          {"from":"A","to":"A","probability":0.2},
+          {"from":"A","to":"B","probability":0.8}
+        ],
+        "B": [{"from":"B","to":"C","probability":1.0}],
+        "C": []
+      },
+      "attributeNameUsed": null,
+      "weightFactor": 0.0
+    },
+    "caseID": "A",
+    "lastAct": null,
+    "lastProb": 0.0,
+    "prob": 1.0,
+    "logProb": 1.0,
+    "mean": "rO0ABXNyADVvcmcuYXBhY2hlLmNvbW1vbnMubWF0aDMuc3RhdC5kZXNjcmlwdGl2ZS5tb21lbnQuTWVhbu4DhxRFeuu0AgACWgAJaW5jTW9tZW50TAAGbW9tZW50dAA+TG9yZy9hcGFjaGUvY29tbW9ucy9tYXRoMy9zdGF0L2Rlc2NyaXB0aXZlL21vbWVudC9GaXJzdE1vbWVudDt4cAFzcgA8b3JnLmFwYWNoZS5jb21tb25zLm1hdGgzLnN0YXQuZGVzY3JpcHRpdmUubW9tZW50LkZpcnN0TW9tZW50VNTekKtB+mkCAAREAANkZXZEAAJtMUoAAW5EAARuRGV2eHBAPeZmZmZmZkAuGZmZmZmZAAAAAAAAAAJALeZmZmZmZg==",
+    "lastUpdate": 1754641275271
+  },
+  "B":
+  {
+    "model":
+    {
+      "nodes": ["A","B","C"],
+      "edges": [
+        {"from":"A","to":"A","probability":0.2},
+        {"from":"A","to":"B","probability":0.8},
+        {"from":"B","to":"C","probability":1.0}
+      ],
+      "inEdgeMap":
+      {
+        "A": [{"from":"A","to":"A","probability":0.2}],
+        "B": [{"from":"A","to":"B","probability":0.8}],
+        "C": [{"from":"B","to":"C","probability":1.0}]
+      },
+      "outEdgeMap":
+      {
+        "A": [
+          {"from":"A","to":"A","probability":0.2},
+          {"from":"A","to":"B","probability":0.8}
+        ],
+        "B": [{"from":"B","to":"C","probability":1.0}],
+        "C": []},
+      "attributeNameUsed": null,
+      "weightFactor": 0.0
+    },
+    "caseID": "B",
+    "lastAct": "A",
+    "lastProb": 0.0,
+    "prob": 0.0,
+    "logProb": "Infinity",
+    "mean": "rO0ABXNyADVvcmcuYXBhY2hlLmNvbW1vbnMubWF0aDMuc3RhdC5kZXNjcmlwdGl2ZS5tb21lbnQuTWVhbu4DhxRFeuu0AgACWgAJaW5jTW9tZW50TAAGbW9tZW50dAA+TG9yZy9hcGFjaGUvY29tbW9ucy9tYXRoMy9zdGF0L2Rlc2NyaXB0aXZlL21vbWVudC9GaXJzdE1vbWVudDt4cAFzcgA8b3JnLmFwYWNoZS5jb21tb25zLm1hdGgzLnN0YXQuZGVzY3JpcHRpdmUubW9tZW50LkZpcnN0TW9tZW50VNTekKtB+mkCAAREAANkZXZEAAJtMUoAAW5EAARuRGV2eHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA==",
+    "lastUpdate": 1754641275272
+  }
+}

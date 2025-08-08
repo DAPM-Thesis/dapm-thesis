@@ -1,14 +1,16 @@
 package communication.message.serialization;
 import communication.message.Message;
-import communication.message.impl.Alignment;
-import communication.message.impl.Metrics;
-import communication.message.impl.ProcessMap;
+import communication.message.impl.*;
 import communication.message.impl.causalnet.CausalNet;
 import communication.message.impl.causalnet.CausalNetBinding;
 import communication.message.impl.causalnet.CausalNetNode;
+import communication.message.impl.softconformance.SoftConformanceReport;
+import communication.message.impl.softconformance.models.SoftConformanceStatus;
+import communication.message.impl.softconformance.models.pdfa.PDFA;
+import communication.message.impl.softconformance.models.pdfa.PDFAEdge;
+import communication.message.impl.softconformance.models.pdfa.PDFANode;
 import communication.message.impl.time.UTCTime;
 import communication.message.impl.time.Date;
-import communication.message.impl.Trace;
 import communication.message.impl.event.Attribute;
 import communication.message.impl.event.Event;
 import communication.message.impl.petrinet.PetriNet;
@@ -18,8 +20,12 @@ import communication.message.impl.petrinet.arc.Arc;
 import communication.message.impl.petrinet.arc.PlaceToTransitionArc;
 import communication.message.impl.petrinet.arc.TransitionToPlaceArc;
 import communication.message.serialization.parsing.JSONParser;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import utils.Pair;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -92,6 +98,94 @@ public class MessageSerializer implements MessageVisitor<String> {
         this.serialization = causalNet.getName() + ':' + serialize(causalNet);
         return getSerialization();
     }
+
+    @Override
+    public String visit(SoftConformanceReport softConformanceReport) {
+        this.serialization = softConformanceReport.getName() + ':' + serialize(softConformanceReport);
+        return getSerialization();
+    }
+
+    private String serialize(SoftConformanceReport softConformanceReport) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        if (!softConformanceReport.isEmpty()) {
+            softConformanceReport.forEach((key, value) ->
+                            sb.append('\"').append(key).append('\"')
+                                    .append(':').append(serialize(value)).append(','));
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    private String serialize(SoftConformanceStatus status) {
+        String lastAct = (status.getLastAct() == null) ? null : '\"' + status.getLastAct() + '\"';
+        return "{" +
+                "\"model\": " + serialize(status.getModel()) + ", " +
+                "\"caseID\": \"" + status.getCaseID() + "\", " +
+                "\"lastAct\": " + lastAct + ", " +
+                "\"lastProb\": " + status.getLastProbability() + ", " +
+                "\"prob\": " + status.getSequenceProbability() + ", " +
+                "\"logProb\": \"" + status.getSequenceLogProbability() + "\", " +
+                "\"mean\": \"" + serialize(status.getMean()) + "\", " +
+                "\"lastUpdate\": " + status.getLastUpdateValue() +
+                "}";
+    }
+
+    // Mean implements Serializable and we therefore just serialize into its base64 representation
+    private String serialize(Mean mean) {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        try (ObjectOutputStream oos = new ObjectOutputStream(byteStream)) {
+            oos.writeObject(mean);
+            return Base64.getEncoder().encodeToString(byteStream.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String serialize(PDFA model) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"nodes\": [");
+        if (!model.getNodes().isEmpty()) {
+            model.getNodes().forEach(node -> sb.append("\"").append(node.label()).append("\","));
+            sb.setLength(sb.length() - 1);
+        }
+        sb.append("],");
+
+        sb.append("\"edges\": [");
+        if (!model.getEdges().isEmpty()) {
+            model.getEdges().forEach(edge -> sb.append(edge.serialize()).append(","));
+            sb.setLength(sb.length() - 1);
+        }
+        sb.append("],");
+
+        sb.append("\"inEdgeMap\": ");
+        serializeEdgeMap(model.getInEdgeMap(), sb);
+        sb.append(",\"outEdgeMap\": ");
+        serializeEdgeMap(model.getOutEdgeMap(), sb);
+
+        String attributeName = (model.getAttributeNameUsed() != null) ? '\"' + model.getAttributeNameUsed() + '\"' : "null";
+        sb.append(",\"attributeNameUsed\": ").append(attributeName).append(",");
+        sb.append("\"weightFactor\": ").append(model.getWeightFactor());
+        sb.append("}");
+        return sb.toString();
+    }
+
+    private void serializeEdgeMap(Map<PDFANode, Collection<PDFAEdge>> edgeMap, StringBuilder sb) {
+        sb.append("{");
+        for (Map.Entry<PDFANode, Collection<PDFAEdge>> entry : edgeMap.entrySet()) {
+            sb.append("\"").append(entry.getKey().label()).append("\": [");
+            if (!entry.getValue().isEmpty()) {
+                entry.getValue().forEach(edge -> sb.append(edge.serialize()).append(","));
+                sb.setLength(sb.length() - 1);
+            }
+            sb.append("],");
+        }
+        if (!edgeMap.isEmpty()) { sb.setLength(sb.length() - 1); }
+        sb.append("}");
+    }
+
 
     private String serialize(CausalNet causalNet) {
         StringBuilder sb = new StringBuilder();
