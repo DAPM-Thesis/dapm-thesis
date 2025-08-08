@@ -54,7 +54,7 @@ public  class HandshakeController {
         return ResponseEntity.ok(resp);
     }
 
-    // --- DTO types below (or place in their own files) ---
+
 
     public static class HandshakeRequest {
         private String token;
