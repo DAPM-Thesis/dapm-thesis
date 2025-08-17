@@ -72,7 +72,8 @@ public abstract class Operator<AO, O extends Message> extends ConsumingProcessin
                     this,
                     hbBrokerUrl,
                     this.internalHeartbeatTopicConfig,
-                    this.reactionHandler
+                    this.reactionHandler,
+                    this.heartbeatTimingConfig
             );
             this.heartbeatManager.start();
             LogUtil.info("[OP HB PH1] {} Instance {}: HeartbeatManager_Phase1 started.", getClass().getSimpleName(), getInstanceId());

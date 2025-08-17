@@ -8,6 +8,7 @@ import candidate_validation.SubscriberReference;
 import candidate_validation.ProcessingElementReference;
 import pipeline.processingelement.Configuration;
 import pipeline.processingelement.heartbeat.FaultToleranceLevel;
+import pipeline.processingelement.heartbeat.UserDefinedHeartbeatConfig;
 import utils.Pair;
 
 import java.net.URI;
@@ -30,8 +31,9 @@ public class CandidateParser {
         Map<String, Object> jsonMap = (Map<String, Object>) (new JSONParser()).parse(json);
 
         String faultToleranceLeString = (String) jsonMap.get("faultToleranceLevel");
-
         FaultToleranceLevel faultToleranceLevel = FaultToleranceLevel.fromString(faultToleranceLeString, FaultToleranceLevel.LEVEL_NOTIFY_ONLY);
+        
+        UserDefinedHeartbeatConfig userDefinedHeartbeatConfig = getUserDefinedHeartbeatTimingConfig(jsonMap);
 
         List<Map<String, Object>> rawElements = (List<Map<String, Object>>) jsonMap.get("processing elements");
         Set<ProcessingElementReference> elements = getProcessingElementReferences(rawElements);
@@ -49,7 +51,27 @@ public class CandidateParser {
             validator.validateConfiguration(configJson, configFilename);
         }
 
-        return new PipelineCandidateData(elements, channels, faultToleranceLevel);
+        return new PipelineCandidateData(elements, channels, faultToleranceLevel, userDefinedHeartbeatConfig);
+    }
+
+    private UserDefinedHeartbeatConfig getUserDefinedHeartbeatTimingConfig(Map<String, Object> jsonMap) {
+        if (!jsonMap.containsKey("heartbeatTimingConfig")) {
+            return null;
+        }
+
+        Object configValue = jsonMap.get("heartbeatTimingConfig");
+        if (!(configValue instanceof Map)) {
+            return null;
+        }
+
+        Map<String, Object> configMap = (Map<String, Object>) configValue;
+        
+        Long sendInterval = configMap.containsKey("sendIntervalMs") ? ((Number) configMap.get("sendIntervalMs")).longValue() : null;
+        Long checkInterval = configMap.containsKey("checkIntervalMs") ? ((Number) configMap.get("checkIntervalMs")).longValue() : null;
+        Long timeout = configMap.containsKey("timeoutMs") ? ((Number) configMap.get("timeoutMs")).longValue() : null;
+        Integer missesThreshold = configMap.containsKey("missesThreshold") ? ((Number) configMap.get("missesThreshold")).intValue() : null;
+        
+        return new UserDefinedHeartbeatConfig(sendInterval, checkInterval, timeout, missesThreshold);
     }
 
     private String toFilenameWithoutExtension(String... subWords) {

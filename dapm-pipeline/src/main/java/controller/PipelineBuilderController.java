@@ -18,6 +18,7 @@ import pipeline.notification.PipelineNotificationService;
 import pipeline.processingelement.ProcessingElement;
 import pipeline.processingelement.Sink;
 import pipeline.processingelement.heartbeat.FaultToleranceLevel;
+import pipeline.processingelement.heartbeat.HeartbeatTimingConfig;
 import pipeline.processingelement.heartbeat.HeartbeatTopicConfig;
 import pipeline.processingelement.operator.Operator;
 import pipeline.processingelement.source.Source;
@@ -136,7 +137,7 @@ public class PipelineBuilderController {
     }
 
     // TODO: Move to somewhere else
-    public static record OperationalParamsRequest(String pipelineId, FaultToleranceLevel faultToleranceLevel, String organizationHostURL) {}
+    public static record OperationalParamsRequest(String pipelineId, FaultToleranceLevel faultToleranceLevel, String organizationHostURL, HeartbeatTimingConfig heartbeatTimingConfig) {}
 
     @PutMapping("/instance/{instanceID}/operational-params")
     public ResponseEntity<Void> setOperationalParams(
@@ -145,7 +146,7 @@ public class PipelineBuilderController {
         ProcessingElement pe = peInstanceRepository.getInstance(instanceID);
         if (pe == null) { return ResponseEntity.notFound().build(); }
         
-        pe.setOperationalParameters(params.pipelineId(), params.faultToleranceLevel(), notificationService, params.organizationHostURL);
+        pe.setOperationalParameters(params.pipelineId(), params.faultToleranceLevel(), notificationService, params.organizationHostURL, params.heartbeatTimingConfig);
         LogUtil.info("[CTRLR OP PARAMS] Set operational params for PE {}: PipelineID={}, FTLevel={}",
                 instanceID, params.pipelineId(), params.faultToleranceLevel());
         return ResponseEntity.ok().build();

@@ -3,20 +3,39 @@ package pipeline.processingelement.heartbeat;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * Strategy decides, for a given direction (upstream/downstream) and policy (ALL vs ANY),
+ * which topics are late at THIS check.
+ */
 public interface HeartbeatVerificationStrategy {
+
     /**
-     * Verifies peer liveness based on topic activity.
-     * @param lastHeartbeatOnMonitoredTopics Map of monitoredTopicName to its last received heartbeat timestamp.
-     * @param currentTime Current time for comparison.
-     * @param timeoutMillis Liveness timeout threshold.
-     * @param expectedTopicsInGroupForThisDirection The set of all topic names that are expected for this strategy.
-     * @return true if liveness criteria met, false otherwise.
+     * Return true/false for single-shot liveness.
      */
-    boolean verifyLiveness(Map<String, Instant> lastHeartbeatOnMonitoredTopics,
-                           Instant currentTime,
-                           long timeoutMillis,
-                           Set<String> expectedTopicsInGroupForThisDirection);
+    default boolean verifyLiveness(Map<String, Instant> lastHeartbeatOnMonitoredTopics,
+                                   Instant currentTime,
+                                   long timeoutMillis,
+                                   Set<String> expectedTopicsInGroupForThisDirection) {
+        return topicsNotTimely(lastHeartbeatOnMonitoredTopics, currentTime, timeoutMillis, expectedTopicsInGroupForThisDirection).isEmpty();
+    }
+
+    /**
+     * Identify which expected topics are currently late (i.e., exceeded timeout).
+     * The manager will interpret these with miss counters & thresholds.
+     */
+    default Set<String> topicsNotTimely(Map<String, Instant> lastHeartbeatOnMonitoredTopics,
+                                        Instant currentTime,
+                                        long timeoutMillis,
+                                        Set<String> expectedTopicsInGroupForThisDirection) {
+        if (expectedTopicsInGroupForThisDirection == null || expectedTopicsInGroupForThisDirection.isEmpty()) {
+            return Set.of();
+        }
+        return expectedTopicsInGroupForThisDirection.stream()
+                .filter(t -> !isTopicTimely(lastHeartbeatOnMonitoredTopics.get(t), currentTime, timeoutMillis))
+                .collect(Collectors.toSet());
+    }
 
     default boolean isTopicTimely(Instant heartbeatTime, Instant currentTime, long timeoutMillis) {
         if (heartbeatTime == null || Instant.MIN.equals(heartbeatTime)) return false;

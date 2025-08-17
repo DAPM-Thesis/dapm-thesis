@@ -10,7 +10,9 @@ import communication.config.ConsumerConfig;
 import communication.config.ProducerConfig;
 import controller.PipelineBuilderController.OperationalParamsRequest;
 import pipeline.processingelement.heartbeat.FaultToleranceLevel;
+import pipeline.processingelement.heartbeat.HeartbeatTimingConfig;
 import pipeline.processingelement.heartbeat.HeartbeatTopicConfig;
+import pipeline.processingelement.heartbeat.UserDefinedHeartbeatConfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,7 +36,7 @@ public class PipelineBuilder {
     }
 
     public void buildPipeline(String pipelineID, ValidatedPipeline validatedPipeline) {
-        Pipeline pipeline = new Pipeline(pipelineID, validatedPipeline.getChannels(), validatedPipeline.getFaultToleranceLevel());
+        Pipeline pipeline = new Pipeline(pipelineID, validatedPipeline.getChannels(), validatedPipeline.getFaultToleranceLevel(), validatedPipeline.getUserDefinedHeartbeatConfig());
         buildPipeline(pipeline);
         pipelineRepository.storePipeline(pipelineID, pipeline);
         configureHeartbeats(pipeline);
@@ -208,18 +210,28 @@ public class PipelineBuilder {
 
     private void setOperationalParametersOnPEs(Pipeline pipeline) {
         LogUtil.info("[BUILDER OP PARAMS] Setting operational parameters for pipeline: {}", pipeline.getPipelineID());
-        FaultToleranceLevel faultToleranceLevel = pipeline.getFaultToleranceLevel();
+        
+        HeartbeatTimingConfig finalHeartbeatConfig = getHeartbeatTimingConfigs(
+                pipeline.getUserDefinedHeartbeatConfig(),
+                pipeline.getProcessingElements().size()
+        );
 
         for (Map.Entry<String, ProcessingElementReference> entry : pipeline.getProcessingElements().entrySet()) {
             String instanceID = entry.getKey();
             ProcessingElementReference peRef = entry.getValue();
+            
             // TODO: Also need the pipeline owner's organization host URL for notifications. (or look for an alternative way to get it)
-            OperationalParamsRequest params = new OperationalParamsRequest(pipeline.getPipelineID(), faultToleranceLevel, peRef.getOrganizationHostURL());
+            OperationalParamsRequest params = new OperationalParamsRequest(
+                pipeline.getPipelineID(), 
+                pipeline.getFaultToleranceLevel(), 
+                peRef.getOrganizationHostURL(), 
+                finalHeartbeatConfig);
+            
             String url = peRef.getOrganizationHostURL() + "/pipelineBuilder/instance/" + instanceID + "/operational-params";
             HTTPRequest req = new HTTPRequest(url, JsonUtil.toJson(params));
 
             LogUtil.info("[BUILDER OP PARAMS] Sending to PE {} ({}): PipelineID={}, FTLevel={}",
-                    peRef.getTemplateID(), instanceID + "-" + peRef.getInstanceNumber(), pipeline.getPipelineID(), faultToleranceLevel);
+                    peRef.getTemplateID(), instanceID + "-" + peRef.getInstanceNumber(), pipeline.getPipelineID(), pipeline.getFaultToleranceLevel());
             HTTPResponse resp = webClient.putSync(req);
             if (resp == null || !resp.status().is2xxSuccessful()) {                
                 throw new IllegalStateException("[PIPELINE BUILDER] Failed to set operational params for " + instanceID);
@@ -227,6 +239,62 @@ public class PipelineBuilder {
         }
         LogUtil.info("[BUILDER OP PARAMS] Operational parameters set for all PEs in pipeline: {}", pipeline.getPipelineID());
     }
+
+    private HeartbeatTimingConfig getHeartbeatTimingConfigs(UserDefinedHeartbeatConfig userInput, int numPEs) {
+        HeartbeatTimingConfig defaults = HeartbeatTimingConfig.getDefaults();
+        
+        long timeout = defaults.getTimeoutMs();
+        long send    = defaults.getSendIntervalMs();
+        long check   = defaults.getCheckIntervalMs();
+        Integer misses = defaults.getMissesThreshold(); // default 3
+        
+        // ---------- 1) Apply explicit user inputs ----------
+        if (userInput != null) {
+            if (userInput.getMissesThreshold() != null) {
+                misses = Math.max(1, userInput.getMissesThreshold());
+            }
+            if (userInput.getTimeoutMs() != null) {
+                timeout = Math.max(10_000L, userInput.getTimeoutMs());
+            }
+            if (userInput.getSendIntervalMs() != null) {
+                send = userInput.getSendIntervalMs();
+            }
+            if (userInput.getCheckIntervalMs() != null) {
+                check = userInput.getCheckIntervalMs();
+            }
+        }
+    
+        // ---------- 2) Derive missing values ----------
+        // If user gave a timeout but NO send, keep send roughly aligned with misses:
+        if (userInput != null && userInput.getTimeoutMs() != null && userInput.getSendIntervalMs() == null) {
+            // keep: misses * send ≈ timeout
+            send = Math.max(300L, timeout / Math.max(2, misses));
+        }
+    
+        // If user did NOT give a check, derive as timeout/2 (your requirement)
+        if (userInput == null || userInput.getCheckIntervalMs() == null) {
+            check = Math.max(50L, timeout / 2);
+        }
+    
+        // ---------- 3) Sanity/consistency ----------
+        if (send < 100L)  send  = 100L;
+        if (check < 50L)  check = 50L;
+    
+        // keep timeout consistent for dashboards/intuition: timeout >= send * misses
+        long minTimeout = send * Math.max(1, misses);
+        if (timeout < minTimeout) timeout = minTimeout;
+    
+        // ---------- 4) Grace period (no user input; computed) ----------
+        // Minimal 60s + 3s per additional PE. (For N PEs: 60_000 + (N-1)*3_000)
+        long grace = 60_000L + Math.max(0, (numPEs - 1)) * 3_000L;
+    
+        LogUtil.info("Resolved Heartbeat Timings: Timeout=[{}], Send=[{}], Check=[{}], Grace=[{}], MissesThreshold=[{}]",
+                timeout, send, check, grace, misses);
+    
+        return new HeartbeatTimingConfig(send, check, timeout, grace, misses);
+    }
+
+
 
     private PEInstanceResponse sendCreateSourceRequest(ProcessingElementReference pe) {
         String encodedTemplateID = JsonUtil.encode(pe.getTemplateID());

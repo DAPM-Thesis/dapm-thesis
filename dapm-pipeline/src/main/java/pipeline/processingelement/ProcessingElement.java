@@ -1,8 +1,13 @@
 package pipeline.processingelement;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import pipeline.notification.PipelineNotificationService;
 import pipeline.processingelement.heartbeat.FaultToleranceLevel;
 import pipeline.processingelement.heartbeat.HeartbeatManager_V2;
+import pipeline.processingelement.heartbeat.HeartbeatTimingConfig;
 import pipeline.processingelement.heartbeat.HeartbeatTopicConfig;
 import pipeline.processingelement.reaction.ReactionHandler;
 import pipeline.processingelement.reaction.DefaultReactionHandler;
@@ -23,6 +28,7 @@ public abstract class ProcessingElement {
     protected FaultToleranceLevel pipelineFaultToleranceLevel = FaultToleranceLevel.LEVEL_NOTIFY_ONLY;
     protected PipelineNotificationService pipelineNotificationService;
     protected String organizationHostURL;
+    protected HeartbeatTimingConfig heartbeatTimingConfig;
 
     public ProcessingElement(Configuration configuration) {
         this.configuration = configuration;
@@ -35,11 +41,12 @@ public abstract class ProcessingElement {
         this.internalHeartbeatTopicConfig = config;
     }
 
-    public void setOperationalParameters(String pipelineID, FaultToleranceLevel faultToleranceLevel, PipelineNotificationService notificationService, String organizationHostURL) {
+    public void setOperationalParameters(String pipelineID, FaultToleranceLevel faultToleranceLevel, PipelineNotificationService notificationService, String organizationHostURL, HeartbeatTimingConfig heartbeatTimingConfig) {
         this.pipelineID = pipelineID;
         this.pipelineFaultToleranceLevel = faultToleranceLevel;
         this.pipelineNotificationService = notificationService;
         this.organizationHostURL = organizationHostURL;
+        this.heartbeatTimingConfig = heartbeatTimingConfig;
 
         this.reactionHandler = new DefaultReactionHandler();
         this.reactionHandler.initialize(this, this.pipelineID, this.pipelineFaultToleranceLevel, this.pipelineNotificationService, this.organizationHostURL);
@@ -68,6 +75,7 @@ public abstract class ProcessingElement {
     }
 
     public boolean isProcessingActive() { return processingActive; }
+
     public void setProcessingActive(boolean processingActive) {         
         this.processingActive = processingActive;
         if(processingActive) this.available = true;  // TODO: Consider if this is right, considering PE Permissions (Access Control)
@@ -83,6 +91,9 @@ public abstract class ProcessingElement {
         return pipelineFaultToleranceLevel;
     }
 
+    public HeartbeatTimingConfig getHeartbeatTimingConfig() {
+        return heartbeatTimingConfig;
+    }
 
     // TODO: IS THE RIGHT PLACE FOR THIS? Or Do we even need it? (For Permission lost?)
     public void selfReportCriticalError(String message, Exception ex) {

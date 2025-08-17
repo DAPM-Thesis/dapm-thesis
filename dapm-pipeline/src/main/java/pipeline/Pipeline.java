@@ -4,6 +4,7 @@ import candidate_validation.ChannelReference;
 import candidate_validation.ProcessingElementReference;
 import candidate_validation.SubscriberReference;
 import pipeline.processingelement.heartbeat.FaultToleranceLevel;
+import pipeline.processingelement.heartbeat.UserDefinedHeartbeatConfig;
 import utils.graph.DG;
 
 import java.util.*;
@@ -15,12 +16,14 @@ public class Pipeline {
     private DG<ProcessingElementReference, Integer> directedGraph;
     private final FaultToleranceLevel faultToleranceLevel;
     private final Set<ChannelReference> channels;
+    private final UserDefinedHeartbeatConfig userDefinedHeartbeatConfig;
 
-    public Pipeline(String pipelineID, Set<ChannelReference> channelReferences, FaultToleranceLevel faultToleranceLevel) {
+    public Pipeline(String pipelineID, Set<ChannelReference> channelReferences, FaultToleranceLevel faultToleranceLevel, UserDefinedHeartbeatConfig userDefinedHeartbeatConfig) {
         processingElements = new HashMap<>();
         this.pipelineID = pipelineID;
         this.faultToleranceLevel = faultToleranceLevel;
         this.channels = channelReferences;
+        this.userDefinedHeartbeatConfig = userDefinedHeartbeatConfig;
         initializeDG(channelReferences);
     }
 
@@ -74,5 +77,9 @@ public class Pipeline {
 
     public FaultToleranceLevel getFaultToleranceLevel() {
         return faultToleranceLevel;
+    }
+
+    public UserDefinedHeartbeatConfig getUserDefinedHeartbeatConfig() {
+        return userDefinedHeartbeatConfig;
     }
 }

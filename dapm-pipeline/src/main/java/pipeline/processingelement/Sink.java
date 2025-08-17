@@ -38,7 +38,8 @@ public abstract class Sink extends ConsumingProcessingElement {
                     this,
                     hbBrokerUrl,
                     this.internalHeartbeatTopicConfig,
-                    this.reactionHandler
+                    this.reactionHandler,
+                    this.heartbeatTimingConfig
             );
             this.heartbeatManager.start();
             LogUtil.info("[SINK HB PH1] {} Instance {}: HeartbeatManager_Phase1 started.", getClass().getSimpleName(), getInstanceId());

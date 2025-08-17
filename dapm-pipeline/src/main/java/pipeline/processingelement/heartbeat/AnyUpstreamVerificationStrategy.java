@@ -6,12 +6,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * ANY downstream timely is sufficient; late set = all downstream topics currently late.
- * The manager uses this to:
- *   - track per-topic miss counters for logging, and
- *   - maintain an aggregated "all-silent" miss counter for failure.
+ * ANY upstream timely means the set of "late" topics is all-but-at-least-one-ok.
+ * We still return the per-topic late set so the manager can count misses and log recoveries.
  */
-public class AnyDownstreamVerificationStrategy implements HeartbeatVerificationStrategy {
+public class AnyUpstreamVerificationStrategy implements HeartbeatVerificationStrategy {
     @Override
     public Set<String> topicsNotTimely(Map<String, Instant> lastHeartbeatOnMonitoredTopics,
                                        Instant currentTime,

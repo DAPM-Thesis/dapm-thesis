@@ -81,7 +81,8 @@ public abstract class Source<O extends Message> extends ProcessingElement implem
                 this,
                 dataProducer.getBrokerUrl(),
                 this.internalHeartbeatTopicConfig,
-                this.reactionHandler
+                this.reactionHandler,
+                this.heartbeatTimingConfig
         );
         this.heartbeatManager.start();
     }
